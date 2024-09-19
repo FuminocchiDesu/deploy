@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Nerko+One&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+html, body {
+  height: 100%; /* Ensure html and body take up the full viewport height */
+  margin: 0; /* Remove default margin */
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  font-family: "Nerko One", cursive;
+}
+
+#root {
+  background-color: #f7eadf; /* Background color of the outer container */
+  min-height: 100vh; /* Ensure root takes up the full viewport height */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+.login-container {
+  background-color: white; /* Background for the login form */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Adjust width as needed */
+  text-align: center; /* Center the content inside */
+}
+
+#shop-disp a {
+  text-decoration: none; /* Removes the underline */
+  color: inherit; /* Inherits the color from the parent element */
+}
+
+#shop-disp a:hover {
+  text-decoration: none; /* Optional: Adds underline on hover */
+  color: #967259; /* Optional: Changes color on hover */
+}
+
+.contents {
+  font-family: "Nerko One", cursive;
+  font-weight: 400;
+  font-style: normal;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 70px;
+  min-height: 100vh; /* Ensures content takes up full viewport height */
+  background-color: #f7eadf; /* Background color of the outer container */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  display: flex; /* Flexbox for aligning children */
+  flex-direction: column; /* Ensures children are stacked vertically */
+  box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  color: #444444;
+}
+
+.header h1 {
+  max-width: 45vh;
+}
+
+.logout-button {
+  padding: 10px;
+  margin: 10px;
+  background-color: #967259;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 50px;
+  font-size: 3vh;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-button:hover {
+  background-color: #7a5e49;
+}
+
+.logout-button i {
+  font-size: 2vh; /* Adjust the icon size */
+  margin: 0; /* Remove any default margins */
+  display: block; /* Ensure the icon is centered */
+}
+
+#account {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px;
+}
+
+.profile-link {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.profile-link:hover {
+  text-decoration: underline;
+}
+
+.search-container {
+  position: relative; /* Ensure the icon is positioned relative to the container */
+  margin-bottom: 40px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 10px 10px 40px; /* Add padding on the left to make space for the icon */
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px; /* Position the icon inside the input */
+  top: 50%;
+  transform: translateY(-50%); /* Center the icon vertically */
+  color: #ccc; /* Icon color */
+  font-size: 20px; /* Adjust size as needed */
+}
+
+.coffee-shop-card {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+.image-container {
+  width: 100%;  /* Full width of the container */
+  height: 200px; /* Set a fixed height for uniformity */
+  display: flex;  /* Use flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  overflow: hidden;  /* Hide any overflow */
+  border-radius: 30px; /* Rounded corners */
+  margin-bottom: 20px;
+}
+
+.coffee-shop-image {
+  width: 100%;   /* Image fills the width of the container */
+  height: 100%;  /* Image fills the height of the container */
+  object-fit: cover; /* Crops image to fill the container */
+  border-radius: 30px; /* Apply rounded corners to image */
+}
+
+#shop-disp {
+  position: relative; /* Ensure positioning context for absolute positioning */
+  background-color: rgb(255, 255, 255);
+  min-height: 50vh;
+  max-height: 50vh;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  float: left;
+  margin-right: 20px;
+  border: none;
+  text-align: left; /* Ensure text alignment is to the left */
+  clear: right;
+  width: 22em;
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+#shops-container {
+  display: flex;
+}
+
+.design-box {
+  position: absolute;
+  bottom: 0; /* Stick to the bottom */
+  right: 0; /* Stick to the right */
+  width: 90px; /* Adjust size as needed */
+  height: 90px; /* Adjust size as needed */
+  background-color: #967259; /* Background color */
+  border-radius: 40px 0px 8px 0px; /* Optional: for rounded corners */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); /* Optional: add shadow for better visibility */
+}
+
+.arrow {
+  font-size: 50px; /* Adjust the size as needed */
+  color: white; /* Arrow color */
+  transform: translateX(1px); /* Optional: Adjust positioning */
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+#text-container {
+  width: 100%;
+  padding-left: 20px;
+}
+
+#shop-disp img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 50px;
+}
+
+#shop-disp h2 {
+  margin-top: 0;
+  text-align: left; /* Ensure header text is aligned to the left */
+}
+
+#shop-disp p {
+  margin: 5px 0;
+  text-align: left; /* Ensure paragraph text is aligned to the left */
+}
+
+/* Clear float after the shop-disp */
+.coffee-shop-card::after {
+  content: "";
+  display: table;
+  clear: both;
+}
