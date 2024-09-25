@@ -1,4 +1,3 @@
-// frontend/src/components/AdminSide/OwnerDashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,6 +6,9 @@ import OwnerMenu from './OwnerMenu';
 import OwnerPromos from './OwnerPromos';
 import ReadOnlyMenu from './ReadOnlyMenu';
 import ReadOnlyPromos from './ReadOnlyPromos';
+import CustomerReviews from './CustomerReviews'; // Make sure this is correctly imported
+import Analytics from './Analytics'; // Make sure this is correctly imported
+import IssueReporting from './IssueReporting'; // Make sure this is correctly imported
 
 const OwnerDashboard = ({ handleOwnerLogout }) => {
   const [coffeeShop, setCoffeeShop] = useState(null);
@@ -17,6 +19,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // Fetch Coffee Shops Function
   const fetchCoffeeShops = useCallback(async () => {
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/coffee-shops/owner_coffee_shops/', {
@@ -32,6 +35,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
     }
   }, [id, navigate]);
 
+  // Fetch Coffee Shop Function
   const fetchCoffeeShop = useCallback(async () => {
     if (id) {
       try {
@@ -53,6 +57,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
     fetchCoffeeShop();
   }, [fetchCoffeeShop]);
 
+  // Handle Shop Update Function
   const handleShopUpdate = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -77,6 +82,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
     }
   };
 
+  // Handle Input Change Function
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'image') {
@@ -86,10 +92,12 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
     }
   };
 
+  // Handle Shop Select Function
   const handleShopSelect = (shopId) => {
     navigate(`/owner-dashboard/${shopId}`);
   };
 
+  // Logout Function
   const onLogout = () => {
     handleOwnerLogout();
     navigate('/admin-login');
@@ -149,10 +157,10 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
               className="edit-input"
             />
             <input
-            type="file"
-            name="image"
-            onChange={handleInputChange}
-            className="edit-input"
+              type="file"
+              name="image"
+              onChange={handleInputChange}
+              className="edit-input"
             />
             <div className="button-group">
               <button type="submit" className="save-button">Save Changes</button>
@@ -168,7 +176,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
             <button onClick={() => setIsEditing(true)} className="edit-button">Edit Shop Details</button>
           </div>
         )}
-        
+
         <div className="menu-management">
           <h2>Menu</h2>
           {isEditingMenu ? (
@@ -183,7 +191,7 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
             </>
           )}
         </div>
-        
+
         <div className="promos-management">
           <h2>Promotions</h2>
           {isEditingPromos ? (
@@ -197,6 +205,21 @@ const OwnerDashboard = ({ handleOwnerLogout }) => {
               <button onClick={() => setIsEditingPromos(true)} className="edit-button">Edit Promotions</button>
             </>
           )}
+        </div>
+
+        <div className="reviews-management">
+          <h2>Customer Reviews</h2>
+          <CustomerReviews coffeeShopId={id} />
+        </div>
+
+        <div className="analytics-management">
+          <h2>Analytics</h2>
+          <Analytics coffeeShopId={id} />
+        </div>
+
+        <div className="issue-reporting">
+          <h2>Report an Issue</h2>
+          <IssueReporting coffeeShopId={id} onClose={() => {}} />
         </div>
       </div>
     </div>

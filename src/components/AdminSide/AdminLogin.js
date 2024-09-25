@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const AdminLogin = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -14,6 +15,8 @@ const AdminLogin = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);  // Start loading
+    setError(''); // Clear any previous errors
     try {
       const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', credentials);
       localStorage.setItem('ownerToken', response.data.access);
@@ -31,6 +34,8 @@ const AdminLogin = ({ onLogin }) => {
       } else {
         setError('Invalid credentials or server error');
       }
+    } finally {
+      setLoading(false);  // End loading
     }
   };
 
@@ -45,6 +50,7 @@ const AdminLogin = ({ onLogin }) => {
           value={credentials.username}
           onChange={handleChange}
           required
+          autoComplete="username"  // Improve UX for username input
         />
         <input
           type="password"
@@ -53,8 +59,11 @@ const AdminLogin = ({ onLogin }) => {
           value={credentials.password}
           onChange={handleChange}
           required
+          autoComplete="current-password"  // Improve UX for password input
         />
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
       {error && <p className="error-message">{error}</p>}
     </div>
