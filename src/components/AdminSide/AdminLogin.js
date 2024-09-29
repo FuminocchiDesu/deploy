@@ -1,68 +1,62 @@
-import React, { useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import { AlertCircle, Coffee, Loader2 } from 'lucide-react'
-import './AdminLogin.css'
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
+import './AdminLogin.css';
 
 const AdminLogin = ({ onLogin }) => {
-  const [credentials, setCredentials] = useState({ username: '', password: '' })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setCredentials(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setCredentials(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
     try {
-      const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', credentials)
-      
+      const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', credentials);
       if (response && response.data) {
         if (response.data.access) {
-          localStorage.setItem('ownerToken', response.data.access)
+          localStorage.setItem('ownerToken', response.data.access);
         } else {
-          console.error('Access token not found in response')
-          setError('Login successful, but token not received. Please try again.')
-          return
+          setError('Login successful, but token not received. Please try again.');
+          return;
         }
 
         if (response.data.coffee_shop_id) {
-          localStorage.setItem('coffeeShopId', response.data.coffee_shop_id)
-          onLogin() // Notify that owner has logged in
-          navigate('/coffee-shop-settings') // Redirect to CoffeeShopSettings after successful login
+          localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
+          onLogin(); // Notify that owner has logged in
+          navigate('/dashboard'); // Redirect to Dashboard after successful login
         } else {
-          setError('No coffee shop associated with this account')
+          setError('No coffee shop associated with this account');
         }
       } else {
-        console.error('Unexpected response structure:', response)
-        setError('Unexpected response from server. Please try again.')
+        setError('Unexpected response from server. Please try again.');
       }
     } catch (err) {
-      console.error('Login error:', err)
       if (err.response) {
-        console.error('Error response:', err.response)
         if (err.response.status === 403) {
-          setError('Not authorized. Are you sure you are a shop owner?')
+          setError('Not authorized. Are you sure you are a shop owner?');
         } else if (err.response.data && err.response.data.detail) {
-          setError(err.response.data.detail)
+          setError(err.response.data.detail);
         } else {
-          setError(`Server error: ${err.response.status}`)
+          setError(`Server error: ${err.response.status}`);
         }
       } else if (err.request) {
-        console.error('Error request:', err.request)
-        setError('No response received from server. Please check your internet connection.')
+        setError('No response received from server. Please check your internet connection.');
       } else {
-        setError('An unexpected error occurred. Please try again.')
+        setError('An unexpected error occurred. Please try again.');
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="admin-login-page">
@@ -127,7 +121,7 @@ const AdminLogin = ({ onLogin }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminLogin
+export default AdminLogin;

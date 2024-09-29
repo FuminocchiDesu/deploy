@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AdminLogin from './components/AdminSide/AdminLogin';
-// import CoffeeShopSettings from './components/AdminSide/CoffeeShopSettings'; // Comment this out for now
-import "./App.css";
+import AdminDashboard from './components/AdminSide/AdminDashboard'; // Correct import for AdminDashboard
+import './App.css';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,7 +36,7 @@ const App = () => {
 
   return (
     <Router>
-      <AppContent 
+      <AppContent
         isAuthenticated={isAuthenticated}
         isOwnerAuthenticated={isOwnerAuthenticated}
         handleLogin={handleLogin}
@@ -55,15 +55,13 @@ const AppContent = ({ isAuthenticated, isOwnerAuthenticated, handleLogin, handle
         {/* Public routes */}
         <Route path="/admin-login" element={<AdminLogin onLogin={handleOwnerLogin} />} />
         
-        {/* CoffeeShopSettings route - Commented out for now */}
-        {/* <Route path="/coffee-shop-settings" element={isOwnerAuthenticated ? <CoffeeShopSettings /> : <Navigate to="/admin-login" />} /> */}
-
-        {/* Other routes... */}
+        {/* Admin dashboard */}
+        <Route path="/dashboard" element={isOwnerAuthenticated ? <AdminDashboard /> : <Navigate to="/admin-login" />} />
 
         {/* Default route */}
         <Route path="/" element={
-          isAuthenticated ? <Navigate to="/coffee-shops" /> :
-          isOwnerAuthenticated ? <Navigate to={`/owner-dashboard/${localStorage.getItem('coffeeShopId')}`} /> :
+          isAuthenticated ? <Navigate to="/dashboard" /> :
+          isOwnerAuthenticated ? <Navigate to="/dashboard" /> :
           <Navigate to="/admin-login" />
         } />
 
