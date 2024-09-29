@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import Login from './components/UserSide/Login';
-import Register from './components/UserSide/Register';
-import CoffeeShops from './components/UserSide/CoffeeShops';
-import CoffeeShopDetails from './components/UserSide/CoffeeShopDetails';
-import RatingForm from './components/UserSide/RatingForm';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AdminLogin from './components/AdminSide/AdminLogin';
-import OwnerDashboard from './components/AdminSide/OwnerDashboard';
-import UserProfile from './components/UserSide/UserProfile';
+// import CoffeeShopSettings from './components/AdminSide/CoffeeShopSettings'; // Comment this out for now
 import "./App.css";
 
 const App = () => {
@@ -55,38 +49,22 @@ const App = () => {
 };
 
 const AppContent = ({ isAuthenticated, isOwnerAuthenticated, handleLogin, handleOwnerLogin, handleLogout, handleOwnerLogout }) => {
-  const navigate = useNavigate();
-
-  const handleLoginWithRedirect = () => {
-    handleLogin();
-    navigate('/coffee-shops');
-  };
-
   return (
     <div className="content">
       <Routes>
         {/* Public routes */}
-        <Route path="/login" element={<Login onLogin={handleLoginWithRedirect} />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/admin-login" element={<AdminLogin onLogin={handleOwnerLogin} />} />
-        <Route path="/profile" element={<UserProfile/>}/>
+        
+        {/* CoffeeShopSettings route - Commented out for now */}
+        {/* <Route path="/coffee-shop-settings" element={isOwnerAuthenticated ? <CoffeeShopSettings /> : <Navigate to="/admin-login" />} /> */}
 
-        {/* Protected routes */}
-        <Route path="/coffee-shops" element={isAuthenticated ? <CoffeeShops handleLogout={handleLogout} /> : <Navigate to="/login" />} />
-        <Route path="/coffee-shop/:id" element={isAuthenticated ? <CoffeeShopDetails /> : <Navigate to="/login" />} />
-        <Route path="/rate/:id" element={isAuthenticated ? <RatingForm /> : <Navigate to="/login" />} />
-
-        {/* Owner routes */}
-        <Route 
-          path="/owner-dashboard/:id" 
-          element={isOwnerAuthenticated ? <OwnerDashboard handleOwnerLogout={handleOwnerLogout} /> : <Navigate to="/admin-login" />} 
-        />
+        {/* Other routes... */}
 
         {/* Default route */}
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/coffee-shops" /> :
           isOwnerAuthenticated ? <Navigate to={`/owner-dashboard/${localStorage.getItem('coffeeShopId')}`} /> :
-          <Navigate to="/login" />
+          <Navigate to="/admin-login" />
         } />
 
         {/* Catch-all route */}
