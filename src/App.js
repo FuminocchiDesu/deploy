@@ -2,15 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AdminLogin from './components/AdminSide/AdminLogin';
 import AdminDashboard from './components/AdminSide/AdminDashboard';
-import PageSettings from './components/AdminSide/PageSettings'; // Import the PageSettings component
+import PageSettings from './components/AdminSide/PageSettings';
+import axios from 'axios';
 import './App.css';
 
 const App = () => {
-  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(null);
 
   useEffect(() => {
-    const ownerToken = localStorage.getItem('ownerToken');
-    setIsOwnerAuthenticated(!!ownerToken);
+    const validateToken = async () => {
+      const ownerToken = localStorage.getItem('ownerToken');
+      if (ownerToken) {
+        try {
+          // Replace with your actual API endpoint for token validation
+          const response = await axios.post('https://khlcle.pythonanywhere.com/api/validate-token/', {}, {
+            headers: { Authorization: `Bearer ${ownerToken}` }
+          });
+          setIsOwnerAuthenticated(true);
+        } catch (error) {
+          console.error('Token validation failed:', error);
+          localStorage.removeItem('ownerToken');
+          localStorage.removeItem('coffeeShopId');
+          setIsOwnerAuthenticated(false);
+        }
+      } else {
+        setIsOwnerAuthenticated(false);
+      }
+    };
+
+    validateToken();
   }, []);
 
   const handleOwnerLogin = () => {
@@ -23,20 +43,12 @@ const App = () => {
     setIsOwnerAuthenticated(false);
   };
 
+  if (isOwnerAuthenticated === null) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Router>
-      <AppContent
-        isOwnerAuthenticated={isOwnerAuthenticated}
-        handleOwnerLogin={handleOwnerLogin}
-        handleOwnerLogout={handleOwnerLogout}
-      />
-    </Router>
-  );
-};
-
-const AppContent = ({ isOwnerAuthenticated, handleOwnerLogin, handleOwnerLogout }) => {
-  return (
-    <div className="content">
       <Routes>
         <Route 
           path="/admin-login" 
@@ -60,7 +72,16 @@ const AppContent = ({ isOwnerAuthenticated, handleOwnerLogin, handleOwnerLogout 
           path="/dashboard/page-settings" 
           element={
             isOwnerAuthenticated 
-              ? <PageSettings /> 
+              ? <PageSettings handleOwnerLogout={handleOwnerLogout} /> 
+              : <Navigate to="/admin-login" />
+          } 
+        />
+
+        <Route 
+          path="/dashboard/page-settings/:id" 
+          element={
+            isOwnerAuthenticated 
+              ? <PageSettings handleOwnerLogout={handleOwnerLogout} /> 
               : <Navigate to="/admin-login" />
           } 
         />
@@ -69,7 +90,7 @@ const AppContent = ({ isOwnerAuthenticated, handleOwnerLogin, handleOwnerLogout 
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </div>
+    </Router>
   );
 };
 
