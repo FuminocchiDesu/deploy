@@ -1,31 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AdminLogin from './components/AdminSide/AdminLogin';
-import AdminDashboard from './components/AdminSide/AdminDashboard'; // Correct import for AdminDashboard
+import AdminDashboard from './components/AdminSide/AdminDashboard';
+import PageSettings from './components/AdminSide/PageSettings'; // Import the PageSettings component
 import './App.css';
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     const ownerToken = localStorage.getItem('ownerToken');
-    setIsAuthenticated(!!token);
     setIsOwnerAuthenticated(!!ownerToken);
   }, []);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
   const handleOwnerLogin = () => {
     setIsOwnerAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
   };
 
   const handleOwnerLogout = () => {
@@ -37,35 +26,47 @@ const App = () => {
   return (
     <Router>
       <AppContent
-        isAuthenticated={isAuthenticated}
         isOwnerAuthenticated={isOwnerAuthenticated}
-        handleLogin={handleLogin}
         handleOwnerLogin={handleOwnerLogin}
-        handleLogout={handleLogout}
         handleOwnerLogout={handleOwnerLogout}
       />
     </Router>
   );
 };
 
-const AppContent = ({ isAuthenticated, isOwnerAuthenticated, handleLogin, handleOwnerLogin, handleLogout, handleOwnerLogout }) => {
+const AppContent = ({ isOwnerAuthenticated, handleOwnerLogin, handleOwnerLogout }) => {
   return (
     <div className="content">
       <Routes>
-        {/* Public routes */}
-        <Route path="/admin-login" element={<AdminLogin onLogin={handleOwnerLogin} />} />
+        <Route 
+          path="/admin-login" 
+          element={
+            isOwnerAuthenticated 
+              ? <Navigate to="/dashboard" /> 
+              : <AdminLogin onLogin={handleOwnerLogin} />
+          } 
+        />
         
-        {/* Admin dashboard */}
-        <Route path="/dashboard" element={isOwnerAuthenticated ? <AdminDashboard /> : <Navigate to="/admin-login" />} />
+        <Route 
+          path="/dashboard/*" 
+          element={
+            isOwnerAuthenticated 
+              ? <AdminDashboard handleOwnerLogout={handleOwnerLogout} /> 
+              : <Navigate to="/admin-login" />
+          } 
+        />
 
-        {/* Default route */}
-        <Route path="/" element={
-          isAuthenticated ? <Navigate to="/dashboard" /> :
-          isOwnerAuthenticated ? <Navigate to="/dashboard" /> :
-          <Navigate to="/admin-login" />
-        } />
+        <Route 
+          path="/dashboard/page-settings" 
+          element={
+            isOwnerAuthenticated 
+              ? <PageSettings /> 
+              : <Navigate to="/admin-login" />
+          } 
+        />
 
-        {/* Catch-all route */}
+        <Route path="/" element={<Navigate to={isOwnerAuthenticated ? "/dashboard" : "/admin-login"} />} />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
