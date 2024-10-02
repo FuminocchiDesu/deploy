@@ -7,9 +7,7 @@ import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
-  const [visitsData, setVisitsData] = useState([]);
-  const [favoriteCount, setFavoriteCount] = useState(0);
-  const [reviews, setReviews] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
   const navigate = useNavigate();
 
   const menuItems = [
@@ -25,21 +23,10 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
   const fetchDashboardData = async () => {
     try {
-      const [visitsResponse, favoritesResponse, reviewsResponse] = await Promise.all([
-        axios.get('https://khlcle.pythonanywhere.com/api/visits/', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        }),
-        axios.get('https://khlcle.pythonanywhere.com/api/favorites/count/', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        }),
-        axios.get('https://khlcle.pythonanywhere.com/api/reviews/', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        })
-      ]);
-
-      setVisitsData(visitsResponse.data);
-      setFavoriteCount(favoritesResponse.data.count);
-      setReviews(reviewsResponse.data);
+      const response = await axios.get('https://khlcle.pythonanywhere.com/api/dashboard/', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+      });
+      setDashboardData(response.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
@@ -54,6 +41,10 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
     handleOwnerLogout();
     navigate('/admin-login');
   };
+
+  if (!dashboardData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="admin-layout">
@@ -93,7 +84,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
           <div className="card">
             <h2 className="card-title">Visits Over Time</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={visitsData}>
+              <LineChart data={dashboardData.visits_data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -107,16 +98,17 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
           <div className="dashboard-grid">
             <div className="card">
               <h2 className="card-title">Favorites</h2>
-              <p className="stat-value">{favoriteCount}</p>
+              <p className="stat-value">{dashboardData.favorite_count}</p>
               <p>Users have favorited your coffee shop</p>
             </div>
 
             <div className="card">
               <h2 className="card-title">Recent Reviews</h2>
-              {reviews.slice(0, 3).map((review, index) => (
+              {dashboardData.recent_reviews.map((review, index) => (
                 <div key={index} className="review-item">
                   <p>{review.content}</p>
                   <p className="review-author">- {review.author}</p>
+                  <p className="review-rating">Rating: {review.rating}/5</p>
                 </div>
               ))}
               <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
