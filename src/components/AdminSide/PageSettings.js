@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User, Upload } from 'lucide-react';
+import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star } from 'lucide-react';
 import './SharedStyles.css';
 
 const PageSettings = ({ handleOwnerLogout }) => {
@@ -15,7 +15,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
@@ -23,6 +22,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const menuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
     { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
+    { name: 'Reviews', icon: <Star className="menu-icon" />, path: '/dashboard/reviews' },
     { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
   ];
 
@@ -31,7 +31,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   }, []);
 
   const fetchCoffeeShop = async () => {
-    setIsLoading(true);
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/coffee-shops/owner_coffee_shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
@@ -41,8 +40,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -105,10 +102,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     handleOwnerLogout();
     navigate('/admin-login');
   };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="admin-layout">

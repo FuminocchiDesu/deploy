@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User } from 'lucide-react';
+import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import './SharedStyles.css';
@@ -15,6 +15,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
   const menuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
     { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
+    { name: 'Reviews', icon: <Star className="menu-icon" />, path: '/dashboard/reviews' },
     { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
   ];
 
@@ -103,23 +104,25 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
             </ResponsiveContainer>
           </div>
 
-          <div className="card">
-            <h2 className="card-title">Favorites</h2>
-            <p className="stat-value">{favoriteCount}</p>
-            <p>Users have favorited your coffee shop</p>
-          </div>
+          <div className="dashboard-grid">
+            <div className="card">
+              <h2 className="card-title">Favorites</h2>
+              <p className="stat-value">{favoriteCount}</p>
+              <p>Users have favorited your coffee shop</p>
+            </div>
 
-          <div className="card">
-            <h2 className="card-title">Recent Reviews</h2>
-            {reviews.slice(0, 3).map((review, index) => (
-              <div key={index} className="review-item">
-                <p>{review.content}</p>
-                <p className="review-author">- {review.author}</p>
-              </div>
-            ))}
-            <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
-              View All Reviews
-            </button>
+            <div className="card">
+              <h2 className="card-title">Recent Reviews</h2>
+              {reviews.slice(0, 3).map((review, index) => (
+                <div key={index} className="review-item">
+                  <p>{review.content}</p>
+                  <p className="review-author">- {review.author}</p>
+                </div>
+              ))}
+              <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
+                View All Reviews
+              </button>
+            </div>
           </div>
         </div>
       </main>

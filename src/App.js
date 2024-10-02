@@ -4,6 +4,7 @@ import AdminLogin from './components/AdminSide/AdminLogin';
 import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
 import MenuPage from './components/AdminSide/MenuPage';
+import ReviewsPage from './components/AdminSide/ReviewsPage';
 import axios from 'axios';
 import './App.css';
 
@@ -82,6 +83,15 @@ const App = () => {
           element={
             isOwnerAuthenticated 
               ? <MenuPage handleOwnerLogout={handleOwnerLogout} /> 
+              : <Navigate to="/admin-login" />
+          } 
+        />
+
+        <Route 
+          path="/dashboard/reviews" 
+          element={
+            isOwnerAuthenticated 
+              ? <ReviewsPage handleOwnerLogout={handleOwnerLogout} /> 
               : <Navigate to="/admin-login" />
           } 
         />

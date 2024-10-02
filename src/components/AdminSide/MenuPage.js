@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User } from 'lucide-react';
+import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
 import axios from 'axios';
 import './SharedStyles.css';
 
@@ -14,6 +14,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const sidebarMenuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
     { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
+    { name: 'Reviews', icon: <Star className="menu-icon" />, path: '/dashboard/reviews' },
     { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
   ];
 

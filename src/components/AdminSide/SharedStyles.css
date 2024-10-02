@@ -255,3 +255,56 @@
   .full-width {
     width: 100%;
   }
+
+  /* Add these styles to your existing SharedStyles.css file */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.review-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.review-author {
+  font-style: italic;
+  color: #6b7280;
+}
+
+.review-card {
+  margin-bottom: 20px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.review-rating {
+  display: flex;
+}
+
+.star-icon {
+  width: 20px;
+  height: 20px;
+  color: #d1d5db;
+}
+
+.star-icon.filled {
+  color: #fbbf24;
+}
+
+.review-content {
+  margin-bottom: 10px;
+}
+
+.review-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
