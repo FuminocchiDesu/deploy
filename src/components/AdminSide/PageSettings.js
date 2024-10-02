@@ -1,33 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Bell, Coffee, DollarSign, Home, LogOut, Edit, ShoppingCart, User, Users, Upload } from 'lucide-react';
+import OwnerMenu from './OwnerMenu';
+import OwnerPromos from './OwnerPromos';
 import './SharedStyles.css';
 
 const PageSettings = ({ handleOwnerLogout }) => {
   const [coffeeShop, setCoffeeShop] = useState({
+    id: '',
     name: '',
     address: '',
-    opening_hours: '',
+    opening_hours: [],
     description: '',
     image: null
   });
   const [coffeeShops, setCoffeeShops] = useState([]);
-  const [categories, setCategories] = useState(['Hot Coffee', 'Iced Coffee', 'Pastries', 'Sandwiches', 'Desserts']);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
+  const [imagePreview, setImagePreview] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
   const menuItems = [
-    { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
-    { name: 'Orders', icon: <ShoppingCart className="menu-icon" />, path: '/dashboard/orders' },
-    { name: 'Customers', icon: <Users className="menu-icon" />, path: '/dashboard/customers' },
-    { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
-    { name: 'Analytics', icon: <DollarSign className="menu-icon" />, path: '/dashboard/analytics' },
-    { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
+    { name: 'Dashboard', icon: 'home', path: '/dashboard' },
+    { name: 'Orders', icon: 'shopping-cart', path: '/dashboard/orders' },
+    { name: 'Customers', icon: 'users', path: '/dashboard/customers' },
+    { name: 'Menu', icon: 'coffee', path: '/dashboard/menu' },
+    { name: 'Analytics', icon: 'dollar-sign', path: '/dashboard/analytics' },
+    { name: 'Edit Page', icon: 'edit', path: '/dashboard/page-settings' },
   ];
 
   useEffect(() => {
@@ -69,6 +71,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
       setCoffeeShop(response.data);
+      setImagePreview(response.data.image);
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       throw new Error('Failed to fetch coffee shop details');
@@ -80,12 +83,14 @@ const PageSettings = ({ handleOwnerLogout }) => {
     setError(null);
     setSuccess(null);
     const formData = new FormData();
-    Object.keys(coffeeShop).forEach(key => {
-      if (coffeeShop[key] !== null && coffeeShop[key] !== undefined) {
-        if (key === 'image' && coffeeShop[key] instanceof File) {
-          formData.append(key, coffeeShop[key]);
+    Object.entries(coffeeShop).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (key === 'image' && value instanceof File) {
+          formData.append(key, value);
+        } else if (key === 'opening_hours') {
+          formData.append(key, JSON.stringify(value));
         } else {
-          formData.append(key, coffeeShop[key]);
+          formData.append(key, value.toString());
         }
       }
     });
@@ -106,11 +111,21 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'image') {
+    if (name === 'image' && files) {
       setCoffeeShop(prev => ({ ...prev, [name]: files[0] }));
+      setImagePreview(URL.createObjectURL(files[0]));
     } else {
       setCoffeeShop(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleOpeningHoursChange = (day, field, value) => {
+    setCoffeeShop(prev => ({
+      ...prev,
+      opening_hours: prev.opening_hours.map(oh => 
+        oh.day === day ? { ...oh, [field]: value } : oh
+      )
+    }));
   };
 
   const handleMenuItemClick = (item) => {
@@ -131,9 +146,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
     <div className="admin-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <User className="menu-icon" />
           <span className="admin-title">Admin</span>
-          <Bell className="menu-icon" />
+          <i className="fas fa-bell"></i>
         </div>
         <div className="sidebar-search">
           <input type="text" placeholder="Search..." className="search-input" />
@@ -145,21 +159,21 @@ const PageSettings = ({ handleOwnerLogout }) => {
               className={`menu-item ${activeMenuItem === item.name ? 'active' : ''}`}
               onClick={() => handleMenuItemClick(item)}
             >
-              {item.icon}
+              <i className={`fas fa-${item.icon} menu-icon`}></i>
               <span>{item.name}</span>
             </button>
           ))}
         </nav>
         <button className="logout-button" onClick={onLogout}>
-          <LogOut className="menu-icon" />
+          <i className="fas fa-sign-out-alt menu-icon"></i>
           <span>Logout</span>
         </button>
       </aside>
 
       <main className="main-content">
-        <header className="page-header">
+        <div className="page-header">
           <h1>Page Settings</h1>
-        </header>
+        </div>
 
         {error && (
           <div className="alert error">
@@ -176,23 +190,21 @@ const PageSettings = ({ handleOwnerLogout }) => {
         <div className="card">
           <h2 className="card-title">Coffee Shop Page Image</h2>
           <div className="image-upload">
+            {imagePreview && (
+              <img src={imagePreview} alt="Coffee Shop" className="full-width" style={{maxHeight: '200px', objectFit: 'cover'}} />
+            )}
             <div className="upload-placeholder">
-              <Upload className="upload-icon" />
-              <p>Upload image</p>
+              <i className="fas fa-upload upload-icon"></i>
+              <p>Click to upload or drag and drop</p>
+              <p className="text-sm text-gray-500">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
             </div>
             <input
               type="file"
+              id="image-upload"
               name="image"
               onChange={handleInputChange}
               className="file-input"
-              id="image-upload"
             />
-            <button
-              className="button outline"
-              onClick={() => document.getElementById('image-upload').click()}
-            >
-              Select Image
-            </button>
           </div>
         </div>
 
@@ -202,9 +214,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
             <div className="form-group">
               <label htmlFor="name">Coffee Shop Name</label>
               <input
-                type="text"
-                name="name"
                 id="name"
+                name="name"
                 value={coffeeShop.name}
                 onChange={handleInputChange}
                 className="form-input"
@@ -213,68 +224,63 @@ const PageSettings = ({ handleOwnerLogout }) => {
             <div className="form-group">
               <label htmlFor="address">Address</label>
               <input
-                type="text"
-                name="address"
                 id="address"
+                name="address"
                 value={coffeeShop.address}
                 onChange={handleInputChange}
                 className="form-input"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="opening_hours">Opening Hours</label>
-              <input
-                type="text"
-                name="opening_hours"
-                id="opening_hours"
-                value={coffeeShop.opening_hours}
-                onChange={handleInputChange}
-                className="form-input"
-              />
+              <label>Opening Hours</label>
+              {coffeeShop.opening_hours.map((oh, index) => (
+                <div key={index} className="flex space-x-2">
+                  <span className="w-20 flex items-center">{oh.day}</span>
+                  <input
+                    type="time"
+                    value={oh.opening_time}
+                    onChange={(e) => handleOpeningHoursChange(oh.day, 'opening_time', e.target.value)}
+                    className="form-input"
+                  />
+                  <input
+                    type="time"
+                    value={oh.closing_time}
+                    onChange={(e) => handleOpeningHoursChange(oh.day, 'closing_time', e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+              ))}
             </div>
             <div className="form-group">
               <label htmlFor="description">Description</label>
               <textarea
-                name="description"
                 id="description"
-                rows={3}
+                name="description"
                 value={coffeeShop.description}
                 onChange={handleInputChange}
+                rows={3}
                 className="form-textarea"
               />
             </div>
+            <button type="submit" className="button primary">Save Changes</button>
           </form>
         </div>
 
         <div className="card">
-          <div className="card-header">
-            <h2 className="card-title">Menu</h2>
-            <button className="button outline">Manage Categories</button>
-          </div>
-          <div className="menu-categories">
-            {categories.map((category, index) => (
-              <button key={index} className="button outline category-button">{category}</button>
-            ))}
-          </div>
-          <div className="menu-items">
-            <div className="add-dish">
-              <Upload className="add-icon" />
-              <p>Add new dish</p>
-            </div>
-            <div className="dish-card">
-              <img src="/placeholder.svg?height=100&width=100" alt="Spicy seasoned seafood noodles" className="dish-image" />
-              <h3 className="dish-title">Spicy seasoned seafood noodles</h3>
-              <p className="dish-price">$ 2.29</p>
-              <button className="button outline full-width">Edit dish</button>
-            </div>
-          </div>
+          <h2 className="card-title">Menu Management</h2>
+          <OwnerMenu coffeeShopId={id || ''} />
+        </div>
+
+        <div className="card">
+          <h2 className="card-title">Promotions Management</h2>
+          <OwnerPromos coffeeShopId={id || ''} />
         </div>
 
         <div className="action-buttons">
           <button className="button outline">Terminate Page</button>
           <div>
             <button className="button outline">Cancel</button>
-            <button className="button primary" onClick={handleShopUpdate}>Save</button>
+            <button className="button primary" onClick={handleShopUpdate}>Save All Changes</button>
           </div>
         </div>
       </main>
