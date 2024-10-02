@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import AdminLogin from './components/AdminSide/AdminLogin';
 import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
+import MenuPage from './components/AdminSide/MenuPage';
 import axios from 'axios';
 import './App.css';
 
@@ -14,7 +15,6 @@ const App = () => {
       const ownerToken = localStorage.getItem('ownerToken');
       if (ownerToken) {
         try {
-          // Replace with your actual API endpoint for token validation
           const response = await axios.post('https://khlcle.pythonanywhere.com/api/validate-token/', {}, {
             headers: { Authorization: `Bearer ${ownerToken}` }
           });
@@ -60,7 +60,7 @@ const App = () => {
         />
         
         <Route 
-          path="/dashboard/*" 
+          path="/dashboard" 
           element={
             isOwnerAuthenticated 
               ? <AdminDashboard handleOwnerLogout={handleOwnerLogout} /> 
@@ -78,10 +78,10 @@ const App = () => {
         />
 
         <Route 
-          path="/dashboard/page-settings/:id" 
+          path="/dashboard/menu" 
           element={
             isOwnerAuthenticated 
-              ? <PageSettings handleOwnerLogout={handleOwnerLogout} /> 
+              ? <MenuPage handleOwnerLogout={handleOwnerLogout} /> 
               : <Navigate to="/admin-login" />
           } 
         />

@@ -1,20 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, DollarSign, Home, LogOut, Edit, ShoppingCart, User, Users } from 'lucide-react';
+import { Bell, Coffee, Home, LogOut, Edit, User } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
+  const [visitsData, setVisitsData] = useState([]);
+  const [favoriteCount, setFavoriteCount] = useState(0);
+  const [reviews, setReviews] = useState([]);
   const navigate = useNavigate();
 
   const menuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
-    { name: 'Orders', icon: <ShoppingCart className="menu-icon" />, path: '/dashboard/orders' },
-    { name: 'Customers', icon: <Users className="menu-icon" />, path: '/dashboard/customers' },
     { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
-    { name: 'Analytics', icon: <DollarSign className="menu-icon" />, path: '/dashboard/analytics' },
     { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
   ];
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [visitsResponse, favoritesResponse, reviewsResponse] = await Promise.all([
+        axios.get('https://khlcle.pythonanywhere.com/api/visits/', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+        }),
+        axios.get('https://khlcle.pythonanywhere.com/api/favorites/count/', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+        }),
+        axios.get('https://khlcle.pythonanywhere.com/api/reviews/', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+        })
+      ]);
+
+      setVisitsData(visitsResponse.data);
+      setFavoriteCount(favoritesResponse.data.count);
+      setReviews(reviewsResponse.data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
@@ -57,44 +85,41 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
       <main className="main-content">
         <header className="page-header">
-          <h1>{activeMenuItem}</h1>
+          <h1>Dashboard</h1>
         </header>
 
         <div className="dashboard-content">
           <div className="card">
-            <h2 className="card-title">Overview</h2>
-            <div className="stats-grid">
-              <div className="stat-item">
-                <h3>Total Sales</h3>
-                <p className="stat-value">$0</p>
-                <span className="stat-change positive">+0%</span>
-              </div>
-              <div className="stat-item">
-                <h3>Total Orders</h3>
-                <p className="stat-value">0</p>
-                <span className="stat-change positive">+0%</span>
-              </div>
-              <div className="stat-item">
-                <h3>Total Customers</h3>
-                <p className="stat-value">0</p>
-                <span className="stat-change positive">+0%</span>
-              </div>
-              <div className="stat-item">
-                <h3>Total Products</h3>
-                <p className="stat-value">0</p>
-                <span className="stat-change neutral">0%</span>
-              </div>
-            </div>
+            <h2 className="card-title">Visits Over Time</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={visitsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="visits" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
           <div className="card">
-            <h2 className="card-title">Recent Orders</h2>
-            <p>No recent orders</p>
+            <h2 className="card-title">Favorites</h2>
+            <p className="stat-value">{favoriteCount}</p>
+            <p>Users have favorited your coffee shop</p>
           </div>
 
           <div className="card">
-            <h2 className="card-title">Top Selling Items</h2>
-            <p>No data available</p>
+            <h2 className="card-title">Recent Reviews</h2>
+            {reviews.slice(0, 3).map((review, index) => (
+              <div key={index} className="review-item">
+                <p>{review.content}</p>
+                <p className="review-author">- {review.author}</p>
+              </div>
+            ))}
+            <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
+              View All Reviews
+            </button>
           </div>
         </div>
       </main>
