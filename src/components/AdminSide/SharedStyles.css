@@ -308,3 +308,31 @@
   font-size: 0.875rem;
   color: #6b7280;
 }
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.page-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin: 20px 0;
+}
+
+.error-message {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
