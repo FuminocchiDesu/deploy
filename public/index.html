@@ -24,7 +24,19 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>KohiLocale</title>
+    <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw&libraries=places&callback=initMap"
+    async
+    defer
+  ></script>
+  <script>
+    // Define the initMap function
+    function initMap() {
+      // Optional: Add any initialization code here
+      console.log('Google Maps API loaded');
+    }
+  </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

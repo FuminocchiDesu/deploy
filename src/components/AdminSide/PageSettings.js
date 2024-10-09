@@ -2,22 +2,36 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star } from 'lucide-react';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
+
+const libraries = ['places'];
 
 const PageSettings = ({ handleOwnerLogout }) => {
   const [coffeeShop, setCoffeeShop] = useState({
     id: '',
     name: '',
     address: '',
-    opening_hours: [],
+    latitude: null,
+    longitude: null,
+    opening_hours: Array(7).fill({ opening_time: '', closing_time: '' }).map((_, index) => ({
+      day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
+      opening_time: '',
+      closing_time: ''
+    })),
     description: '',
     image: null
   });
+
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const navigate = useNavigate();
+
+  const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
 
   const menuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
@@ -27,16 +41,43 @@ const PageSettings = ({ handleOwnerLogout }) => {
   ];
 
   useEffect(() => {
-    fetchCoffeeShop();
+    loadGoogleMapsApi(apiKey).then(() => {
+      fetchCoffeeShop();
+    });
   }, []);
+
+  const loadGoogleMapsApi = (apiKey) => {
+    return new Promise((resolve) => {
+      if (window.google) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  };
 
   const fetchCoffeeShop = async () => {
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/coffee-shops/owner_coffee_shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
-      setCoffeeShop(response.data);
+      // Ensure that response data includes opening_hours
+      const fetchedCoffeeShop = {
+        ...response.data,
+        opening_hours: response.data.opening_hours || Array(7).fill({ opening_time: '', closing_time: '' }).map((_, index) => ({
+          day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
+          opening_time: '',
+          closing_time: ''
+        }))
+      };
+      setCoffeeShop(fetchedCoffeeShop);
       setImagePreview(response.data.image);
+      if (response.data.latitude && response.data.longitude) {
+        setMapCenter({ lat: response.data.latitude, lng: response.data.longitude });
+      }
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');
@@ -61,7 +102,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     });
     try {
       const response = await axios.put(`https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShop.id}/`, formData, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
           'Content-Type': 'multipart/form-data'
         }
@@ -87,10 +128,41 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const handleOpeningHoursChange = (day, field, value) => {
     setCoffeeShop(prev => ({
       ...prev,
-      opening_hours: prev.opening_hours.map(oh => 
+      opening_hours: prev.opening_hours.map(oh =>
         oh.day === day ? { ...oh, [field]: value } : oh
       )
     }));
+  };
+
+  const handleAddressChange = (address) => {
+    setCoffeeShop(prev => ({ ...prev, address }));
+  };
+
+  const handleAddressSelect = async (address) => {
+    try {
+      const results = await geocodeByAddress(address);
+      const latLng = await getLatLng(results[0]);
+      setCoffeeShop(prev => ({
+        ...prev,
+        address,
+        latitude: latLng.lat,
+        longitude: latLng.lng
+      }));
+      setMapCenter(latLng);
+    } catch (error) {
+      console.error('Error selecting address:', error);
+    }
+  };
+
+  const handleMapClick = (event) => {
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    setCoffeeShop(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
+    }));
+    setMapCenter({ lat, lng });
   };
 
   const handleMenuItemClick = (item) => {
@@ -106,30 +178,18 @@ const PageSettings = ({ handleOwnerLogout }) => {
   return (
     <div className="admin-layout">
       <aside className="sidebar">
-        <div className="sidebar-header">
-          <User className="menu-icon" />
-          <span className="admin-title">Admin</span>
-          <Bell className="menu-icon" />
-        </div>
-        <div className="sidebar-search">
-          <input type="text" placeholder="Search..." className="search-input" />
-        </div>
-        <nav className="sidebar-menu">
-          {menuItems.map((item) => (
-            <button
-              key={item.name}
-              className={`menu-item ${activeMenuItem === item.name ? 'active' : ''}`}
-              onClick={() => handleMenuItemClick(item)}
-            >
+        <ul>
+          {menuItems.map(item => (
+            <li key={item.name} onClick={() => handleMenuItemClick(item)}>
               {item.icon}
               <span>{item.name}</span>
-            </button>
+            </li>
           ))}
-        </nav>
-        <button className="logout-button" onClick={onLogout}>
-          <LogOut className="menu-icon" />
-          <span>Logout</span>
-        </button>
+          <li onClick={onLogout}>
+            <LogOut className="menu-icon" />
+            <span>Logout</span>
+          </li>
+        </ul>
       </aside>
 
       <main className="main-content">
@@ -153,66 +213,60 @@ const PageSettings = ({ handleOwnerLogout }) => {
           <div className="card">
             <h2 className="card-title">Coffee Shop Image</h2>
             <div className="image-upload">
-              {imagePreview && (
-                <img src={imagePreview} alt="Coffee Shop" className="preview-image" />
-              )}
-              <div className="upload-placeholder">
-                <Upload className="upload-icon" />
-                <p>Click to upload or drag and drop</p>
-                <p className="upload-info">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-              </div>
+              {imagePreview && <img src={imagePreview} alt="Coffee Shop Preview" className="image-preview" />}
               <input
                 type="file"
-                id="image-upload"
+                accept="image/*"
                 name="image"
                 onChange={handleInputChange}
-                className="file-input"
+                className="form-input"
               />
             </div>
-          </div>
 
-          <div className="card">
-            <h2 className="card-title">Coffee Shop Details</h2>
             <div className="form-group">
               <label htmlFor="name">Coffee Shop Name</label>
               <input
+                type="text"
                 id="name"
                 name="name"
                 value={coffeeShop.name}
                 onChange={handleInputChange}
                 className="form-input"
+                required
               />
             </div>
+
             <div className="form-group">
               <label htmlFor="address">Address</label>
-              <input
-                id="address"
-                name="address"
+              <PlacesAutocomplete
                 value={coffeeShop.address}
-                onChange={handleInputChange}
-                className="form-input"
-              />
+                onChange={handleAddressChange}
+                onSelect={handleAddressSelect}
+              >
+                {({ getInputProps, suggestions, loading }) => (
+                  <div>
+                    <input
+                      {...getInputProps({
+                        placeholder: 'Search Places...',
+                        className: 'form-input'
+                      })}
+                    />
+                    <div>
+                      {loading && <div>Loading suggestions...</div>}
+                      {suggestions.map(suggestion => {
+                        const style = suggestion.active ? { backgroundColor: '#a0c4ff', cursor: 'pointer' } : { backgroundColor: '#ffffff', cursor: 'pointer' };
+                        return (
+                          <div key={suggestion.placeId} onClick={() => handleAddressSelect(suggestion.description)} style={style}>
+                            {suggestion.description}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </PlacesAutocomplete>
             </div>
-            <div className="form-group">
-              <label>Opening Hours</label>
-              {coffeeShop.opening_hours.map((oh, index) => (
-                <div key={index} className="opening-hours-row">
-                  <span className="day-label">{oh.day}</span>
-                  <input
-                    type="time"
-                    value={oh.opening_time}
-                    onChange={(e) => handleOpeningHoursChange(oh.day, 'opening_time', e.target.value)}
-                    className="form-input time-input"
-                  />
-                  <input
-                    type="time"
-                    value={oh.closing_time}
-                    onChange={(e) => handleOpeningHoursChange(oh.day, 'closing_time', e.target.value)}
-                    className="form-input time-input"
-                  />
-                </div>
-              ))}
-            </div>
+
             <div className="form-group">
               <label htmlFor="description">Description</label>
               <textarea
@@ -220,17 +274,50 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 name="description"
                 value={coffeeShop.description}
                 onChange={handleInputChange}
-                rows={3}
-                className="form-textarea"
+                className="form-input"
               />
             </div>
-          </div>
 
-          <div className="action-buttons">
-            <button type="button" className="button outline">Cancel</button>
-            <button type="submit" className="button primary">Save Changes</button>
+            <h2 className="card-title">Opening Hours</h2>
+            <div className="opening-hours">
+              {coffeeShop.opening_hours.map((hour) => (
+                <div key={hour.day} className="opening-hour">
+                  <label>{hour.day}</label>
+                  <input
+                    type="time"
+                    value={hour.opening_time}
+                    onChange={(e) => handleOpeningHoursChange(hour.day, 'opening_time', e.target.value)}
+                    className="form-input"
+                  />
+                  <input
+                    type="time"
+                    value={hour.closing_time}
+                    onChange={(e) => handleOpeningHoursChange(hour.day, 'closing_time', e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button type="submit" className="btn btn-primary">Update Coffee Shop</button>
           </div>
         </form>
+
+        <div className="map-container">
+          <h2 className="card-title">Map</h2>
+          <LoadScript googleMapsApiKey={apiKey}>
+            <GoogleMap
+              mapContainerStyle={{ height: '400px', width: '100%' }}
+              center={mapCenter}
+              zoom={15}
+              onClick={handleMapClick}
+            >
+              {coffeeShop.latitude && coffeeShop.longitude && (
+                <Marker position={{ lat: coffeeShop.latitude, lng: coffeeShop.longitude }} />
+              )}
+            </GoogleMap>
+          </LoadScript>
+        </div>
       </main>
     </div>
   );
