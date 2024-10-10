@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
+import { Plus, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
 
-const MenuPage = ({ handleOwnerLogout }) => {
+const MenuAndPromosManagement = ({ handleOwnerLogout }) => {
   const [categories, setCategories] = useState([]);
-  const [items, setItems] = useState([]);
   const [promos, setPromos] = useState([]);
-  const [activeTab, setActiveTab] = useState('categories');
+  const [activeTab, setActiveTab] = useState('menu');
   const [error, setError] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
   const [activeMenuItem, setActiveMenuItem] = useState('Menu');
   const navigate = useNavigate();
 
@@ -22,21 +22,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
       
-      const [categoriesRes, itemsRes, promosRes] = await Promise.all([
-        axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/menu-categories/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/menu-items/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/promos/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
+      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/menu-and-promos/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      setCategories(categoriesRes.data);
-      setItems(itemsRes.data);
-      setPromos(promosRes.data);
+      setCategories(response.data.menu_categories);
+      setPromos(response.data.promos);
     } catch (err) {
       setError('Failed to fetch menu data. Please try again.');
       console.error('Error fetching menu data:', err);
@@ -47,9 +38,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
-      const endpoint = `https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/${type}/`;
+      const endpoint = `https://khlcle.pythonanywhere.com/api/api/coffee-shops/${shopId}/menu-and-promos/create_${type}/`;
       
-      const response = await axios.post(endpoint, data, {
+      await axios.post(endpoint, data, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -64,9 +55,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
-      const endpoint = `https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/${type}/${id}/`;
+      const endpoint = `https://khlcle.pythonanywhere.com/api/api/coffee-shops/${shopId}/menu-and-promos/${id}/manage_${type}/`;
       
-      const response = await axios.put(endpoint, data, {
+      await axios.put(endpoint, data, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -81,7 +72,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
-      const endpoint = `https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/${type}/${id}/`;
+      const endpoint = `https://khlcle.pythonanywhere.com/api/api/coffee-shops/${shopId}/menu-and-promos/${id}/manage_${type}/`;
       
       await axios.delete(endpoint, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -94,6 +85,133 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
+  const toggleCategoryExpansion = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  const renderMenuTab = () => (
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Menu Categories and Items</h2>
+      <button
+        className="mb-2 flex items-center text-blue-500 hover:text-blue-700"
+        onClick={() => handleCreate('category', { name: 'New Category' })}
+      >
+        <Plus size={16} className="mr-1" /> Add Category
+      </button>
+      <ul>
+        {categories.map(category => (
+          <li key={category.id} className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold">{category.name}</span>
+              <div className="flex items-center">
+                <button
+                  className="mr-2 text-yellow-500 hover:text-yellow-700"
+                  onClick={() => handleUpdate('category', category.id, { name: 'Updated Category' })}
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  className="mr-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete('category', category.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => toggleCategoryExpansion(category.id)}
+                >
+                  {expandedCategories[category.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+            </div>
+            {expandedCategories[category.id] && (
+              <ul className="ml-4">
+                {category.items.map(item => (
+                  <li key={item.id} className="mb-2">
+                    <div className="flex items-center justify-between">
+                      <span>{item.name}</span>
+                      <div>
+                        <button
+                          className="mr-2 text-yellow-500 hover:text-yellow-700"
+                          onClick={() => handleUpdate('item', item.id, { name: 'Updated Item' })}
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleDelete('item', item.id)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <ul className="ml-4 text-sm">
+                      {item.sizes.map((size, index) => (
+                        <li key={index}>
+                          {size.size}: {size.price}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+                <li>
+                  <button
+                    className="mt-2 flex items-center text-blue-500 hover:text-blue-700"
+                    onClick={() => handleCreate('item', { name: 'New Item', description: 'Description', category: category.id })}
+                  >
+                    <Plus size={14} className="mr-1" /> Add Item
+                  </button>
+                </li>
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const renderPromosTab = () => (
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Promos</h2>
+      <button
+        className="mb-2 flex items-center text-blue-500 hover:text-blue-700"
+        onClick={() => handleCreate('promo', { name: 'New Promo', description: 'Promo Description', start_date: new Date().toISOString().split('T')[0], end_date: new Date().toISOString().split('T')[0] })}
+      >
+        <Plus size={16} className="mr-1" /> Add Promo
+      </button>
+      <ul>
+        {promos.map(promo => (
+          <li key={promo.id} className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold">{promo.name}</span>
+              <div>
+                <button
+                  className="mr-2 text-yellow-500 hover:text-yellow-700"
+                  onClick={() => handleUpdate('promo', promo.id, { name: 'Updated Promo' })}
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete('promo', promo.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">{promo.description}</p>
+            <p className="text-sm text-gray-500">
+              {new Date(promo.start_date).toLocaleDateString()} - {new Date(promo.end_date).toLocaleDateString()}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
     navigate(item.path);
@@ -103,7 +221,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
     handleOwnerLogout();
     navigate('/admin-login');
   };
-  
   return (
     <div className="admin-layout">
       <SidebarMenu
@@ -114,24 +231,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
       
       <main className="main-content">
         <header className="page-header">
-          <h1>Menu Management</h1>
-        </header>
+      <h1 className="text-2xl font-bold mb-4">Menu and Promos Management</h1>
+      </header>
       {error && (
         <div className="text-red-500 mb-4">{error}</div>
       )}
 
       <div className="flex mb-4">
         <button
-          className={`mr-2 px-4 py-2 rounded ${activeTab === 'categories' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('categories')}
+          className={`mr-2 px-4 py-2 rounded ${activeTab === 'menu' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveTab('menu')}
         >
-          Categories
-        </button>
-        <button
-          className={`mr-2 px-4 py-2 rounded ${activeTab === 'items' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('items')}
-        >
-          Items
+          Menu
         </button>
         <button
           className={`px-4 py-2 rounded ${activeTab === 'promos' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
@@ -139,112 +250,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
         >
           Promos
         </button>
-        
       </div>
 
-      {activeTab === 'categories' && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Categories</h2>
-          <button
-            className="mb-2 flex items-center text-blue-500 hover:text-blue-700"
-            onClick={() => handleCreate('menu-categories', { name: 'New Category' })}
-          >
-            <Plus size={16} className="mr-1" /> Add Category
-          </button>
-          <ul>
-            {categories.map(category => (
-              <li key={category.id} className="flex items-center justify-between mb-2">
-                <span>{category.name}</span>
-                <div>
-                  <button
-                    className="mr-2 text-yellow-500 hover:text-yellow-700"
-                    onClick={() => handleUpdate('menu-categories', category.id, { name: 'Updated Category' })}
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete('menu-categories', category.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-          
-        </div>
-      )}
+      {activeTab === 'menu' ? renderMenuTab() : renderPromosTab()}
+      
 
-      {activeTab === 'items' && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
-          <button
-            className="mb-2 flex items-center text-blue-500 hover:text-blue-700"
-            onClick={() => handleCreate('menu-items', { name: 'New Item', description: 'Description', category: categories[0]?.id })}
-          >
-            <Plus size={16} className="mr-1" /> Add Item
-          </button>
-          <ul>
-            {items.map(item => (
-              <li key={item.id} className="flex items-center justify-between mb-2">
-                <span>{item.name}</span>
-                <div>
-                  <button
-                    className="mr-2 text-yellow-500 hover:text-yellow-700"
-                    onClick={() => handleUpdate('menu-items', item.id, { name: 'Updated Item' })}
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete('menu-items', item.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {activeTab === 'promos' && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Promos</h2>
-          <button
-            className="mb-2 flex items-center text-blue-500 hover:text-blue-700"
-            onClick={() => handleCreate('promos', { name: 'New Promo', description: 'Promo Description' })}
-          >
-            <Plus size={16} className="mr-1" /> Add Promo
-          </button>
-          <ul>
-            {promos.map(promo => (
-              <li key={promo.id} className="flex items-center justify-between mb-2">
-                <span>{promo.name}</span>
-                <div>
-                  <button
-                    className="mr-2 text-yellow-500 hover:text-yellow-700"
-                    onClick={() => handleUpdate('promos', promo.id, { name: 'Updated Promo' })}
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete('promos', promo.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-      )}
-      </main>
-      </div>    
+    </main>
+    </div>
+   
   );
+  
 };
 
-export default MenuPage;
+export default MenuAndPromosManagement;
