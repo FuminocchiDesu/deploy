@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star } from 'lucide-react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
+import SidebarMenu from './SideBarMenu';
 
 const libraries = ['places'];
 
@@ -23,7 +24,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     description: '',
     image: null
   });
-
+  const [isOpeningHoursExpanded, setIsOpeningHoursExpanded] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
@@ -33,54 +34,59 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
 
-  const menuItems = [
-    { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
-    { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
-    { name: 'Reviews', icon: <Star className="menu-icon" />, path: '/dashboard/reviews' },
-    { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
-  ];
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: apiKey,
+    libraries
+  });
 
   useEffect(() => {
-    loadGoogleMapsApi(apiKey).then(() => {
-      fetchCoffeeShop();
-    });
+    fetchCoffeeShop();
   }, []);
 
-  const loadGoogleMapsApi = (apiKey) => {
-    return new Promise((resolve) => {
-      if (window.google) {
-        resolve();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.onload = () => resolve();
-      document.head.appendChild(script);
-    });
+  const toggleOpeningHours = () => {
+    setIsOpeningHoursExpanded(!isOpeningHoursExpanded);
+  };
+
+  const dayFullNames = {
+    'mon': 'Monday',
+    'tue': 'Tuesday',
+    'wed': 'Wednesday',
+    'thu': 'Thursday',
+    'fri': 'Friday',
+    'sat': 'Saturday',
+    'sun': 'Sunday'
   };
 
   const fetchCoffeeShop = async () => {
     try {
-      const response = await axios.get('https://khlcle.pythonanywhere.com/api/coffee-shops/owner_coffee_shop/', {
+      const response = await axios.get('https://khlcle.pythonanywhere.com/api/owner/coffee-shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
-      // Ensure that response data includes opening_hours
-      const fetchedCoffeeShop = {
-        ...response.data,
-        opening_hours: response.data.opening_hours || Array(7).fill({ opening_time: '', closing_time: '' }).map((_, index) => ({
-          day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
-          opening_time: '',
-          closing_time: ''
-        }))
-      };
-      setCoffeeShop(fetchedCoffeeShop);
-      setImagePreview(response.data.image);
-      if (response.data.latitude && response.data.longitude) {
-        setMapCenter({ lat: response.data.latitude, lng: response.data.longitude });
+      if (response.data.length > 0) {
+        const fetchedCoffeeShop = response.data[0]; // Assuming the owner has only one coffee shop
+        setCoffeeShop(fetchedCoffeeShop);
+        setImagePreview(fetchedCoffeeShop.image);
+        if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
+          setMapCenter({ lat: parseFloat(fetchedCoffeeShop.latitude), lng: parseFloat(fetchedCoffeeShop.longitude) });
+        }
+        fetchOpeningHours(fetchedCoffeeShop.id);
       }
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');
+    }
+  };
+
+  const fetchOpeningHours = async (coffeeShopId) => {
+    try {
+      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShopId}/opening_hours/`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+      });
+      setCoffeeShop(prev => ({ ...prev, opening_hours: response.data }));
+    } catch (error) {
+      console.error('Error fetching opening hours:', error);
+      setError('Failed to fetch opening hours. Please try again.');
     }
   };
 
@@ -90,23 +96,34 @@ const PageSettings = ({ handleOwnerLogout }) => {
     setSuccess(null);
     const formData = new FormData();
     Object.entries(coffeeShop).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
+      if (value !== null && value !== undefined && key !== 'opening_hours') {
         if (key === 'image' && value instanceof File) {
           formData.append(key, value);
-        } else if (key === 'opening_hours') {
-          formData.append(key, JSON.stringify(value));
         } else {
           formData.append(key, value.toString());
         }
       }
     });
+
     try {
-      const response = await axios.put(`https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShop.id}/`, formData, {
+      const response = await axios.put(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, formData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
           'Content-Type': 'multipart/form-data'
         }
       });
+      
+      // Update opening hours separately
+      await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`, 
+        coffeeShop.opening_hours, 
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
       setCoffeeShop(response.data);
       setSuccess('Coffee shop details updated successfully.');
     } catch (error) {
@@ -177,20 +194,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   return (
     <div className="admin-layout">
-      <aside className="sidebar">
-        <ul>
-          {menuItems.map(item => (
-            <li key={item.name} onClick={() => handleMenuItemClick(item)}>
-              {item.icon}
-              <span>{item.name}</span>
-            </li>
-          ))}
-          <li onClick={onLogout}>
-            <LogOut className="menu-icon" />
-            <span>Logout</span>
-          </li>
-        </ul>
-      </aside>
+      <SidebarMenu
+        activeMenuItem={activeMenuItem}
+        handleMenuItemClick={handleMenuItemClick}
+        onLogout={onLogout}
+      />
 
       <main className="main-content">
         <header className="page-header">
@@ -243,7 +251,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 onChange={handleAddressChange}
                 onSelect={handleAddressSelect}
               >
-                {({ getInputProps, suggestions, loading }) => (
+                {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
                   <div>
                     <input
                       {...getInputProps({
@@ -256,7 +264,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
                       {suggestions.map(suggestion => {
                         const style = suggestion.active ? { backgroundColor: '#a0c4ff', cursor: 'pointer' } : { backgroundColor: '#ffffff', cursor: 'pointer' };
                         return (
-                          <div key={suggestion.placeId} onClick={() => handleAddressSelect(suggestion.description)} style={style}>
+                          <div
+                            {...getSuggestionItemProps(suggestion, { style })}
+                            key={suggestion.placeId}
+                          >
                             {suggestion.description}
                           </div>
                         );
@@ -278,11 +289,15 @@ const PageSettings = ({ handleOwnerLogout }) => {
               />
             </div>
 
-            <h2 className="card-title">Opening Hours</h2>
-            <div className="opening-hours">
+            <div className="opening-hours-section">
+            <h2 className="card-title" onClick={toggleOpeningHours} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              Opening Hours
+              {isOpeningHoursExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </h2>
+            <div className={`opening-hours ${isOpeningHoursExpanded ? 'expanded' : ''}`}>
               {coffeeShop.opening_hours.map((hour) => (
                 <div key={hour.day} className="opening-hour">
-                  <label>{hour.day}</label>
+                  <label>{dayFullNames[hour.day] || hour.day}</label>
                   <input
                     type="time"
                     value={hour.opening_time}
@@ -298,26 +313,34 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 </div>
               ))}
             </div>
-
-            <button type="submit" className="btn btn-primary">Update Coffee Shop</button>
           </div>
-        </form>
+
+          <button type="submit" className="btn btn-primary">Update Coffee Shop</button>
+        </div>
+      </form>
 
         <div className="map-container">
-          <h2 className="card-title">Map</h2>
-          <LoadScript googleMapsApiKey={apiKey}>
-            <GoogleMap
-              mapContainerStyle={{ height: '400px', width: '100%' }}
-              center={mapCenter}
-              zoom={15}
-              onClick={handleMapClick}
-            >
-              {coffeeShop.latitude && coffeeShop.longitude && (
-                <Marker position={{ lat: coffeeShop.latitude, lng: coffeeShop.longitude }} />
-              )}
-            </GoogleMap>
-          </LoadScript>
-        </div>
+        <h2 className="card-title">Map</h2>
+        {isLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ height: '400px', width: '100%' }}
+            center={mapCenter}
+            zoom={15}
+            onClick={handleMapClick}
+          >
+            {coffeeShop.latitude && coffeeShop.longitude && (
+              <MarkerF 
+                position={{ 
+                  lat: parseFloat(coffeeShop.latitude), 
+                  lng: parseFloat(coffeeShop.longitude) 
+                }} 
+              />
+            )}
+          </GoogleMap>
+        ) : (
+          <div>Loading map...</div>
+        )}
+      </div>
       </main>
     </div>
   );

@@ -336,3 +336,37 @@
   border-radius: 4px;
   margin-bottom: 20px;
 }
+
+.opening-hours-section {
+  margin-bottom: 20px;
+}
+
+.opening-hours-section h2 {
+  margin-bottom: 10px;
+}
+
+.opening-hours {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.opening-hours.expanded {
+  max-height: 1000px; /* Adjust this value based on your needs */
+  transition: max-height 0.5s ease-in;
+}
+
+.opening-hour {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.opening-hour label {
+  width: 100px;
+  margin-right: 10px;
+}
+
+.opening-hour input {
+  margin-right: 10px;
+}

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
+
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {

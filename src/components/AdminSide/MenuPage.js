@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
+import { useNavigate } from 'react-router-dom';
 
 const MenuPage = ({ handleOwnerLogout }) => {
   const [categories, setCategories] = useState([]);
@@ -8,6 +10,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [promos, setPromos] = useState([]);
   const [activeTab, setActiveTab] = useState('categories');
   const [error, setError] = useState(null);
+  const [activeMenuItem, setActiveMenuItem] = useState('Menu');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -90,10 +94,28 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
+  const handleMenuItemClick = (item) => {
+    setActiveMenuItem(item.name);
+    navigate(item.path);
+  };
+
+  const onLogout = () => {
+    handleOwnerLogout();
+    navigate('/admin-login');
+  };
+  
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Menu Management</h1>
+    <div className="admin-layout">
+      <SidebarMenu
+        activeMenuItem={activeMenuItem}
+        handleMenuItemClick={handleMenuItemClick}
+        onLogout={onLogout}
+      />
       
+      <main className="main-content">
+        <header className="page-header">
+          <h1>Menu Management</h1>
+        </header>
       {error && (
         <div className="text-red-500 mb-4">{error}</div>
       )}
@@ -117,6 +139,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
         >
           Promos
         </button>
+        
       </div>
 
       {activeTab === 'categories' && (
@@ -149,6 +172,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
               </li>
             ))}
           </ul>
+          
         </div>
       )}
 
@@ -216,8 +240,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
             ))}
           </ul>
         </div>
+        
       )}
-    </div>
+      </main>
+      </div>    
   );
 };
 
