@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
@@ -30,6 +30,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
+  const [isEditMode, setIsEditMode] = useState(false);
   const navigate = useNavigate();
 
   const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
@@ -37,8 +38,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
+    version: "weekly", // or "latest"
     libraries
   });
+
+  const mapRef = useRef(null);
 
   useEffect(() => {
     fetchCoffeeShop();
@@ -64,7 +68,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
       if (response.data.length > 0) {
-        const fetchedCoffeeShop = response.data[0]; // Assuming the owner has only one coffee shop
+        const fetchedCoffeeShop = response.data[0];
         setCoffeeShop(fetchedCoffeeShop);
         setImagePreview(fetchedCoffeeShop.image);
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
@@ -97,8 +101,14 @@ const PageSettings = ({ handleOwnerLogout }) => {
     const formData = new FormData();
     Object.entries(coffeeShop).forEach(([key, value]) => {
       if (value !== null && value !== undefined && key !== 'opening_hours') {
-        if (key === 'image' && value instanceof File) {
-          formData.append(key, value);
+        if (key === 'image') {
+          if (value instanceof File) {
+            formData.append(key, value);
+          } else if (typeof value === 'string' && value.startsWith('http')) {
+            console.log('Existing image URL:', value);
+          } else {
+            console.log('Invalid image value:', value);
+          }
         } else {
           formData.append(key, value.toString());
         }
@@ -112,10 +122,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
-      // Update opening hours separately
-      await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`, 
-        coffeeShop.opening_hours, 
+
+      await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`,
+        coffeeShop.opening_hours,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
@@ -124,17 +133,23 @@ const PageSettings = ({ handleOwnerLogout }) => {
         }
       );
 
-      setCoffeeShop(response.data);
+      await fetchCoffeeShop();
+
       setSuccess('Coffee shop details updated successfully.');
+      setIsEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Status code:', error.response.status);
+      }
       setError('Failed to update coffee shop details. Please try again.');
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'image' && files) {
+    if (name === 'image' && files && files[0]) {
       setCoffeeShop(prev => ({ ...prev, [name]: files[0] }));
       setImagePreview(URL.createObjectURL(files[0]));
     } else {
@@ -172,14 +187,16 @@ const PageSettings = ({ handleOwnerLogout }) => {
   };
 
   const handleMapClick = (event) => {
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-    setCoffeeShop(prev => ({
-      ...prev,
-      latitude: lat,
-      longitude: lng
-    }));
-    setMapCenter({ lat, lng });
+    if (isEditMode) {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      setCoffeeShop(prev => ({
+        ...prev,
+        latitude: lat,
+        longitude: lng
+      }));
+      setMapCenter({ lat, lng });
+    }
   };
 
   const handleMenuItemClick = (item) => {
@@ -192,6 +209,34 @@ const PageSettings = ({ handleOwnerLogout }) => {
     navigate('/admin-login');
   };
 
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+  };
+
+  // Effect to add the marker once the map is loaded
+  useEffect(() => {
+    if (isLoaded && coffeeShop.latitude && coffeeShop.longitude && window.google?.maps?.marker?.AdvancedMarkerElement) {
+      const map = mapRef.current?.state?.map;
+
+      if (map) {
+        const marker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: { lat: coffeeShop.latitude, lng: coffeeShop.longitude },
+          map,
+          title: coffeeShop.name, // Optional title for the marker
+          icon: {
+            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Change marker color
+            scaledSize: new window.google.maps.Size(50, 50), // Resize the marker
+          },
+        });
+
+        return () => {
+          marker.setMap(null);
+        };
+      }
+    }
+  }, [isLoaded, coffeeShop.latitude, coffeeShop.longitude]);
+  
+
   return (
     <div className="admin-layout">
       <SidebarMenu
@@ -203,144 +248,190 @@ const PageSettings = ({ handleOwnerLogout }) => {
       <main className="main-content">
         <header className="page-header">
           <h1>Page Settings</h1>
+          <button onClick={toggleEditMode} className="btn btn-primary">
+            {isEditMode ? 'Cancel Edit' : <><Edit /> Edit</>}
+          </button>
         </header>
 
-        {error && (
-          <div className="alert error">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="alert success">
-            <strong>Success:</strong> {success}
-          </div>
-        )}
-
         <form onSubmit={handleShopUpdate}>
-          <div className="card">
-            <h2 className="card-title">Coffee Shop Image</h2>
-            <div className="image-upload">
-              {imagePreview && <img src={imagePreview} alt="Coffee Shop Preview" className="image-preview" />}
-              <input
-                type="file"
-                accept="image/*"
-                name="image"
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
+          <div className="form-section">
+          <div className="form-group">
+  <label htmlFor="image">Coffee Shop Image</label>
+  {imagePreview ? (
+    <div className="image-preview">
+      <img src={imagePreview} alt="Coffee Shop" className="preview-image" />
+    </div>
+  ) : (
+    <p>No image uploaded</p>
+  )}
+  {isEditMode && (
+    <input
+      type="file"
+      name="image"
+      id="image"
+      accept="image/*"
+      onChange={handleInputChange}
+      className="form-input"
+    />
+  )}
+</div>
 
             <div className="form-group">
-              <label htmlFor="name">Coffee Shop Name</label>
+              <label htmlFor="name">Name</label>
               <input
                 type="text"
-                id="name"
                 name="name"
+                id="name"
                 value={coffeeShop.name}
                 onChange={handleInputChange}
                 className="form-input"
+                disabled={!isEditMode}
                 required
               />
             </div>
 
             <div className="form-group">
               <label htmlFor="address">Address</label>
-              <PlacesAutocomplete
-                value={coffeeShop.address}
-                onChange={handleAddressChange}
-                onSelect={handleAddressSelect}
-              >
-                {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-                  <div>
-                    <input
-                      {...getInputProps({
-                        placeholder: 'Search Places...',
-                        className: 'form-input'
-                      })}
-                    />
+              {isEditMode ? (
+                <PlacesAutocomplete
+                  value={coffeeShop.address}
+                  onChange={handleAddressChange}
+                  onSelect={handleAddressSelect}
+                >
+                  {({ getInputProps, suggestions, getSuggestionItemProps }) => (
                     <div>
-                      {loading && <div>Loading suggestions...</div>}
-                      {suggestions.map(suggestion => {
-                        const style = suggestion.active ? { backgroundColor: '#a0c4ff', cursor: 'pointer' } : { backgroundColor: '#ffffff', cursor: 'pointer' };
-                        return (
-                          <div
-                            {...getSuggestionItemProps(suggestion, { style })}
-                            key={suggestion.placeId}
-                          >
-                            {suggestion.description}
-                          </div>
-                        );
-                      })}
+                      <input
+                        {...getInputProps({
+                          placeholder: 'Search address...',
+                          className: 'form-input',
+                        })}
+                        required
+                      />
+                      <div className="autocomplete-dropdown">
+                        {suggestions.map((suggestion) => {
+                          const className = suggestion.active ? 'suggestion-item active' : 'suggestion-item';
+                          return (
+                            <div
+                              {...getSuggestionItemProps(suggestion, { className })}
+                              key={suggestion.placeId}
+                            >
+                              {suggestion.description}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </PlacesAutocomplete>
+                  )}
+                </PlacesAutocomplete>
+              ) : (
+                <input
+                  type="text"
+                  name="address"
+                  id="address"
+                  value={coffeeShop.address}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  disabled
+                  required
+                />
+              )}
             </div>
 
             <div className="form-group">
               <label htmlFor="description">Description</label>
               <textarea
-                id="description"
                 name="description"
+                id="description"
                 value={coffeeShop.description}
                 onChange={handleInputChange}
                 className="form-input"
+                rows="4"
+                disabled={!isEditMode}
+                required
               />
             </div>
+              
+            <div className="form-group opening-hours-group">
+              <label>Opening Hours</label>
+              <button
+                type="button"
+                className="btn-toggle-opening-hours"
+                onClick={toggleOpeningHours}
+              >
+                {isOpeningHoursExpanded ? (
+                  <>
+                    Hide Hours <ChevronUp />
+                  </>
+                ) : (
+                  <>
+                    Show Hours <ChevronDown />
+                  </>
+                )}
+              </button>
 
-            <div className="opening-hours-section">
-            <h2 className="card-title" onClick={toggleOpeningHours} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              Opening Hours
-              {isOpeningHoursExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </h2>
-            <div className={`opening-hours ${isOpeningHoursExpanded ? 'expanded' : ''}`}>
-              {coffeeShop.opening_hours.map((hour) => (
-                <div key={hour.day} className="opening-hour">
-                  <label>{dayFullNames[hour.day] || hour.day}</label>
-                  <input
-                    type="time"
-                    value={hour.opening_time}
-                    onChange={(e) => handleOpeningHoursChange(hour.day, 'opening_time', e.target.value)}
-                    className="form-input"
-                  />
-                  <input
-                    type="time"
-                    value={hour.closing_time}
-                    onChange={(e) => handleOpeningHoursChange(hour.day, 'closing_time', e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-              ))}
+              {isOpeningHoursExpanded && (
+                <table className="opening-hours-table">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th>Opening Time</th>
+                      <th>Closing Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+  {coffeeShop.opening_hours.map((dayHours, index) => (
+    <tr key={index}>
+      <td>{dayFullNames[dayHours.day.slice(0, 3).toLowerCase()]}</td>
+      <td>
+        <input
+          type="time"
+          value={dayHours.opening_time}
+          onChange={(e) =>
+            handleOpeningHoursChange(dayHours.day, 'opening_time', e.target.value)
+          }
+          className="form-input"
+          disabled={!isEditMode}
+        />
+      </td>
+      <td>
+        <input
+          type="time"
+          value={dayHours.closing_time}
+          onChange={(e) =>
+            handleOpeningHoursChange(dayHours.day, 'closing_time', e.target.value)
+          }
+          className="form-input"
+          disabled={!isEditMode}
+        />
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+                </table>
+              )}
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary">Update Coffee Shop</button>
-        </div>
-      </form>
+          <button type="submit" className="btn btn-success" disabled={!isEditMode}>
+            Save Changes
+          </button>
+        </form>
 
         <div className="map-container">
-        <h2 className="card-title">Map</h2>
-        {isLoaded ? (
-          <GoogleMap
-            mapContainerStyle={{ height: '400px', width: '100%' }}
-            center={mapCenter}
-            zoom={15}
-            onClick={handleMapClick}
-          >
-            {coffeeShop.latitude && coffeeShop.longitude && (
-              <MarkerF 
-                position={{ 
-                  lat: parseFloat(coffeeShop.latitude), 
-                  lng: parseFloat(coffeeShop.longitude) 
-                }} 
-              />
-            )}
-          </GoogleMap>
-        ) : (
-          <div>Loading map...</div>
-        )}
-      </div>
+          <h2 className="card-title">Map</h2>
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ height: '400px', width: '100%' }}
+              center={mapCenter}
+              zoom={20}
+              onClick={handleMapClick}
+              ref={mapRef}
+            />
+          ) : (
+            <div>Loading map...</div>
+          )}
+        </div>
       </main>
     </div>
   );
