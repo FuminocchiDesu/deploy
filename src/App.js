@@ -5,33 +5,18 @@ import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
 import MenuPage from './components/AdminSide/MenuPage';
 import ReviewsPage from './components/AdminSide/ReviewsPage';
-import axios from 'axios';
 import './App.css';
 
 const App = () => {
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(null);
 
   useEffect(() => {
-    const validateToken = async () => {
-      const ownerToken = localStorage.getItem('ownerToken');
-      if (ownerToken) {
-        try {
-          const response = await axios.post('https://khlcle.pythonanywhere.com/api/validate-token/', {}, {
-            headers: { Authorization: `Bearer ${ownerToken}` }
-          });
-          setIsOwnerAuthenticated(true);
-        } catch (error) {
-          console.error('Token validation failed:', error);
-          localStorage.removeItem('ownerToken');
-          localStorage.removeItem('coffeeShopId');
-          setIsOwnerAuthenticated(false);
-        }
-      } else {
-        setIsOwnerAuthenticated(false);
-      }
-    };
-
-    validateToken();
+    const ownerToken = localStorage.getItem('ownerToken');
+    if (ownerToken) {
+      setIsOwnerAuthenticated(true);
+    } else {
+      setIsOwnerAuthenticated(false);
+    }
   }, []);
 
   const handleOwnerLogin = () => {
