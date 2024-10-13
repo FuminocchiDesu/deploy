@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import SidebarMenu from './SideBarMenu'; // Import the SidebarMenu component
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com'; // Update this to your actual API base URL
 
@@ -13,7 +15,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
   const [form] = Form.useForm();
-
+  const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
+  const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken'); // Use ownerToken instead of token
 
@@ -25,6 +28,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
       handleOwnerLogout(); // Logout if essential data is missing
     }
   }, [coffeeShopId, ownerToken]);
+
+  const handleMenuItemClick = (item) => {
+    setActiveMenuItem(item.name);
+    navigate(item.path);
+  };
+
+  const onLogout = () => {
+    handleOwnerLogout();
+    navigate('/admin-login');
+  };
 
   const fetchData = async () => {
     try {
@@ -229,13 +242,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
   ];
 
   return (
+    <div className="admin-layout">
+    <SidebarMenu
+            activeMenuItem={activeMenuItem}
+            handleMenuItemClick={handleMenuItemClick}
+            onLogout={onLogout}
+          />
     <div>
+      
       <h1>Menu Management</h1>
       <Button onClick={() => setIsEditMode(!isEditMode)}>
         {isEditMode ? 'View Mode' : 'Edit Mode'}
       </Button>
-      <Button onClick={handleOwnerLogout}>Logout</Button>
-
       <h2>Categories</h2>
       <Table dataSource={categories} columns={categoryColumns} />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('category')}>Add Category</Button>}
@@ -341,6 +359,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
           )}
         </Form>
       </Modal>
+    </div>
     </div>
   );
 };
