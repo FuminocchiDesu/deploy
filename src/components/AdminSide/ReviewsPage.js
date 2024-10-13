@@ -30,14 +30,15 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
   };
 
   const renderStars = (rating) => {
-    return [...Array(5)].map((_, index) => (
+    return Array.from({ length: 5 }, (_, index) => (
       <Star
         key={index}
         size={16}
-        className={index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}
+        fill={index < rating ? '#FFD700' : 'none'}
+        stroke={index < rating ? '#FFD700' : '#D1D5DB'}
       />
-    ));
-  };
+    ))
+  }
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
