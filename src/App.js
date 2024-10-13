@@ -8,15 +8,19 @@ import ReviewsPage from './components/AdminSide/ReviewsPage';
 import './App.css';
 
 const App = () => {
-  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(null);
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false); // Default to false
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const ownerToken = localStorage.getItem('ownerToken');
+
     if (ownerToken) {
-      setIsOwnerAuthenticated(true);
+      setIsOwnerAuthenticated(true); // Token exists in localStorage, consider the user authenticated
     } else {
-      setIsOwnerAuthenticated(false);
+      setIsOwnerAuthenticated(false); // No token, so not authenticated
     }
+
+    setIsLoading(false); // Mark loading as done after checking token
   }, []);
 
   const handleOwnerLogin = () => {
@@ -29,8 +33,8 @@ const App = () => {
     setIsOwnerAuthenticated(false);
   };
 
-  if (isOwnerAuthenticated === null) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <div>Loading...</div>; // Display loading while token check is being done
   }
 
   return (

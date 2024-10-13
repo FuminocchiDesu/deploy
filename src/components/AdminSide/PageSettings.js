@@ -87,7 +87,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
       const response = await axios.get(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShopId}/opening_hours/`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
-      setCoffeeShop(prev => ({ ...prev, opening_hours: response.data }));
+      const fetchedHours = response.data;
+      const fullOpeningHours = Object.keys(dayFullNames).map(shortDay => {
+        const existingHour = fetchedHours.find(h => h.day.toLowerCase().startsWith(shortDay));
+        return existingHour || { day: dayFullNames[shortDay], opening_time: '', closing_time: '' };
+      });
+      setCoffeeShop(prev => ({ ...prev, opening_hours: fullOpeningHours }));
     } catch (error) {
       console.error('Error fetching opening hours:', error);
       setError('Failed to fetch opening hours. Please try again.');
@@ -123,6 +128,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         }
       });
 
+      // Send opening hours separately
       await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`,
         coffeeShop.opening_hours,
         {
@@ -352,65 +358,64 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
               
             <div className="form-group opening-hours-group">
-              <label>Opening Hours</label>
-              <button
-                type="button"
-                className="btn-toggle-opening-hours"
-                onClick={toggleOpeningHours}
-              >
-                {isOpeningHoursExpanded ? (
-                  <>
-                    Hide Hours <ChevronUp />
-                  </>
-                ) : (
-                  <>
-                    Show Hours <ChevronDown />
-                  </>
-                )}
-              </button>
+        <label>Opening Hours</label>
+        <button
+          type="button"
+          className="btn-toggle-opening-hours"
+          onClick={toggleOpeningHours}
+        >
+          {isOpeningHoursExpanded ? (
+            <>
+              Hide Hours <ChevronUp />
+            </>
+          ) : (
+            <>
+              Show Hours <ChevronDown />
+            </>
+          )}
+        </button>
 
-              {isOpeningHoursExpanded && (
-                <table className="opening-hours-table">
-                  <thead>
-                    <tr>
-                      <th>Day</th>
-                      <th>Opening Time</th>
-                      <th>Closing Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-  {coffeeShop.opening_hours.map((dayHours, index) => (
-    <tr key={index}>
-      <td>{dayFullNames[dayHours.day.slice(0, 3).toLowerCase()]}</td>
-      <td>
-        <input
-          type="time"
-          value={dayHours.opening_time}
-          onChange={(e) =>
-            handleOpeningHoursChange(dayHours.day, 'opening_time', e.target.value)
-          }
-          className="form-input"
-          disabled={!isEditMode}
-        />
-      </td>
-      <td>
-        <input
-          type="time"
-          value={dayHours.closing_time}
-          onChange={(e) =>
-            handleOpeningHoursChange(dayHours.day, 'closing_time', e.target.value)
-          }
-          className="form-input"
-          disabled={!isEditMode}
-        />
-      </td>
-    </tr>
-  ))}
-</tbody>
-
-                </table>
-              )}
-            </div>
+        {isOpeningHoursExpanded && (
+          <table className="opening-hours-table">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Opening Time</th>
+                <th>Closing Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coffeeShop.opening_hours.map((dayHours) => (
+                <tr key={dayHours.day}>
+                  <td>{dayHours.day}</td>
+                  <td>
+                    <input
+                      type="time"
+                      value={dayHours.opening_time}
+                      onChange={(e) =>
+                        handleOpeningHoursChange(dayHours.day, 'opening_time', e.target.value)
+                      }
+                      className="form-input"
+                      disabled={!isEditMode}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="time"
+                      value={dayHours.closing_time}
+                      onChange={(e) =>
+                        handleOpeningHoursChange(dayHours.day, 'closing_time', e.target.value)
+                      }
+                      className="form-input"
+                      disabled={!isEditMode}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
           </div>
 
           <button type="submit" className="btn btn-success" disabled={!isEditMode}>

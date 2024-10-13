@@ -52,14 +52,14 @@ const MenuPage = ({ handleOwnerLogout }) => {
   };
 
   const handleFormSubmit = (data, error) => {
-  if (error) {
-    setError(error);
-  } else {
-    setShowForm(false);
-    setEditingItem(null);
-    fetchData();
-  }
-};
+    if (error) {
+      setError(error);
+    } else {
+      setShowForm(false);
+      setEditingItem(null);
+      fetchData();
+    }
+  };
 
   const handleDelete = async (type, id) => {
     if (isReadOnly) return;
@@ -244,7 +244,19 @@ const MenuPage = ({ handleOwnerLogout }) => {
         handleMenuItemClick={handleMenuItemClick}
         onLogout={onLogout}
       />
-      
+      {showForm && (
+        <MenuManagementForms
+          onSubmit={handleFormSubmit}
+          initialData={editingItem}
+          formType={formType}
+          categories={categories}
+        />
+      )}
+      {console.log(editingItem)}
+      {console.log(formType)}
+      {console.log(categories)}
+
+
       <main className="main-content">
         <header className="page-header">
           <h1 className="text-2xl font-bold mb-4">Menu and Promos Management</h1>
@@ -258,14 +270,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
         {error && (
           <div className="text-red-500 mb-4">{error}</div>
         )}
-  {showForm && (
-        <MenuManagementForms
-          onSubmit={handleFormSubmit}
-          initialData={editingItem}
-          formType={formType}
-          categories={categories}
-        />
-      )}
+  
         <div className="flex mb-4">
           <button
             className={`mr-2 px-4 py-2 rounded ${activeTab === 'menu' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}

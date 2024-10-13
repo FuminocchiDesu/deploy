@@ -30,9 +30,16 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
       });
       setDashboardData(response.data);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      if (error.response && error.response.status === 401) {
+        // If 401 error, trigger logout and redirect to the login page
+        handleOwnerLogout();
+        navigate('/admin-login');
+      } else {
+        console.error('Error fetching dashboard data:', error);
+      }
     }
   };
+  
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);

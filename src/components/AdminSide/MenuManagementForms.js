@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { X } from 'lucide-react';
 
 const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) => {
-  const [formData, setFormData] = useState(initialData || {});
-  const [sizes, setSizes] = useState(initialData?.sizes || []);
+  const [formData, setFormData] = useState({});
+  const [sizes, setSizes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     if (initialData) {
@@ -37,6 +37,10 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
     setSizes(sizes.filter((_, i) => i !== index));
   };
 
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,36 +52,75 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
 
     let url;
     let method;
-    let data = { ...formData };
-if (formType === 'item') {
-  data.sizes = sizes;
-  data.category = parseInt(data.category, 10); // Ensure category is sent as a number
-}
+    let data = new FormData();
 
-   if (initialData) {
-  // Update existing item
-  url = `${baseUrl}/${shopId}/menu-and-promos/${initialData.id}/manage_${formType}/`;
-} else {
-  // Create new item
-  url = `${baseUrl}/${shopId}/menu-and-promos/create_${formType}/`;
-}
+    // Add coffee_shop field for all form types
+    data.append('coffee_shop', shopId);
+
+    if (formType === 'category') {
+      // For categories, we need to send the name and coffee_shop
+      data.append('name', formData.name);
+    } else {
+      // For other types, append all form data except 'image' and 'sizes'
+      for (let key in formData) {
+        if (key !== 'image' && key !== 'sizes') {
+          data.append(key, formData[key]);
+        }
+      }
+
+      if (formType === 'item') {
+        data.append('sizes', JSON.stringify(sizes));
+      }
+    }
+
+    if (imageFile) {
+      data.append('image', imageFile);
+    }
+
+    if (initialData) {
+      url = `${baseUrl}/${shopId}/menu-and-promos/${initialData.id}/manage_${formType}/`;
+      method = 'PATCH';
+    } else {
+      url = `${baseUrl}/${shopId}/menu-and-promos/create_${formType}/`;
+      method = 'POST';
+    }
+
+    // Log the data being sent
+    console.log('Submitting data:', Object.fromEntries(data));
 
     try {
-      const response = await axios({
+      const response = await fetch(url, {
         method,
-        url,
-        data,
-        headers: { 'Authorization': `Bearer ${token}` }
+        body: data,
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+        }
       });
 
-      setLoading(false);
-      onSubmit(response.data, null);
-        } catch (err) {
-            onSubmit(null, error);
-        setLoading(false);
-        setError(`An error occurred while submitting the form: ${err.response?.data?.detail || err.message}`);
-        console.error('Error submitting form:', err.response?.data || err);
+      const responseText = await response.text();
+      console.log('Raw server response:', responseText);
+
+      let errorMessage = `HTTP error! status: ${response.status}`;
+
+      if (!response.ok) {
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage += `, message: ${JSON.stringify(errorData)}`;
+        } catch (jsonError) {
+          errorMessage += `, non-JSON response received`;
+        }
+        throw new Error(errorMessage);
       }
+
+      const result = JSON.parse(responseText);
+      setLoading(false);
+      onSubmit(result, null);
+    } catch (err) {
+      setLoading(false);
+      setError(`An error occurred while submitting the form: ${err.message}`);
+      console.error('Error submitting form:', err);
+      onSubmit(null, err.message);
+    }
   };
 
   const renderCategoryForm = () => (
@@ -151,15 +194,18 @@ if (formType === 'item') {
           </select>
         </div>
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image URL</label>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
           <input
-            type="url"
+            type="file"
             id="image"
             name="image"
-            value={formData.image || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            onChange={handleImageChange}
+            accept="image/*"
+            className="mt-1 block w-full"
           />
+          {initialData && initialData.image && (
+            <img src={initialData.image} alt="Current item" className="mt-2 w-32 h-32 object-cover" />
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Sizes and Prices</label>
@@ -167,14 +213,14 @@ if (formType === 'item') {
             <div key={index} className="flex items-center space-x-2 mt-2">
               <input
                 type="text"
-                value={size.size}
+                value={size.size || ''}
                 onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
                 placeholder="Size"
                 className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
               <input
                 type="number"
-                value={size.price}
+                value={size.price || ''}
                 onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
                 placeholder="Price"
                 className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -249,15 +295,18 @@ if (formType === 'item') {
           />
         </div>
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image URL</label>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
           <input
-            type="url"
+            type="file"
             id="image"
             name="image"
-            value={formData.image || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            onChange={handleImageChange}
+            accept="image/*"
+            className="mt-1 block w-full"
           />
+          {initialData && initialData.image && (
+            <img src={initialData.image} alt="Current promo" className="mt-2 w-32 h-32 object-cover" />
+          )}
         </div>
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" disabled={loading}>
           {loading ? 'Submitting...' : (initialData ? 'Update' : 'Add') + ' Promo'}
