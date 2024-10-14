@@ -19,6 +19,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken'); // Use ownerToken instead of token
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
@@ -66,22 +67,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const showModal = (type, record = null) => {
     setModalType(type);
     setIsModalVisible(true);
+    setSelectedRecord(record); // Store the selected record
     if (record) {
-      if (type === 'item') {
-        // Prepare the form data for items, including sizes and image
-        const formData = {
-          ...record,
-          sizes: record.sizes.map(size => ({
-            size: size.size,
-            price: size.price
-          })),
-          image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
-        };
-        form.setFieldsValue(formData);
-      } else {
-        form.setFieldsValue(record);
-      }
+      // For updates, set the form with existing data
+      form.setFieldsValue({
+        ...record,
+        id: record.id, // Ensure the ID is passed
+        image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
+      });
     } else {
+      // For creates, reset the form
       form.resetFields();
     }
   };
@@ -95,9 +90,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const handleModalCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
+    setSelectedRecord(null); // Clear the selected record
   };
+  
 
   const handleSubmit = async (values) => {
+    if (!values.id && selectedRecord && selectedRecord.id) {
+      values.id = selectedRecord.id; // Use selectedRecord to access the id
+    }
+  
     try {
       const config = {
         headers: { 
@@ -105,62 +106,65 @@ const MenuPage = ({ handleOwnerLogout }) => {
           'Content-Type': 'multipart/form-data'
         }
       };
-
+  
       let formData = new FormData();
-    for (let key in values) {
-      if (key === 'sizes') {
-        formData.append(key, JSON.stringify(values[key]));
-      } else if (key === 'image') {
-        if (values[key] && values[key][0] && values[key][0].originFileObj) {
-          formData.append(key, values[key][0].originFileObj);
+      for (let key in values) {
+        if (key === 'sizes') {
+          formData.append(key, JSON.stringify(values[key]));
+        } else if (key === 'image') {
+          if (values[key] && values[key][0] && values[key][0].originFileObj) {
+            formData.append(key, values[key][0].originFileObj);
+          }
+        } else {
+          formData.append(key, values[key]);
         }
-      } else {
-        formData.append(key, values[key]);
       }
-    }
-
+  
       let response;
-      if (modalType === 'category') {
-        const endpoint = values.id 
-          ? `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${values.id}/`
-          : `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
-        response = values.id 
-          ? await axios.put(endpoint, formData, config)
-          : await axios.post(endpoint, formData, config);
-      } else if (modalType === 'item') {
-        const endpoint = values.id 
-          ? `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${values.id}/`
-          : `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
-        response = values.id 
-          ? await axios.put(endpoint, formData, config)
-          : await axios.post(endpoint, formData, config);
-      } else if (modalType === 'promo') {
-        const endpoint = values.id 
-          ? `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${values.id}/`
-          : `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
-        response = values.id 
-          ? await axios.put(endpoint, formData, config)
-          : await axios.post(endpoint, formData, config);
+      let endpoint;
+      let method;
+  
+      // Determine endpoint and method based on modal type
+      switch (modalType) {
+        case 'category':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
+          break;
+        case 'item':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
+          break;
+        case 'promo':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
+          break;
+        default:
+          throw new Error('Invalid modal type');
       }
-
-      message.success('Operation successful');
-      setIsModalVisible(false);
-      fetchData();
+  
+      // Check if this is an update or a create
+      if (values.id) {
+        // This is an update operation
+        endpoint += `${values.id}/`; // Append the id for update
+        method = 'put'; // Use PATCH for update
+      } else {
+        // This is a create operation
+        method = 'post'; // Use POST for create
+      }
+  
+      // Perform the request
+      response = await axios[method](endpoint, formData, config);
+      
+      if (response.status === 200 || response.status === 201) {
+        message.success(`${values.id ? 'Update' : 'Create'} successful`);
+        setIsModalVisible(false);
+        form.resetFields();
+        fetchData(); // Refresh data after successful operation
+      }
+  
     } catch (error) {
       console.error('Error submitting data:', error);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      }
-      if (error.response && error.response.status === 401) {
-        message.error('Owner authentication failed. Please log in again.');
-        handleOwnerLogout();
-      } else {
-        message.error('Operation failed: ' + (error.response?.data?.detail || error.message));
-      }
+      message.error('Operation failed: ' + (error.response?.data?.error || error.message));
     }
   };
+  
 
   const handleDelete = async (type, id) => {
     try {
@@ -255,15 +259,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
         {isEditMode ? 'View Mode' : 'Edit Mode'}
       </Button>
       <h2>Categories</h2>
-      <Table dataSource={categories} columns={categoryColumns} />
+      <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('category')}>Add Category</Button>}
 
       <h2>Menu Items</h2>
-      <Table dataSource={items} columns={itemColumns} />
+      <Table dataSource={items} columns={itemColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('item')}>Add Item</Button>}
 
       <h2>Promos</h2>
-      <Table dataSource={promos} columns={promoColumns} />
+      <Table dataSource={promos} columns={promoColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('promo')}>Add Promo</Button>}
 
       <Modal
@@ -294,51 +298,51 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 </Select>
               </Form.Item>
               <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={(e) => {
-                if (Array.isArray(e)) {
-                  return e;
-                }
-                return e && e.fileList;
-              }}>
-                <Upload 
-                  beforeUpload={() => false}
-                  listType="picture"
-                  maxCount={1}
-                >
-                  <Button icon={<UploadOutlined />}>Click to upload</Button>
-                </Upload>
-              </Form.Item>
-              <Form.List name="sizes">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name, ...restField }) => (
-                      <Form.Item key={key} label={`Size ${name + 1}`} required={false}>
-                        <Space.Compact>
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'size']}
-                            rules={[{ required: true, message: 'Missing size' }]}
-                          >
-                            <Input placeholder="Size" style={{ width: '120px' }} />
-                          </Form.Item>
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'price']}
-                            rules={[{ required: true, message: 'Missing price' }]}
-                          >
-                            <Input placeholder="Price" style={{ width: '120px' }} />
-                          </Form.Item>
-                          <Button onClick={() => remove(name)} type="text" danger>Delete</Button>
-                        </Space.Compact>
-                      </Form.Item>
-                    ))}
-                    <Form.Item>
-                      <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                        Add Size
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e && e.fileList;
+          }}>
+            <Upload 
+              beforeUpload={() => false}
+              listType="picture"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Click to upload</Button>
+            </Upload>
+          </Form.Item>
+              <Form.List name="sizes" rules={[{ required: true, message: 'Please add at least one size' }]}>
+  {(fields, { add, remove }) => (
+    <>
+      {fields.map(({ key, name, ...restField }) => (
+        <Form.Item key={key} required={false}>
+          <Space>
+            <Form.Item
+              {...restField}
+              name={[name, 'size']}
+              rules={[{ required: true, message: 'Missing size' }]}
+            >
+              <Input placeholder="Size" />
+            </Form.Item>
+            <Form.Item
+              {...restField}
+              name={[name, 'price']}
+              rules={[{ required: true, message: 'Missing price' }]}
+            >
+              <Input placeholder="Price" />
+            </Form.Item>
+            <Button onClick={() => remove(name)} type="text" danger>Delete</Button>
+          </Space>
+        </Form.Item>
+      ))}
+      <Form.Item>
+        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+          Add Size
+        </Button>
+      </Form.Item>
+    </>
+  )}
+</Form.List>
             </>
           )}
           {modalType === 'promo' && (
