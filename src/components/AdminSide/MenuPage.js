@@ -259,16 +259,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
         {isEditMode ? 'View Mode' : 'Edit Mode'}
       </Button>
       <h2>Categories</h2>
-      <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('category')}>Add Category</Button>}
+      <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
 
       <h2>Menu Items</h2>
-      <Table dataSource={items} columns={itemColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('item')}>Add Item</Button>}
+      <Table dataSource={items} columns={itemColumns} rowKey="id" />
 
       <h2>Promos</h2>
-      <Table dataSource={promos} columns={promoColumns} rowKey="id" />
       {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('promo')}>Add Promo</Button>}
+      <Table dataSource={promos} columns={promoColumns} rowKey="id" />
 
       <Modal
         title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
