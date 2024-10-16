@@ -1,14 +1,15 @@
 // ReviewsPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Star } from 'lucide-react';
+import { Star, QrCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
+import SidebarMenu from './SideBarMenu';
 
 const ReviewsPage = ({ handleOwnerLogout }) => {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
+  const [qrCodeUrl, setQrCodeUrl] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,26 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
       console.error('Error fetching reviews:', err);
     }
   };
+
+  const generateQRCode = async (shopId, token) => {
+    try {
+      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/generate-qr/`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': '*/*', // Accept any format
+        },
+        responseType: 'blob'  // Expect binary data (like an image)
+      });
+      
+      const url = URL.createObjectURL(response.data);
+      setQrCodeUrl(url);
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+      setError('Failed to generate QR code. Please try again.');
+    }
+  };
+  
+
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -64,7 +85,24 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
         </header>
 
         <div className="dashboard-content">
-          {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      <button
+  onClick={() => {
+    const token = localStorage.getItem('ownerToken');
+    const shopId = localStorage.getItem('coffeeShopId');
+    generateQRCode(shopId, token);
+  }}
+  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+>
+  <QrCode className="mr-2" size={20} />
+  Generate QR Code
+</button>
+      {qrCodeUrl && (
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">QR Code for Ratings</h2>
+          <img src={qrCodeUrl} alt="QR Code for Ratings" className="w-64 h-64" />
+        </div>
+      )}
 
           <div className="space-y-4">
             {reviews.map(review => (
