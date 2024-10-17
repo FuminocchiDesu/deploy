@@ -15,7 +15,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
   const [form] = Form.useForm();
-  const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
+  const [activeMenuItem, setActiveMenuItem] = useState('Menu');
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken'); // Use ownerToken instead of token
