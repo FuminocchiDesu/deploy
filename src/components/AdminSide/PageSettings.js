@@ -6,6 +6,7 @@ import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
+import Switch from './CustomSwitch'; // Import our custom Switch component
 
 const libraries = ['places'];
 
@@ -22,7 +23,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
       closing_time: ''
     })),
     description: '',
-    image: null
+    image: null,
+    is_under_maintenance: false
   });
   const [isOpeningHoursExpanded, setIsOpeningHoursExpanded] = useState(false);
   const [error, setError] = useState(null);
@@ -32,6 +34,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isEditMode, setIsEditMode] = useState(false);
   const navigate = useNavigate();
+  const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
 
   const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
 
@@ -69,7 +72,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
       });
       if (response.data.length > 0) {
         const fetchedCoffeeShop = response.data[0];
-        setCoffeeShop(fetchedCoffeeShop);
+        setCoffeeShop(prevState => ({
+          ...prevState,
+          ...fetchedCoffeeShop,
+          is_under_maintenance: fetchedCoffeeShop.is_under_maintenance // Ensure this is set correctly
+        }));
         setImagePreview(fetchedCoffeeShop.image);
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
           setMapCenter({ lat: parseFloat(fetchedCoffeeShop.latitude), lng: parseFloat(fetchedCoffeeShop.longitude) });
@@ -96,6 +103,33 @@ const PageSettings = ({ handleOwnerLogout }) => {
     } catch (error) {
       console.error('Error fetching opening hours:', error);
       setError('Failed to fetch opening hours. Please try again.');
+    }
+  };
+
+  const handleMaintenanceToggle = async (checked) => {
+    setIsUpdatingMaintenance(true);
+    try {
+      const response = await axios.patch(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, 
+        { is_under_maintenance: checked },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      setCoffeeShop(prev => ({
+        ...prev,
+        is_under_maintenance: checked
+      }));
+      
+      setSuccess('Maintenance mode updated successfully');
+    } catch (error) {
+      console.error('Error updating maintenance mode:', error);
+      setError('Failed to update maintenance mode. Please try again.');
+    } finally {
+      setIsUpdatingMaintenance(false);
     }
   };
 
@@ -254,6 +288,15 @@ const PageSettings = ({ handleOwnerLogout }) => {
       <main className="main-content">
         <header className="page-header">
           <h1>Page Settings</h1>
+          <div className="maintenance-mode">
+              <label htmlFor="maintenance-mode">Maintenance Mode</label>
+              <Switch
+                id="maintenance-mode"
+                checked={coffeeShop.is_under_maintenance}
+                onChange={handleMaintenanceToggle}
+                disabled={isUpdatingMaintenance}
+              />
+            </div>
           <button onClick={toggleEditMode} className="btn btn-primary">
             {isEditMode ? 'Cancel Edit' : <><Edit /> Edit</>}
           </button>
