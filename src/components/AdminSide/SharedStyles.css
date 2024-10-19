@@ -1,12 +1,27 @@
+:root {
+  --color-primary: #8B4513;
+  --color-primary-light: #A0522D;
+  --color-secondary: #D2B48C;
+  --color-background: #F5DEB3;
+  --color-text: #4A3728;
+  --color-text-light: #6B5744;
+  --color-border: #DEB887;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
 .admin-layout {
   display: flex;
   height: 100vh;
-  background-color: #f3f4f6;
+  background-color: var(--color-background);
 }
 
 .sidebar {
   width: 250px;
-  background-color: #ffffff;
+  background-color: var(--color-secondary);
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -16,110 +31,120 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .admin-title {
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--color-primary);
 }
 
 .sidebar-search {
-  padding: 15px;
+  padding: 1rem;
 }
 
 .search-input {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 .sidebar-menu {
   flex-grow: 1;
-  padding: 15px;
+  padding: 1rem;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 10px;
-  margin-bottom: 5px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
   text-align: left;
   background: none;
   border: none;
   cursor: pointer;
   transition: background-color 0.3s;
+  color: var(--color-text);
 }
 
 .menu-item:hover, .menu-item.active {
-  background-color: #f3f4f6;
+  background-color: var(--color-primary-light);
+  color: var(--color-background);
 }
 
 .menu-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.75rem;
 }
 
 .logout-button {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 15px;
+  padding: 1rem;
   background: none;
   border: none;
   cursor: pointer;
-  color: #ef4444;
+  color: var(--color-primary);
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 30px;
+  padding: 2rem;
   overflow-y: auto;
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
 }
 
 .page-header h1 {
   font-size: 2rem;
   font-weight: bold;
+  color: var(--color-primary);
 }
 
 .card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 20px;
+  background-color: var(--color-secondary);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
 .card-title {
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
   font-weight: 500;
+  color: var(--color-text);
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 .form-textarea {
@@ -127,20 +152,21 @@
 }
 
 .button {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
 .button.outline {
   background-color: transparent;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
 }
 
 .button.primary {
-  background-color: #3b82f6;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-background);
   border: none;
 }
 
@@ -149,9 +175,9 @@
 }
 
 .alert {
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .alert.error {
@@ -167,21 +193,22 @@
 }
 
 .image-upload {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 20px;
+  border: 2px dashed var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
   text-align: center;
 }
 
 .upload-placeholder {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
+  color: var(--color-text-light);
 }
 
 .upload-icon {
-  width: 48px;
-  height: 48px;
-  color: #9ca3af;
-  margin-bottom: 10px;
+  width: 3rem;
+  height: 3rem;
+  color: var(--color-text-light);
+  margin-bottom: 0.75rem;
 }
 
 .file-input {
@@ -191,99 +218,106 @@
 .menu-categories {
   display: flex;
   overflow-x: auto;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
 }
 
 .category-button {
-  margin-right: 10px;
+  margin-right: 0.75rem;
   white-space: nowrap;
+  background-color: var(--color-primary);
+  color: var(--color-background);
 }
 
 .menu-items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .add-dish {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 20px;
+  border: 2px dashed var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
   text-align: center;
   cursor: pointer;
 }
 
 .add-icon {
-  width: 48px;
-  height: 48px;
-  color: #9ca3af;
-  margin-bottom: 10px;
+  width: 3rem;
+  height: 3rem;
+  color: var(--color-text-light);
+  margin-bottom: 0.75rem;
 }
 
 .dish-card {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
   text-align: center;
+  background-color: var(--color-secondary);
 }
 
 .dish-image {
   width: 100%;
   height: 150px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .dish-title {
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
 }
 
 .dish-price {
-  color: #6b7280;
-  margin-bottom: 10px;
+  color: var(--color-text-light);
+  margin-bottom: 0.75rem;
 }
 
 .action-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .full-width {
   width: 100%;
 }
 
-/* Add these styles to your existing SharedStyles.css file */
+/* Additional styles */
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .review-item {
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .review-author {
   font-style: italic;
-  color: #6b7280;
+  color: var(--color-text-light);
 }
 
 .review-card {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  background-color: var(--color-secondary);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .review-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
 }
 
 .review-rating {
@@ -291,58 +325,60 @@
 }
 
 .star-icon {
-  width: 20px;
-  height: 20px;
-  color: #d1d5db;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-text-light);
 }
 
 .star-icon.filled {
-  color: #fbbf24;
+  color: var(--color-primary);
 }
 
 .review-content {
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
 }
 
 .review-date {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-light);
 }
 
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .page-info {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-light);
 }
 
 .loading {
   text-align: center;
   font-size: 1.125rem;
-  color: #6b7280;
-  margin: 20px 0;
+  color: var(--color-text-light);
+  margin: 1.5rem 0;
 }
 
 .error-message {
   background-color: #fee2e2;
   border: 1px solid #fecaca;
   color: #991b1b;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .opening-hours-section {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
 .opening-hours-section h2 {
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
+  color: var(--color-primary);
 }
 
 .opening-hours {
@@ -352,21 +388,166 @@
 }
 
 .opening-hours.expanded {
-  max-height: 1000px; /* Adjust this value based on your needs */
+  max-height: 1000px;
   transition: max-height 0.5s ease-in;
 }
 
 .opening-hour {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 0.75rem;
 }
 
 .opening-hour label {
   width: 100px;
-  margin-right: 10px;
+  margin-right: 0.75rem;
+  color: var(--color-text);
 }
 
 .opening-hour input {
-  margin-right: 10px;
+  margin-right: 0.75rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-primary);
+}
+
+.toggle-edit-button {
+  margin-bottom: 1.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.menu-section {
+  margin-bottom: 2rem;
+}
+
+.menu-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.menu-table th,
+.menu-table td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.menu-table th {
+  background-color: var(--color-primary-light);
+  color: var(--color-background);
+}
+
+.edit-button,
+.delete-button {
+  margin-right: 0.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.add-button {
+  margin-bottom: 0.75rem;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: var(--color-secondary);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.form-actions button {
+  margin-left: 0.75rem;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+/* Specific styles for Reviews page */
+.reviews-container {
+  background-color: var(--color-secondary);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.review-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.review-item {
+  background-color: var(--color-background);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Specific styles for Page Settings */
+.settings-form {
+  background-color: var(--color-secondary);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.image-preview {
+  max-width: 300px;
+  margin-bottom: 1rem;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.maintenance-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.maintenance-toggle label {
+  margin-right: 1rem;
 }

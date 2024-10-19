@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import SidebarMenu from './SideBarMenu'; // Import the SidebarMenu component
 import { useNavigate } from 'react-router-dom';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import SidebarMenu from './SideBarMenu';
+import './SharedStyles.css';
 
-const API_BASE_URL = 'https://khlcle.pythonanywhere.com'; // Update this to your actual API base URL
+const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
 const MenuPage = ({ handleOwnerLogout }) => {
   const [categories, setCategories] = useState([]);
@@ -14,21 +14,46 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
-  const [form] = Form.useForm();
+  const [form, setForm] = useState({});
   const [activeMenuItem, setActiveMenuItem] = useState('Menu');
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
-  const ownerToken = localStorage.getItem('ownerToken'); // Use ownerToken instead of token
-  const [selectedRecord, setSelectedRecord] = useState(null);
+  const ownerToken = localStorage.getItem('ownerToken');
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
       fetchData();
     } else {
-      message.error('Coffee shop ID or owner token not found');
-      handleOwnerLogout(); // Logout if essential data is missing
+      console.error('Coffee shop ID or owner token not found');
+      handleOwnerLogout();
     }
   }, [coffeeShopId, ownerToken]);
+
+  const fetchData = async () => {
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${ownerToken}` }
+      };
+
+      const [categoriesResponse, itemsResponse, promosResponse] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`, config),
+        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`, config),
+        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config)
+      ]);
+
+      setCategories(categoriesResponse.data);
+      setItems(itemsResponse.data);
+      setPromos(promosResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      if (error.response && error.response.status === 401) {
+        alert('Owner authentication failed. Please log in again.');
+        handleOwnerLogout();
+      } else {
+        alert('Failed to fetch menu data');
+      }
+    }
+  };
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
@@ -40,65 +65,22 @@ const MenuPage = ({ handleOwnerLogout }) => {
     navigate('/admin-login');
   };
 
-  const fetchData = async () => {
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${ownerToken}` }
-      };
-
-      const categoriesResponse = await axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`, config);
-      const itemsResponse = await axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`, config);
-      const promosResponse = await axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config);
-
-      setCategories(categoriesResponse.data);
-      setItems(itemsResponse.data);
-      setPromos(promosResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      if (error.response && error.response.status === 401) {
-        message.error('Owner authentication failed. Please log in again.');
-        handleOwnerLogout();
-      } else {
-        message.error('Failed to fetch menu data');
-      }
-    }
-  };
-
   const showModal = (type, record = null) => {
     setModalType(type);
     setIsModalVisible(true);
-    setSelectedRecord(record); // Store the selected record
-    if (record) {
-      // For updates, set the form with existing data
-      form.setFieldsValue({
-        ...record,
-        id: record.id, // Ensure the ID is passed
-        image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
-      });
-    } else {
-      // For creates, reset the form
-      form.resetFields();
-    }
+    setForm(record || {});
   };
 
   const handleModalOk = () => {
-    form.validateFields().then((values) => {
-      handleSubmit(values);
-    });
+    handleSubmit(form);
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
-    form.resetFields();
-    setSelectedRecord(null); // Clear the selected record
+    setForm({});
   };
-  
 
   const handleSubmit = async (values) => {
-    if (!values.id && selectedRecord && selectedRecord.id) {
-      values.id = selectedRecord.id; // Use selectedRecord to access the id
-    }
-  
     try {
       const config = {
         headers: { 
@@ -106,25 +88,21 @@ const MenuPage = ({ handleOwnerLogout }) => {
           'Content-Type': 'multipart/form-data'
         }
       };
-  
+
       let formData = new FormData();
       for (let key in values) {
         if (key === 'sizes') {
           formData.append(key, JSON.stringify(values[key]));
-        } else if (key === 'image') {
-          if (values[key] && values[key][0] && values[key][0].originFileObj) {
-            formData.append(key, values[key][0].originFileObj);
-          }
+        } else if (key === 'image' && values[key] instanceof File) {
+          formData.append(key, values[key]);
         } else {
           formData.append(key, values[key]);
         }
       }
-  
-      let response;
+
       let endpoint;
       let method;
-  
-      // Determine endpoint and method based on modal type
+
       switch (modalType) {
         case 'category':
           endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
@@ -138,232 +116,170 @@ const MenuPage = ({ handleOwnerLogout }) => {
         default:
           throw new Error('Invalid modal type');
       }
-  
-      // Check if this is an update or a create
+
       if (values.id) {
-        // This is an update operation
-        endpoint += `${values.id}/`; // Append the id for update
-        method = 'put'; // Use PATCH for update
+        endpoint += `${values.id}/`;
+        method = 'put';
       } else {
-        // This is a create operation
-        method = 'post'; // Use POST for create
+        method = 'post';
       }
-  
-      // Perform the request
-      response = await axios[method](endpoint, formData, config);
+
+      const response = await axios[method](endpoint, formData, config);
       
       if (response.status === 200 || response.status === 201) {
-        message.success(`${values.id ? 'Update' : 'Create'} successful`);
+        alert(`${values.id ? 'Update' : 'Create'} successful`);
         setIsModalVisible(false);
-        form.resetFields();
-        fetchData(); // Refresh data after successful operation
+        setForm({});
+        fetchData();
       }
-  
     } catch (error) {
       console.error('Error submitting data:', error);
-      message.error('Operation failed: ' + (error.response?.data?.error || error.message));
+      alert('Operation failed: ' + (error.response?.data?.error || error.message));
     }
   };
-  
 
   const handleDelete = async (type, id) => {
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${ownerToken}` }
-      };
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        const config = {
+          headers: { Authorization: `Bearer ${ownerToken}` }
+        };
 
-      if (type === 'category') {
-        await axios.delete(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`, config);
-      } else if (type === 'item') {
-        await axios.delete(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`, config);
-      } else if (type === 'promo') {
-        await axios.delete(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`, config);
-      }
-      message.success('Deleted successfully');
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting:', error);
-      if (error.response && error.response.status === 401) {
-        message.error('Owner authentication failed. Please log in again.');
-        handleOwnerLogout();
-      } else {
-        message.error('Delete operation failed');
+        let endpoint;
+        switch (type) {
+          case 'category':
+            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`;
+            break;
+          case 'item':
+            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
+            break;
+          case 'promo':
+            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`;
+            break;
+          default:
+            throw new Error('Invalid delete type');
+        }
+
+        await axios.delete(endpoint, config);
+        alert('Deleted successfully');
+        fetchData();
+      } catch (error) {
+        console.error('Error deleting:', error);
+        if (error.response && error.response.status === 401) {
+          alert('Owner authentication failed. Please log in again.');
+          handleOwnerLogout();
+        } else {
+          alert('Delete operation failed');
+        }
       }
     }
   };
 
-  const categoryColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        isEditMode && (
-          <>
-            <Button icon={<EditOutlined />} onClick={() => showModal('category', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('category', record.id)} danger />
-          </>
-        )
-      ),
-    },
-  ];
-
-  const itemColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Description', dataIndex: 'description', key: 'description' },
-    { title: 'Category', dataIndex: ['category', 'name'], key: 'category' },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        isEditMode && (
-          <>
-            <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('item', record.id)} danger />
-          </>
-        )
-      ),
-    },
-  ];
-
-  const promoColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Description', dataIndex: 'description', key: 'description' },
-    { title: 'Start Date', dataIndex: 'start_date', key: 'start_date' },
-    { title: 'End Date', dataIndex: 'end_date', key: 'end_date' },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        isEditMode && (
-          <>
-            <Button icon={<EditOutlined />} onClick={() => showModal('promo', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('promo', record.id)} danger />
-          </>
-        )
-      ),
-    },
-  ];
+  const renderTable = (data, columns, type) => (
+    <div className="overflow-x-auto">
+      <table className="menu-table w-full">
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th key={column.key} className="text-left p-2 bg-gray-100">{column.title}</th>
+            ))}
+            {isEditMode && <th className="text-left p-2 bg-gray-100">Actions</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.id} className="border-b">
+              {columns.map((column) => (
+                <td key={column.key} className="p-2">{column.render ? column.render(item) : item[column.dataIndex]}</td>
+              ))}
+              {isEditMode && (
+                <td className="p-2">
+                  <button className="edit-button mr-2 text-blue-500 hover:text-blue-700" onClick={() => showModal(type, item)}>
+                    <EditOutlined />
+                  </button>
+                  <button className="delete-button text-red-500 hover:text-red-700" onClick={() => handleDelete(type, item.id)}>
+                    <DeleteOutlined />
+                  </button>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div className="admin-layout">
-    <SidebarMenu
-            activeMenuItem={activeMenuItem}
-            handleMenuItemClick={handleMenuItemClick}
-            onLogout={onLogout}
-          />
-    <div>
-      
-      <h1>Menu Management</h1>
-      <Button onClick={() => setIsEditMode(!isEditMode)}>
-        {isEditMode ? 'View Mode' : 'Edit Mode'}
-      </Button>
-      <h2>Categories</h2>
-      {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('category')}>Add Category</Button>}
-      <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
-
-      <h2>Menu Items</h2>
-      {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('item')}>Add Item</Button>}
-      <Table dataSource={items} columns={itemColumns} rowKey="id" />
-
-      <h2>Promos</h2>
-      {isEditMode && <Button icon={<PlusOutlined />} onClick={() => showModal('promo')}>Add Promo</Button>}
-      <Table dataSource={promos} columns={promoColumns} rowKey="id" />
-
-      <Modal
-        title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
-        open={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
-      >
-        <Form form={form} layout="vertical">
-          {modalType === 'category' && (
-            <Form.Item name="name" label="Category Name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
+      <SidebarMenu
+        activeMenuItem={activeMenuItem}
+        handleMenuItemClick={handleMenuItemClick}
+        onLogout={onLogout}
+      />
+      <div className="main-content">
+        <h1 className="page-title text-2xl font-bold mb-4">Menu Management</h1>
+        <button 
+          className="toggle-edit-button mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" 
+          onClick={() => setIsEditMode(!isEditMode)}
+        >
+          {isEditMode ? 'View Mode' : 'Edit Mode'}
+        </button>
+        
+        <section className="menu-section mb-8">
+          <h2 className="text-xl font-semibold mb-2">Categories</h2>
+          {isEditMode && (
+            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('category')}>
+              <PlusOutlined className="mr-1" /> Add Category
+            </button>
           )}
-          {modalType === 'item' && (
-            <>
-              <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-                <Input.TextArea />
-              </Form.Item>
-              <Form.Item name="category" label="Category" rules={[{ required: true }]}>
-                <Select>
-                  {categories.map(category => (
-                    <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={(e) => {
-            if (Array.isArray(e)) {
-              return e;
-            }
-            return e && e.fileList;
-          }}>
-            <Upload 
-              beforeUpload={() => false}
-              listType="picture"
-              maxCount={1}
-            >
-              <Button icon={<UploadOutlined />}>Click to upload</Button>
-            </Upload>
-          </Form.Item>
-              <Form.List name="sizes" rules={[{ required: true, message: 'Please add at least one size' }]}>
-  {(fields, { add, remove }) => (
-    <>
-      {fields.map(({ key, name, ...restField }) => (
-        <Form.Item key={key} required={false}>
-          <Space>
-            <Form.Item
-              {...restField}
-              name={[name, 'size']}
-              rules={[{ required: true, message: 'Missing size' }]}
-            >
-              <Input placeholder="Size" />
-            </Form.Item>
-            <Form.Item
-              {...restField}
-              name={[name, 'price']}
-              rules={[{ required: true, message: 'Missing price' }]}
-            >
-              <Input placeholder="Price" />
-            </Form.Item>
-            <Button onClick={() => remove(name)} type="text" danger>Delete</Button>
-          </Space>
-        </Form.Item>
-      ))}
-      <Form.Item>
-        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-          Add Size
-        </Button>
-      </Form.Item>
-    </>
-  )}
-</Form.List>
-            </>
+          {renderTable(categories, [{ title: 'Name', dataIndex: 'name', key: 'name' }], 'category')}
+        </section>
+
+        <section className="menu-section mb-8">
+          <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
+          {isEditMode && (
+            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('item')}>
+              <PlusOutlined className="mr-1" /> Add Item
+            </button>
           )}
-          {modalType === 'promo' && (
-            <>
-              <Form.Item name="name" label="Promo Name" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-                <Input.TextArea />
-              </Form.Item>
-              <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
-                <DatePicker />
-              </Form.Item>
-              <Form.Item name="end_date" label="End Date" rules={[{ required: true }]}>
-                <DatePicker />
-              </Form.Item>
-            </>
+          {renderTable(items, [
+            { title: 'Name', dataIndex: 'name', key: 'name' },
+            { title: 'Description', dataIndex: 'description', key: 'description' },
+            { title: 'Category', dataIndex: 'category', key: 'category', render: (item) => item.category.name },
+          ], 'item')}
+        </section>
+
+        <section className="menu-section">
+          <h2 className="text-xl font-semibold mb-2">Promos</h2>
+          {isEditMode && (
+            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('promo')}>
+              <PlusOutlined className="mr-1" /> Add Promo
+            </button>
           )}
-        </Form>
-      </Modal>
-    </div>
+          {renderTable(promos, [
+            { title: 'Name', dataIndex: 'name', key: 'name' },
+            { title: 'Description', dataIndex: 'description', key: 'description' },
+            { title: 'Start Date', dataIndex: 'start_date', key: 'start_date' },
+            { title: 'End Date', dataIndex: 'end_date', key: 'end_date' },
+          ], 'promo')}
+        </section>
+
+        {isModalVisible && (
+          <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="modal-content bg-white p-6 rounded-lg w-full max-w-md">
+              <h2 className="text-xl font-semibold mb-4">{`${form.id ? 'Edit' : 'Add'} ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}</h2>
+              <form onSubmit={(e) => { e.preventDefault(); handleModalOk(); }}>
+                {/* Form fields based on modalType */}
+                {/* You'll need to implement the form fields here based on the modalType */}
+                <div className="form-actions mt-4 flex justify-end">
+                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-2">Save</button>
+                  <button type="button" onClick={handleModalCancel} className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

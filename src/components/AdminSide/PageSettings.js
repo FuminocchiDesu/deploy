@@ -6,7 +6,7 @@ import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
-import Switch from './CustomSwitch'; // Import our custom Switch component
+import Switch from './CustomSwitch';
 
 const libraries = ['places'];
 
@@ -41,7 +41,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
-    version: "weekly", // or "latest"
+    version: "weekly",
     libraries
   });
 
@@ -75,7 +75,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         setCoffeeShop(prevState => ({
           ...prevState,
           ...fetchedCoffeeShop,
-          is_under_maintenance: fetchedCoffeeShop.is_under_maintenance // Ensure this is set correctly
+          is_under_maintenance: fetchedCoffeeShop.is_under_maintenance
         }));
         setImagePreview(fetchedCoffeeShop.image);
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
@@ -162,7 +162,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
         }
       });
 
-      // Send opening hours separately
       await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`,
         coffeeShop.opening_hours,
         {
@@ -253,7 +252,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     setIsEditMode(!isEditMode);
   };
 
-  // Effect to add the marker once the map is loaded
   useEffect(() => {
     if (isLoaded && coffeeShop.latitude && coffeeShop.longitude && window.google?.maps?.marker?.AdvancedMarkerElement) {
       const map = mapRef.current?.state?.map;
@@ -262,10 +260,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
         const marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: { lat: coffeeShop.latitude, lng: coffeeShop.longitude },
           map,
-          title: coffeeShop.name, // Optional title for the marker
+          title: coffeeShop.name,
           icon: {
-            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Change marker color
-            scaledSize: new window.google.maps.Size(50, 50), // Resize the marker
+            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            scaledSize: new window.google.maps.Size(50, 50),
           },
         });
 
@@ -275,7 +273,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
       }
     }
   }, [isLoaded, coffeeShop.latitude, coffeeShop.longitude]);
-  
 
   return (
     <div className="admin-layout">
@@ -286,10 +283,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
       />
 
       <main className="main-content">
-        <header className="page-header">
-          <h1>Page Settings</h1>
-          <div className="maintenance-mode">
-              <label htmlFor="maintenance-mode">Maintenance Mode</label>
+        <header className="page-header flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Page Settings</h1>
+          <div className="flex items-center">
+            <div className="maintenance-toggle mr-4">
+              <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
               <Switch
                 id="maintenance-mode"
                 checked={coffeeShop.is_under_maintenance}
@@ -297,35 +295,37 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 disabled={isUpdatingMaintenance}
               />
             </div>
-          <button onClick={toggleEditMode} className="btn btn-primary">
-            {isEditMode ? 'Cancel Edit' : <><Edit /> Edit</>}
-          </button>
+            <button onClick={toggleEditMode} className="button primary">
+              {isEditMode ? 'Cancel Edit' : 'Edit'}
+            </button>
+          </div>
         </header>
 
-        <form onSubmit={handleShopUpdate}>
-          <div className="form-section">
-          <div className="form-group">
-  <label htmlFor="image">Coffee Shop Image</label>
-  {imagePreview ? (
-    <div className="image-preview">
-      <img src={imagePreview} alt="Coffee Shop" className="preview-image" />
-    </div>
-  ) : (
-    <p>No image uploaded</p>
-  )}
-  {isEditMode && (
-    <input
-      type="file"
-      name="image"
-      id="image"
-      accept="image/*"
-      onChange={handleInputChange}
-      className="form-input"
-    />
-  )}
-</div>
+        <form onSubmit={handleShopUpdate} className="settings-form">
+          <div className="settings-section">
+            <h2>Coffee Shop Image</h2>
+            {imagePreview ? (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Coffee Shop" />
+              </div>
+            ) : (
+              <p>No image uploaded</p>
+            )}
+            {isEditMode && (
+              <input
+                type="file"
+                name="image"
+                id="image"
+                accept="image/*"
+                onChange={handleInputChange}
+                className="form-input mt-1 block w-full"
+              />
+            )}
+          </div>
 
-            <div className="form-group">
+          <div className="settings-section">
+            <h2>Basic Information</h2>
+            <div className="mb-4">
               <label htmlFor="name">Name</label>
               <input
                 type="text"
@@ -333,13 +333,13 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 id="name"
                 value={coffeeShop.name}
                 onChange={handleInputChange}
-                className="form-input"
                 disabled={!isEditMode}
+                className="form-input"
                 required
               />
             </div>
 
-            <div className="form-group">
+            <div className="mb-4">
               <label htmlFor="address">Address</label>
               {isEditMode ? (
                 <PlacesAutocomplete
@@ -354,20 +354,17 @@ const PageSettings = ({ handleOwnerLogout }) => {
                           placeholder: 'Search address...',
                           className: 'form-input',
                         })}
-                        required
                       />
-                      <div className="autocomplete-dropdown">
-                        {suggestions.map((suggestion) => {
-                          const className = suggestion.active ? 'suggestion-item active' : 'suggestion-item';
-                          return (
-                            <div
-                              {...getSuggestionItemProps(suggestion, { className })}
-                              key={suggestion.placeId}
-                            >
-                              {suggestion.description}
-                            </div>
-                          );
-                        })}
+                      <div className="autocomplete-dropdown-container">
+                        {suggestions.map(suggestion => (
+                          <div
+                            {...getSuggestionItemProps(suggestion)}
+                            key={suggestion.placeId}
+                            className="suggestion-item"
+                          >
+                            {suggestion.description}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -378,108 +375,95 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   name="address"
                   id="address"
                   value={coffeeShop.address}
-                  onChange={handleInputChange}
                   className="form-input"
                   disabled
-                  required
                 />
               )}
             </div>
 
-            <div className="form-group">
+            <div className="mb-4">
               <label htmlFor="description">Description</label>
               <textarea
                 name="description"
                 id="description"
                 value={coffeeShop.description}
                 onChange={handleInputChange}
-                className="form-input"
+                className="form-textarea"
                 rows="4"
                 disabled={!isEditMode}
-                required
-              />
+              ></textarea>
             </div>
-              
-            <div className="form-group opening-hours-group">
-        <label>Opening Hours</label>
-        <button
-          type="button"
-          className="btn-toggle-opening-hours"
-          onClick={toggleOpeningHours}
-        >
-          {isOpeningHoursExpanded ? (
-            <>
-              Hide Hours <ChevronUp />
-            </>
-          ) : (
-            <>
-              Show Hours <ChevronDown />
-            </>
-          )}
-        </button>
-
-        {isOpeningHoursExpanded && (
-          <table className="opening-hours-table">
-            <thead>
-              <tr>
-                <th>Day</th>
-                <th>Opening Time</th>
-                <th>Closing Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coffeeShop.opening_hours.map((dayHours) => (
-                <tr key={dayHours.day}>
-                  <td>{dayHours.day}</td>
-                  <td>
-                    <input
-                      type="time"
-                      value={dayHours.opening_time}
-                      onChange={(e) =>
-                        handleOpeningHoursChange(dayHours.day, 'opening_time', e.target.value)
-                      }
-                      className="form-input"
-                      disabled={!isEditMode}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="time"
-                      value={dayHours.closing_time}
-                      onChange={(e) =>
-                        handleOpeningHoursChange(dayHours.day, 'closing_time', e.target.value)
-                      }
-                      className="form-input"
-                      disabled={!isEditMode}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
           </div>
 
-          <button type="submit" className="btn btn-success" disabled={!isEditMode}>
-            Save Changes
-          </button>
-        </form>
-
-        <div className="map-container">
-          <h2 className="card-title">Map</h2>
-          {isLoaded ? (
-            <GoogleMap
-              mapContainerStyle={{ height: '400px', width: '100%' }}
-              center={mapCenter}
-              zoom={20}
-              onClick={handleMapClick}
-              ref={mapRef}
-            />
-          ) : (
-            <div>Loading map...</div>
+          {isLoaded && (
+            <div className="settings-section">
+              <h2>Location on Map</h2>
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '400px' }}
+                center={mapCenter}
+                zoom={15}
+                onClick={handleMapClick}
+                onLoad={map => {
+                  mapRef.current = map;
+                }}
+              >
+                {coffeeShop.latitude && coffeeShop.longitude && (
+                  <marker
+                    position={{ lat: parseFloat(coffeeShop.latitude), lng: parseFloat(coffeeShop.longitude) }}
+                  />
+                )}
+              </GoogleMap>
+            </div>
           )}
-        </div>
+
+          <div className="settings-section">
+            <div className="flex justify-between items-center mb-2">
+              <h2>Opening Hours</h2>
+              <button
+                type="button"
+                onClick={toggleOpeningHours}
+                className="text-primary hover:text-primary-light"
+              >
+                {isOpeningHoursExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+            {isOpeningHoursExpanded && (
+              <div className="space-y-2">
+                {coffeeShop.opening_hours.map((oh, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <span className="w-24">{oh.day}</span>
+                    <input
+                      type="time"
+                      value={oh.opening_time}
+                      onChange={(e) => handleOpeningHoursChange(oh.day, 'opening_time', e.target.value)}
+                      className="form-input"
+                      disabled={!isEditMode}
+                    />
+                    <span>to</span>
+                    <input
+                      type="time"
+                      value={oh.closing_time}
+                      onChange={(e) => handleOpeningHoursChange(oh.day, 'closing_time', e.target.value)}
+                      className="form-input"
+                      disabled={!isEditMode}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+
+          {isEditMode && (
+            <div className="flex justify-end">
+              <button type="submit" className="button primary">
+                Save Changes
+              </button>
+            </div>
+          )}
+        </form>
       </main>
     </div>
   );
