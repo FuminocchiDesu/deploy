@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
@@ -41,11 +41,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
-    version: "weekly",
     libraries
   });
 
   const mapRef = useRef(null);
+  const markerRef = useRef(null);
 
   useEffect(() => {
     fetchCoffeeShop();
@@ -225,19 +225,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     }
   };
 
-  const handleMapClick = (event) => {
-    if (isEditMode) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setCoffeeShop(prev => ({
-        ...prev,
-        latitude: lat,
-        longitude: lng
-      }));
-      setMapCenter({ lat, lng });
-    }
-  };
-
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
     navigate(item.path);
@@ -253,26 +240,60 @@ const PageSettings = ({ handleOwnerLogout }) => {
   };
 
   useEffect(() => {
-    if (isLoaded && coffeeShop.latitude && coffeeShop.longitude && window.google?.maps?.marker?.AdvancedMarkerElement) {
-      const map = mapRef.current?.state?.map;
-
-      if (map) {
-        const marker = new window.google.maps.marker.AdvancedMarkerElement({
-          position: { lat: coffeeShop.latitude, lng: coffeeShop.longitude },
-          map,
-          title: coffeeShop.name,
-          icon: {
-            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-            scaledSize: new window.google.maps.Size(50, 50),
-          },
+    if (isLoaded && coffeeShop.latitude && coffeeShop.longitude && mapRef.current) {
+      const position = { lat: parseFloat(coffeeShop.latitude), lng: parseFloat(coffeeShop.longitude) };
+      mapRef.current.panTo(position);
+      
+      if (markerRef.current) {
+        markerRef.current.setPosition(position);
+      } else {
+        markerRef.current = new window.google.maps.Marker({
+          map: mapRef.current,
+          position: position,
+          title: coffeeShop.name
         });
-
-        return () => {
-          marker.setMap(null);
-        };
       }
     }
-  }, [isLoaded, coffeeShop.latitude, coffeeShop.longitude]);
+  }, [isLoaded, coffeeShop.latitude, coffeeShop.longitude, coffeeShop.name]);
+
+  const onMapLoad = (map) => {
+    mapRef.current = map;
+    console.log('Map loaded:', map);
+  };
+
+  const handleMapClick = (event) => {
+    if (isEditMode && window.google) {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      setCoffeeShop(prev => ({
+        ...prev,
+        latitude: lat,
+        longitude: lng
+      }));
+      setMapCenter({ lat, lng });
+  
+      const { AdvancedMarkerElement, PinElement } = window.google.maps.marker;
+  
+      if (AdvancedMarkerElement && PinElement) {
+        if (markerRef.current) {
+          markerRef.current.position = { lat, lng };
+        } else {
+          const pinElement = new PinElement({
+            background: "#FBBC04",
+            glyph: "☕"
+          });
+          
+          markerRef.current = new AdvancedMarkerElement({
+            map: mapRef.current,
+            position: { lat, lng },
+            title: coffeeShop.name,
+            content: pinElement.element
+          });
+        }
+        console.log('Marker position updated:', { lat, lng });
+      }
+    }
+  };
 
   return (
     <div className="admin-layout">
@@ -399,20 +420,13 @@ const PageSettings = ({ handleOwnerLogout }) => {
             <div className="settings-section">
               <h2>Location on Map</h2>
               <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '400px' }}
-                center={mapCenter}
-                zoom={15}
-                onClick={handleMapClick}
-                onLoad={map => {
-                  mapRef.current = map;
-                }}
-              >
-                {coffeeShop.latitude && coffeeShop.longitude && (
-                  <marker
-                    position={{ lat: parseFloat(coffeeShop.latitude), lng: parseFloat(coffeeShop.longitude) }}
-                  />
-                )}
-              </GoogleMap>
+            mapContainerStyle={{ width: '100%', height: '400px' }}
+            center={mapCenter}
+            zoom={15}
+            onClick={handleMapClick}
+            onLoad={onMapLoad}
+          />
+          <p>Latitude: {coffeeShop.latitude}, Longitude: {coffeeShop.longitude}</p>
             </div>
           )}
 

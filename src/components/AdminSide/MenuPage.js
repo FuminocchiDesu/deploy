@@ -40,7 +40,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
         axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`, config),
         axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config)
       ]);
-
       setCategories(categoriesResponse.data);
       setItems(itemsResponse.data);
       setPromos(promosResponse.data);
@@ -245,7 +244,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
           {renderTable(items, [
             { title: 'Name', dataIndex: 'name', key: 'name' },
             { title: 'Description', dataIndex: 'description', key: 'description' },
-            { title: 'Category', dataIndex: 'category', key: 'category', render: (item) => item.category.name },
+            { 
+              title: 'Category', 
+              dataIndex: 'category', 
+              key: 'category', 
+              render: (item) => {
+                const category = categories.find(cat => cat.id === item.category);
+                return category ? category.name : 'Unknown Category';
+              }
+            },
           ], 'item')}
         </section>
 
