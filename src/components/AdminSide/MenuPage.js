@@ -233,7 +233,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       />
       <div className="main-content">
         <h1 className="page-title text-2xl font-bold mb-4">Menu Management</h1>
-        <button 
+        Current Mode: <button 
           className="toggle-edit-button mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" 
           onClick={() => setIsEditMode(!isEditMode)}
         >
