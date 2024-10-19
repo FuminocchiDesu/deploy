@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space } from 'antd';
 import SidebarMenu from './SideBarMenu';
-import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
@@ -17,6 +17,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [modalType, setModalType] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Menu');
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken');
@@ -25,7 +26,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     if (coffeeShopId && ownerToken) {
       fetchData();
     } else {
-      console.error('Coffee shop ID or owner token not found');
+      message.error('Coffee shop ID or owner token not found');
       handleOwnerLogout();
     }
   }, [coffeeShopId, ownerToken]);
@@ -47,10 +48,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
     } catch (error) {
       console.error('Error fetching data:', error);
       if (error.response && error.response.status === 401) {
-        alert('Owner authentication failed. Please log in again.');
+        message.error('Owner authentication failed. Please log in again.');
         handleOwnerLogout();
       } else {
-        alert('Failed to fetch menu data');
+        message.error('Failed to fetch menu data');
       }
     }
   };
@@ -69,15 +70,38 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setModalType(type);
     setSelectedItem(record);
     setIsModalVisible(true);
+    if (record) {
+      form.setFieldsValue({
+        ...record,
+        image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
+      });
+    } else {
+      form.resetFields();
+    }
   };
 
   const handleModalClose = () => {
     setIsModalVisible(false);
     setSelectedItem(null);
+    form.resetFields();
   };
 
-  const handleFormSubmit = async (values) => {
+  const handleFormSubmit = async () => {
     try {
+      const values = await form.validateFields();
+      const formData = new FormData();
+      for (let key in values) {
+        if (key === 'sizes') {
+          formData.append(key, JSON.stringify(values[key]));
+        } else if (key === 'image') {
+          if (values[key] && values[key][0] && values[key][0].originFileObj) {
+            formData.append(key, values[key][0].originFileObj);
+          }
+        } else {
+          formData.append(key, values[key]);
+        }
+      }
+
       const config = {
         headers: { 
           Authorization: `Bearer ${ownerToken}`,
@@ -85,29 +109,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
         }
       };
 
-      let formData = new FormData();
-      for (let key in values) {
-        if (key === 'sizes') {
-          formData.append(key, JSON.stringify(values[key]));
-        } else if (key === 'image' && values[key] && values[key][0] && values[key][0].originFileObj) {
-          formData.append(key, values[key][0].originFileObj);
-        } else {
-          formData.append(key, values[key]);
-        }
-      }
-
-      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
+      let endpoint;
       let method;
 
       switch (modalType) {
         case 'category':
-          endpoint += 'menu-categories/';
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
           break;
         case 'item':
-          endpoint += 'menu-items/';
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
           break;
         case 'promo':
-          endpoint += 'promos/';
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
           break;
         default:
           throw new Error('Invalid modal type');
@@ -123,13 +136,13 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const response = await axios[method](endpoint, formData, config);
       
       if (response.status === 200 || response.status === 201) {
-        alert(`${selectedItem ? 'Update' : 'Create'} successful`);
+        message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
         handleModalClose();
         fetchData();
       }
     } catch (error) {
-      console.error('Error submitting data:', error);
-      alert('Operation failed: ' + (error.response?.data?.error || error.message));
+      console.error('Error submitting form:', error);
+      message.error('Operation failed: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -156,15 +169,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
         }
 
         await axios.delete(endpoint, config);
-        alert('Deleted successfully');
+        message.success('Deleted successfully');
         fetchData();
       } catch (error) {
         console.error('Error deleting:', error);
         if (error.response && error.response.status === 401) {
-          alert('Owner authentication failed. Please log in again.');
+          message.error('Owner authentication failed. Please log in again.');
           handleOwnerLogout();
         } else {
-          alert('Delete operation failed');
+          message.error('Delete operation failed');
         }
       }
     }
@@ -188,59 +201,28 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setItems(prevItems => prevItems.map(item => 
         item.id === id ? { ...item, is_available: !currentAvailability } : item
       ));
+      message.success('Item availability updated successfully');
     } catch (error) {
       console.error('Error toggling availability:', error);
-      alert('Failed to update item availability');
+      message.error('Failed to update item availability');
     }
   };
 
-  const renderTable = (data, columns, type) => (
-    <div className="overflow-x-auto">
-      <table className="menu-table w-full">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key} className="text-left p-2 bg-gray-100">{column.title}</th>
-            ))}
-            {isEditMode && <th className="text-left p-2 bg-gray-100">Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr key={item.id} className="border-b">
-              {columns.map((column) => (
-                <td key={column.key} className="p-2">
-                  {column.render ? column.render(item[column.dataIndex]) : item[column.dataIndex]}
-                </td>
-              ))}
-              {isEditMode && (
-                <td className="p-2">
-                  <button className="edit-button mr-2 text-blue-500 hover:text-blue-700" onClick={() => showModal(type, item)}>
-                    <EditOutlined />
-                  </button>
-                  <button className="delete-button text-red-500 hover:text-red-700" onClick={() => handleDelete(type, item.id)}>
-                    <DeleteOutlined />
-                  </button>
-                  {type === 'item' && (
-                    <button
-                      className={`ml-2 px-2 py-1 rounded ${
-                        !item.is_available 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-red-500 text-white'
-                      }`}
-                      onClick={() => handleAvailabilityToggle(item.id, item.is_available)}
-                    >
-                      {!item.is_available ? 'Unavailable' : 'Available'}
-                    </button>
-                  )}
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+  const categoryColumns = [
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        isEditMode && (
+          <Space>
+            <Button icon={<EditOutlined />} onClick={() => showModal('category', record)} />
+            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('category', record.id)} danger />
+          </Space>
+        )
+      ),
+    },
+  ];
 
   const itemColumns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -248,25 +230,55 @@ const MenuPage = ({ handleOwnerLogout }) => {
     { 
       title: 'Category', 
       dataIndex: 'category', 
-      key: 'category', 
-      render: (category) => {
-        const categoryObj = categories.find(cat => cat.id === category);
-        return categoryObj ? categoryObj.name : 'Unknown Category';
+      key: 'category',
+      render: (categoryId) => {
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.name : 'Unknown Category';
       }
     },
     { 
       title: 'Availability', 
       dataIndex: 'is_available', 
       key: 'is_available',
-      render: (isAvailable) => (        
-        <span className={`px-2 py-1 rounded ${
-          isAvailable 
-            ? 'bg-green-500 text-green' 
-            : 'bg-red-500 text-red'
-        }`}>
+      render: (isAvailable, record) => (
+        <Button
+          type={isAvailable ? 'primary' : 'danger'}
+          onClick={() => handleAvailabilityToggle(record.id, isAvailable)}
+        >
           {isAvailable ? 'Available' : 'Unavailable'}
-        </span>
+        </Button>
       )
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        isEditMode && (
+          <Space>
+            <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
+            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('item', record.id)} danger />
+          </Space>
+        )
+      ),
+    },
+  ];
+
+  const promoColumns = [
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: 'Description', dataIndex: 'description', key: 'description' },
+    { title: 'Start Date', dataIndex: 'start_date', key: 'start_date' },
+    { title: 'End Date', dataIndex: 'end_date', key: 'end_date' },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        isEditMode && (
+          <Space>
+            <Button icon={<EditOutlined />} onClick={() => showModal('promo', record)} />
+            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('promo', record.id)} danger />
+          </Space>
+        )
+      ),
     },
   ];
 
@@ -278,64 +290,136 @@ const MenuPage = ({ handleOwnerLogout }) => {
         onLogout={onLogout}
       />
       <div className="main-content">
-        <h1 className="page-title text-2xl font-bold mb-4">Menu Management</h1>
-        Current Mode: <button 
-          className="toggle-edit-button mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" 
+        <h1 className="page-title">Menu Management</h1>
+        <Button 
+          type={isEditMode ? "primary" : "default"}
           onClick={() => setIsEditMode(!isEditMode)}
+          className="mb-4"
         >
           {isEditMode ? 'View Mode' : 'Edit Mode'}
-        </button>
+        </Button>
         
         <section className="menu-section mb-8">
           <h2 className="text-xl font-semibold mb-2">Categories</h2>
           {isEditMode && (
-            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('category')}>
-              <PlusOutlined className="mr-1" /> Add Category
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
+              Add Category
+            </Button>
           )}
-          {renderTable(categories, [{ title: 'Name', dataIndex: 'name', key: 'name' }], 'category')}
+          <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
         </section>
 
         <section className="menu-section mb-8">
           <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
           {isEditMode && (
-            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('item')}>
-              <PlusOutlined className="mr-1" /> Add Item
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('item')} className="mb-2">
+              Add Item
+            </Button>
           )}
-          {renderTable(items, itemColumns, 'item')}
+          <Table dataSource={items} columns={itemColumns} rowKey="id" />
         </section>
 
         <section className="menu-section">
           <h2 className="text-xl font-semibold mb-2">Promos</h2>
           {isEditMode && (
-            <button className="add-button mb-2 text-blue-500 hover:text-blue-700 flex items-center" onClick={() => showModal('promo')}>
-              <PlusOutlined className="mr-1" /> Add Promo
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('promo')} className="mb-2">
+              Add Promo
+            </Button>
           )}
-          {renderTable(promos, [
-            { title: 'Name', dataIndex: 'name', key: 'name' },
-            { title: 'Description', dataIndex: 'description', key: 'description' },
-            { title: 'Start Date', dataIndex: 'start_date', key: 'start_date' },
-            { title: 'End Date', dataIndex: 'end_date', key: 'end_date' },
-          ], 'promo')}
+          <Table dataSource={promos} columns={promoColumns} rowKey="id" />
         </section>
 
-        {isModalVisible && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <MenuManagementForms
-                onSubmit={handleFormSubmit}
-                initialData={selectedItem}
-                formType={modalType}
-                categories={categories}
-              />
-              <button onClick={handleModalClose} className="mt-4 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+        <Modal
+          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
+          visible={isModalVisible}
+          onOk={handleFormSubmit}
+          onCancel={handleModalClose}
+        >
+          <Form form={form} layout="vertical">
+            {modalType === 'category' && (
+              <Form.Item name="name" label="Category Name" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+            )}
+            {modalType === 'item' && (
+              <>
+                <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="category" label="Category" rules={[{ required: true }]}>
+                  <Select>
+                    {categories.map(category => (
+                      <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={(e) => {
+                  if (Array.isArray(e)) {
+                    return e;
+                  }
+                  return e && e.fileList;
+                }}>
+                  <Upload 
+                    beforeUpload={() => false}
+                    listType="picture"
+                    maxCount={1}
+                  >
+                    <Button icon={<UploadOutlined />}>Click to upload</Button>
+                  </Upload>
+                </Form.Item>
+                <Form.List name="sizes" rules={[{ required: true, message: 'Please add at least one size' }]}>
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map(({ key, name, ...restField }) => (
+                        <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'size']}
+                            rules={[{ required: true, message: 'Missing size' }]}
+                          >
+                            <Input placeholder="Size" />
+                          </Form.Item>
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'price']}
+                            rules={[{ required: true, message: 'Missing price' }]}
+                          >
+                            <Input placeholder="Price" />
+                          </Form.Item>
+                          <Button onClick={() => remove(name)} type="text" danger icon={<DeleteOutlined />} />
+                        </Space>
+                      ))}
+                      <Form.Item>
+                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                          Add Size
+                        </Button>
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List>
+              </>
+            )}
+            {modalType === 'promo' && (
+              <>
+                <Form.Item name="name" label="Promo Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
+                  <DatePicker />
+                </Form.Item>
+                <Form.Item name="end_date" label="End Date" rules={[{ required: true }]}>
+                  <DatePicker />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
       </div>
     </div>
   );
