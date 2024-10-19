@@ -76,13 +76,60 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setSelectedItem(null);
   };
 
-  const handleFormSubmit = async (formData, error) => {
-    if (error) {
-      alert('Error: ' + error);
-    } else {
-      alert('Operation successful');
-      handleModalClose();
-      fetchData();
+  const handleFormSubmit = async (values) => {
+    try {
+      const config = {
+        headers: { 
+          Authorization: `Bearer ${ownerToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      };
+
+      let formData = new FormData();
+      for (let key in values) {
+        if (key === 'sizes') {
+          formData.append(key, JSON.stringify(values[key]));
+        } else if (key === 'image' && values[key] && values[key][0] && values[key][0].originFileObj) {
+          formData.append(key, values[key][0].originFileObj);
+        } else {
+          formData.append(key, values[key]);
+        }
+      }
+
+      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
+      let method;
+
+      switch (modalType) {
+        case 'category':
+          endpoint += 'menu-categories/';
+          break;
+        case 'item':
+          endpoint += 'menu-items/';
+          break;
+        case 'promo':
+          endpoint += 'promos/';
+          break;
+        default:
+          throw new Error('Invalid modal type');
+      }
+
+      if (selectedItem && selectedItem.id) {
+        endpoint += `${selectedItem.id}/`;
+        method = 'put';
+      } else {
+        method = 'post';
+      }
+
+      const response = await axios[method](endpoint, formData, config);
+      
+      if (response.status === 200 || response.status === 201) {
+        alert(`${selectedItem ? 'Update' : 'Create'} successful`);
+        handleModalClose();
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error submitting data:', error);
+      alert('Operation failed: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -138,7 +185,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
       await axios.patch(endpoint, formData, config);
       fetchData();
-      // Update the local state immediately
       setItems(prevItems => prevItems.map(item => 
         item.id === id ? { ...item, is_available: !currentAvailability } : item
       ));
@@ -276,20 +322,20 @@ const MenuPage = ({ handleOwnerLogout }) => {
         </section>
 
         {isModalVisible && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <MenuManagementForms
-        onSubmit={handleFormSubmit}
-        initialData={selectedItem}
-        formType={modalType}
-        categories={categories}
-      />
-      <button onClick={handleModalClose} className="mt-4 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
-        Close
-      </button>
-    </div>
-  </div>
-)}
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <MenuManagementForms
+                onSubmit={handleFormSubmit}
+                initialData={selectedItem}
+                formType={modalType}
+                categories={categories}
+              />
+              <button onClick={handleModalClose} className="mt-4 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
