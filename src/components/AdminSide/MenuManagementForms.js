@@ -19,8 +19,8 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
   }, [initialData]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleSizeChange = (index, field, value) => {
@@ -54,14 +54,11 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
     let method;
     let data = new FormData();
 
-    // Add coffee_shop field for all form types
     data.append('coffee_shop', shopId);
 
     if (formType === 'category') {
-      // For categories, we need to send the name and coffee_shop
       data.append('name', formData.name);
     } else {
-      // For other types, append all form data except 'image' and 'sizes'
       for (let key in formData) {
         if (key !== 'image' && key !== 'sizes') {
           data.append(key, formData[key]);
@@ -85,7 +82,6 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
       method = 'POST';
     }
 
-    // Log the data being sent
     console.log('Submitting data:', Object.fromEntries(data));
 
     try {
@@ -233,6 +229,19 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
           <button type="button" onClick={addSize} className="mt-2 text-blue-500">
             + Add Size
           </button>
+        </div>
+        <div>
+          <label htmlFor="is_available" className="flex items-center">
+            <input
+              type="checkbox"
+              id="is_available"
+              name="is_available"
+              checked={formData.is_available || false}
+              onChange={handleInputChange}
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 mr-2"
+            />
+            <span className="text-sm font-medium text-gray-700">Available</span>
+          </label>
         </div>
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" disabled={loading}>
           {loading ? 'Submitting...' : (initialData ? 'Update' : 'Add') + ' Item'}

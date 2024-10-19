@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import SidebarMenu from './SideBarMenu';
+import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
@@ -14,7 +15,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
-  const [form, setForm] = useState({});
+  const [selectedItem, setSelectedItem] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Menu');
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
@@ -66,74 +67,22 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
   const showModal = (type, record = null) => {
     setModalType(type);
+    setSelectedItem(record);
     setIsModalVisible(true);
-    setForm(record || {});
   };
 
-  const handleModalOk = () => {
-    handleSubmit(form);
-  };
-
-  const handleModalCancel = () => {
+  const handleModalClose = () => {
     setIsModalVisible(false);
-    setForm({});
+    setSelectedItem(null);
   };
 
-  const handleSubmit = async (values) => {
-    try {
-      const config = {
-        headers: { 
-          Authorization: `Bearer ${ownerToken}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      };
-
-      let formData = new FormData();
-      for (let key in values) {
-        if (key === 'sizes') {
-          formData.append(key, JSON.stringify(values[key]));
-        } else if (key === 'image' && values[key] instanceof File) {
-          formData.append(key, values[key]);
-        } else {
-          formData.append(key, values[key]);
-        }
-      }
-
-      let endpoint;
-      let method;
-
-      switch (modalType) {
-        case 'category':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
-          break;
-        case 'item':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
-          break;
-        case 'promo':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
-          break;
-        default:
-          throw new Error('Invalid modal type');
-      }
-
-      if (values.id) {
-        endpoint += `${values.id}/`;
-        method = 'put';
-      } else {
-        method = 'post';
-      }
-
-      const response = await axios[method](endpoint, formData, config);
-      
-      if (response.status === 200 || response.status === 201) {
-        alert(`${values.id ? 'Update' : 'Create'} successful`);
-        setIsModalVisible(false);
-        setForm({});
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error submitting data:', error);
-      alert('Operation failed: ' + (error.response?.data?.error || error.message));
+  const handleFormSubmit = async (formData, error) => {
+    if (error) {
+      alert('Error: ' + error);
+    } else {
+      alert('Operation successful');
+      handleModalClose();
+      fetchData();
     }
   };
 
@@ -174,6 +123,31 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
+  const handleAvailabilityToggle = async (id, currentAvailability) => {
+    try {
+      const formData = new FormData();
+      formData.append('is_available', !currentAvailability);
+  
+      const config = {
+        headers: { 
+          'Authorization': `Bearer ${ownerToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      };
+  
+      const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
+      await axios.patch(endpoint, formData, config);
+      fetchData();
+      // Update the local state immediately
+      setItems(prevItems => prevItems.map(item => 
+        item.id === id ? { ...item, is_available: !currentAvailability } : item
+      ));
+    } catch (error) {
+      console.error('Error toggling availability:', error);
+      alert('Failed to update item availability');
+    }
+  };
+
   const renderTable = (data, columns, type) => (
     <div className="overflow-x-auto">
       <table className="menu-table w-full">
@@ -189,7 +163,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
           {data.map((item) => (
             <tr key={item.id} className="border-b">
               {columns.map((column) => (
-                <td key={column.key} className="p-2">{column.render ? column.render(item) : item[column.dataIndex]}</td>
+                <td key={column.key} className="p-2">
+                  {column.render ? column.render(item[column.dataIndex]) : item[column.dataIndex]}
+                </td>
               ))}
               {isEditMode && (
                 <td className="p-2">
@@ -199,6 +175,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
                   <button className="delete-button text-red-500 hover:text-red-700" onClick={() => handleDelete(type, item.id)}>
                     <DeleteOutlined />
                   </button>
+                  {type === 'item' && (
+                    <button
+                      className={`ml-2 px-2 py-1 rounded ${
+                        !item.is_available 
+                          ? 'bg-green-500 text-white' 
+                          : 'bg-red-500 text-white'
+                      }`}
+                      onClick={() => handleAvailabilityToggle(item.id, item.is_available)}
+                    >
+                      {!item.is_available ? 'Unavailable' : 'Available'}
+                    </button>
+                  )}
                 </td>
               )}
             </tr>
@@ -207,6 +195,34 @@ const MenuPage = ({ handleOwnerLogout }) => {
       </table>
     </div>
   );
+
+  const itemColumns = [
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: 'Description', dataIndex: 'description', key: 'description' },
+    { 
+      title: 'Category', 
+      dataIndex: 'category', 
+      key: 'category', 
+      render: (category) => {
+        const categoryObj = categories.find(cat => cat.id === category);
+        return categoryObj ? categoryObj.name : 'Unknown Category';
+      }
+    },
+    { 
+      title: 'Availability', 
+      dataIndex: 'is_available', 
+      key: 'is_available',
+      render: (isAvailable) => (        
+        <span className={`px-2 py-1 rounded ${
+          isAvailable 
+            ? 'bg-green-500 text-green' 
+            : 'bg-red-500 text-red'
+        }`}>
+          {isAvailable ? 'Available' : 'Unavailable'}
+        </span>
+      )
+    },
+  ];
 
   return (
     <div className="admin-layout">
@@ -241,19 +257,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
               <PlusOutlined className="mr-1" /> Add Item
             </button>
           )}
-          {renderTable(items, [
-            { title: 'Name', dataIndex: 'name', key: 'name' },
-            { title: 'Description', dataIndex: 'description', key: 'description' },
-            { 
-              title: 'Category', 
-              dataIndex: 'category', 
-              key: 'category', 
-              render: (item) => {
-                const category = categories.find(cat => cat.id === item.category);
-                return category ? category.name : 'Unknown Category';
-              }
-            },
-          ], 'item')}
+          {renderTable(items, itemColumns, 'item')}
         </section>
 
         <section className="menu-section">
@@ -272,20 +276,20 @@ const MenuPage = ({ handleOwnerLogout }) => {
         </section>
 
         {isModalVisible && (
-          <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="modal-content bg-white p-6 rounded-lg w-full max-w-md">
-              <h2 className="text-xl font-semibold mb-4">{`${form.id ? 'Edit' : 'Add'} ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}</h2>
-              <form onSubmit={(e) => { e.preventDefault(); handleModalOk(); }}>
-                {/* Form fields based on modalType */}
-                {/* You'll need to implement the form fields here based on the modalType */}
-                <div className="form-actions mt-4 flex justify-end">
-                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-2">Save</button>
-                  <button type="button" onClick={handleModalCancel} className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <MenuManagementForms
+        onSubmit={handleFormSubmit}
+        initialData={selectedItem}
+        formType={modalType}
+        categories={categories}
+      />
+      <button onClick={handleModalClose} className="mt-4 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+        Close
+      </button>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
