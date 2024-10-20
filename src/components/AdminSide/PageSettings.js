@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User, Upload, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { GoogleMap, useJsApiLoader} from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
@@ -265,32 +265,53 @@ const PageSettings = ({ handleOwnerLogout }) => {
     if (isEditMode && window.google) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
-      setCoffeeShop(prev => ({
+      
+      // Update coffee shop latitude and longitude
+      setCoffeeShop((prev) => ({
         ...prev,
         latitude: lat,
-        longitude: lng
+        longitude: lng,
       }));
+      
+      // Update map center
       setMapCenter({ lat, lng });
+      
+      // Move or create a marker on the map
+      if (markerRef.current) {
+        // Update existing marker position
+        markerRef.current.setPosition({ lat, lng });
+      } else {
+        // Create a new marker or advanced marker with PinElement
+        createMarker(lat, lng);
+      }
+    }
+  };
   
+  // Separate function to handle marker creation
+  const createMarker = (lat, lng) => {
+    if (window.google) {
       const { AdvancedMarkerElement, PinElement } = window.google.maps.marker;
-  
+      
       if (AdvancedMarkerElement && PinElement) {
-        if (markerRef.current) {
-          markerRef.current.position = { lat, lng };
-        } else {
-          const pinElement = new PinElement({
-            background: "#FBBC04",
-            glyph: "☕"
-          });
-          
-          markerRef.current = new AdvancedMarkerElement({
-            map: mapRef.current,
-            position: { lat, lng },
-            title: coffeeShop.name,
-            content: pinElement.element
-          });
-        }
-        console.log('Marker position updated:', { lat, lng });
+        // Customize marker pin (e.g., with coffee shop's name first letter and color)
+        const pin = new PinElement({
+          glyph: coffeeShop.name.charAt(0).toUpperCase(),
+          background: 'green', // Example color customization
+        });
+        
+        // Create advanced marker with the customized pin
+        markerRef.current = new AdvancedMarkerElement({
+          map: mapRef.current,
+          position: { lat, lng },
+          content: pin,
+        });
+      } else {
+        // Fallback to regular marker if AdvancedMarkerElement isn't available
+        markerRef.current = new window.google.maps.Marker({
+          map: mapRef.current,
+          position: { lat, lng },
+          title: coffeeShop.name,
+        });
       }
     }
   };

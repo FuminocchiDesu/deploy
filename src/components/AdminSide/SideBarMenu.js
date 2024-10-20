@@ -1,6 +1,5 @@
 // SidebarMenu.js
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
 
 const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
