@@ -7,6 +7,7 @@ import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-au
 import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
 import Switch from './CustomSwitch';
+import OpeningHoursTable from './OpeningHoursTable';
 
 const libraries = ['places'];
 
@@ -17,16 +18,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
     address: '',
     latitude: null,
     longitude: null,
-    opening_hours: Array(7).fill({ opening_time: '', closing_time: '' }).map((_, index) => ({
-      day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
-      opening_time: '',
-      closing_time: ''
-    })),
+    
     description: '',
     image: null,
     is_under_maintenance: false
   });
-  const [isOpeningHoursExpanded, setIsOpeningHoursExpanded] = useState(false);
+  
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
@@ -35,6 +32,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const navigate = useNavigate();
   const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
+  const [openingHours, setOpeningHours] = useState([]);
 
   const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
 
@@ -51,19 +49,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
     fetchCoffeeShop();
   }, []);
 
-  const toggleOpeningHours = () => {
-    setIsOpeningHoursExpanded(!isOpeningHoursExpanded);
-  };
+  
 
-  const dayFullNames = {
-    'mon': 'Monday',
-    'tue': 'Tuesday',
-    'wed': 'Wednesday',
-    'thu': 'Thursday',
-    'fri': 'Friday',
-    'sat': 'Saturday',
-    'sun': 'Sunday'
-  };
+  
 
   const fetchCoffeeShop = async () => {
     try {
@@ -81,7 +69,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
           setMapCenter({ lat: parseFloat(fetchedCoffeeShop.latitude), lng: parseFloat(fetchedCoffeeShop.longitude) });
         }
-        fetchOpeningHours(fetchedCoffeeShop.id);
+        
       }
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
@@ -89,22 +77,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     }
   };
 
-  const fetchOpeningHours = async (coffeeShopId) => {
-    try {
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShopId}/opening_hours/`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-      });
-      const fetchedHours = response.data;
-      const fullOpeningHours = Object.keys(dayFullNames).map(shortDay => {
-        const existingHour = fetchedHours.find(h => h.day.toLowerCase().startsWith(shortDay));
-        return existingHour || { day: dayFullNames[shortDay], opening_time: '', closing_time: '' };
-      });
-      setCoffeeShop(prev => ({ ...prev, opening_hours: fullOpeningHours }));
-    } catch (error) {
-      console.error('Error fetching opening hours:', error);
-      setError('Failed to fetch opening hours. Please try again.');
-    }
-  };
+  
 
   const handleMaintenanceToggle = async (checked) => {
     setIsUpdatingMaintenance(true);
@@ -139,42 +112,59 @@ const PageSettings = ({ handleOwnerLogout }) => {
     setSuccess(null);
     const formData = new FormData();
     Object.entries(coffeeShop).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && key !== 'opening_hours') {
-        if (key === 'image') {
-          if (value instanceof File) {
-            formData.append(key, value);
-          } else if (typeof value === 'string' && value.startsWith('http')) {
-            console.log('Existing image URL:', value);
-          } else {
-            console.log('Invalid image value:', value);
-          }
+      if (key === 'image') {
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else if (typeof value === 'string' && value.startsWith('http')) {
+          // Do not append the image if it's a URL (existing image)
         } else {
-          formData.append(key, value.toString());
+          console.log('Invalid image value:', value);
         }
+      } else if (key !== 'opening_hours') {
+        formData.append(key, value.toString());
       }
     });
 
     try {
-      const response = await axios.put(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, formData, {
+      // Update coffee shop details
+      await axios.put(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, formData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      await axios.post(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/set_opening_hours/`,
-        coffeeShop.opening_hours,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-            'Content-Type': 'application/json'
-          }
+      // Update opening hours
+      const openingHoursPromises = openingHours.map(hour => {
+        const hourData = {
+          day: hour.day,
+          opening_time: hour.opening_time || null,
+          closing_time: hour.closing_time || null,
+          coffee_shop: coffeeShop.id
+        };
+
+        if (hour.id) {
+          return axios.put(`https://khlcle.pythonanywhere.com/api/opening-hours/${hour.id}/`, hourData, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } else {
+          return axios.post(`https://khlcle.pythonanywhere.com/api/opening-hours/`, hourData, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+              'Content-Type': 'application/json'
+            }
+          });
         }
-      );
+      });
+
+      await Promise.all(openingHoursPromises);
 
       await fetchCoffeeShop();
 
-      setSuccess('Coffee shop details updated successfully.');
+      setSuccess('Coffee shop details and opening hours updated successfully.');
       setIsEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
@@ -186,6 +176,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
     }
   };
 
+  const handleOpeningHoursUpdate = (updatedHours) => {
+    setOpeningHours(updatedHours);
+  };
+
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'image' && files && files[0]) {
@@ -194,15 +188,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     } else {
       setCoffeeShop(prev => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleOpeningHoursChange = (day, field, value) => {
-    setCoffeeShop(prev => ({
-      ...prev,
-      opening_hours: prev.opening_hours.map(oh =>
-        oh.day === day ? { ...oh, [field]: value } : oh
-      )
-    }));
   };
 
   const handleAddressChange = (address) => {
@@ -258,7 +243,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   const onMapLoad = (map) => {
     mapRef.current = map;
-    console.log('Map loaded:', map);
   };
 
   const handleMapClick = (event) => {
@@ -451,40 +435,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
           )}
 
           <div className="settings-section">
-            <div className="flex justify-between items-center mb-2">
-              <h2>Opening Hours</h2>
-              <button
-                type="button"
-                onClick={toggleOpeningHours}
-                className="text-primary hover:text-primary-light"
-              >
-                {isOpeningHoursExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
-            </div>
-            {isOpeningHoursExpanded && (
-              <div className="space-y-2">
-                {coffeeShop.opening_hours.map((oh, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <span className="w-24">{oh.day}</span>
-                    <input
-                      type="time"
-                      value={oh.opening_time}
-                      onChange={(e) => handleOpeningHoursChange(oh.day, 'opening_time', e.target.value)}
-                      className="form-input"
-                      disabled={!isEditMode}
-                    />
-                    <span>to</span>
-                    <input
-                      type="time"
-                      value={oh.closing_time}
-                      onChange={(e) => handleOpeningHoursChange(oh.day, 'closing_time', e.target.value)}
-                      className="form-input"
-                      disabled={!isEditMode}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+          <h2>Opening Hours</h2>
+          <OpeningHoursTable 
+            coffeeShopId={coffeeShop.id} 
+            isEditMode={isEditMode}
+            onUpdate={handleOpeningHoursUpdate}
+          />
           </div>
 
           {error && <div className="error-message">{error}</div>}
