@@ -1,37 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
-import SidebarMenu from './SideBarMenu'; // Adjust the import path as necessary
+import SidebarMenu from './SideBarMenu'; // Import SidebarMenu
 
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [dashboardData, setDashboardData] = useState(null);
+  const [filter, setFilter] = useState('month'); // Default filter
   const navigate = useNavigate();
-
-  const menuItems = [
-    { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
-    { name: 'Menu', icon: <Coffee className="menu-icon" />, path: '/dashboard/menu' },
-    { name: 'Reviews', icon: <Star className="menu-icon" />, path: '/dashboard/reviews' },
-    { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
-  ];
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [filter]); // Refetch data whenever the filter changes
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('https://khlcle.pythonanywhere.com/api/dashboard/', {
+      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/dashboard/?filter=${filter}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
       setDashboardData(response.data);
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        // If 401 error, trigger logout and redirect to the login page
         handleOwnerLogout();
         navigate('/admin-login');
       } else {
@@ -39,21 +31,14 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
       }
     }
   };
-  
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <Star
-        key={index}
-        size={16}
-        fill={index < rating ? 'var(--color-primary)' : 'none'}
-        stroke={index < rating ? 'var(--color-primary)' : 'var(--color-text-light)'}
-      />
-    ))
-  }
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+  };
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
-    navigate(item.path);
+    navigate(item.path); // Navigate to the clicked menu item's path
   };
 
   const onLogout = () => {
@@ -67,36 +52,22 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
   return (
     <div className="admin-layout">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <User className="menu-icon" />
-          <span className="admin-title">Admin</span>
-          <Bell className="menu-icon" />
-        </div>
-        <div className="sidebar-search">
-          <input type="text" placeholder="Search..." className="search-input" />
-        </div>
-        <nav className="sidebar-menu">
-          {menuItems.map((item) => (
-            <button
-              key={item.name}
-              className={`menu-item ${activeMenuItem === item.name ? 'active' : ''}`}
-              onClick={() => handleMenuItemClick(item)}
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </button>
-          ))}
-        </nav>
-        <button className="logout-button" onClick={onLogout}>
-          <LogOut className="menu-icon" />
-          <span>Logout</span>
-        </button>
-      </aside>
+      {/* SidebarMenu component */}
+      <SidebarMenu 
+        activeMenuItem={activeMenuItem}
+        handleMenuItemClick={handleMenuItemClick}
+        onLogout={onLogout}
+      />
 
       <main className="main-content">
         <header className="page-header">
           <h1>Dashboard</h1>
+          <div className="filter-buttons">
+            <button onClick={() => handleFilterChange('day')} className={filter === 'day' ? 'active' : ''}>Day</button>
+            <button onClick={() => handleFilterChange('week')} className={filter === 'week' ? 'active' : ''}>Week</button>
+            <button onClick={() => handleFilterChange('month')} className={filter === 'month' ? 'active' : ''}>Month</button>
+            <button onClick={() => handleFilterChange('year')} className={filter === 'year' ? 'active' : ''}>Year</button>
+          </div>
         </header>
 
         <div className="dashboard-content">
@@ -127,7 +98,6 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
                 <div key={index} className="review-item">
                   <p>{review.content}</p>
                   <p className="review-author">- {review.author}</p>
-                  <p className="review-rating">Rating: {renderStars(review.rating)}</p>
                 </div>
               ))}
               <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
