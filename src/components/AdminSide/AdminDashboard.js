@@ -40,6 +40,16 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
     }
   };
   
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <Star
+        key={index}
+        size={16}
+        fill={index < rating ? 'var(--color-primary)' : 'none'}
+        stroke={index < rating ? 'var(--color-primary)' : 'var(--color-text-light)'}
+      />
+    ))
+  }
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
@@ -117,7 +127,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
                 <div key={index} className="review-item">
                   <p>{review.content}</p>
                   <p className="review-author">- {review.author}</p>
-                  <p className="review-rating">Rating: {review.rating}/5</p>
+                  <p className="review-rating">Rating: {renderStars(review.rating)}</p>
                 </div>
               ))}
               <button className="button primary" onClick={() => navigate('/dashboard/reviews')}>
