@@ -426,7 +426,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
             onClick={handleMapClick}
             onLoad={onMapLoad}
           />
-          <p>Latitude: {coffeeShop.latitude}, Longitude: {coffeeShop.longitude}</p>
             </div>
           )}
 
