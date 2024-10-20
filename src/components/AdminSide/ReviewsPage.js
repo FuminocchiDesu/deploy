@@ -118,11 +118,18 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
           )}
           
           {qrCodeUrl && (
-            <div className="mt-4 mb-6">
-              <h2 className="text-lg font-semibold mb-2">Current Active QR Code for Ratings</h2>
-              <img src={qrCodeUrl} alt="QR Code for Ratings" className="w-64 h-64" />
-            </div>
-          )}
+  <div className="mt-4 mb-6">
+    <h2 className="text-lg font-semibold mb-2">Current Active QR Code for Ratings</h2>
+    <img src={qrCodeUrl} alt="QR Code for Ratings" className="w-64 h-64 mb-4" />
+    
+    <a href={qrCodeUrl} download="ratings-qr-code.png">
+      <button className="button primary flex items-center">
+        <QrCode className="mr-2" size={20} />
+        Download QR Code
+      </button>
+    </a>
+  </div>
+)}
 
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
             <h1 className="font-bold">QR Code Generator</h1>
