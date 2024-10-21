@@ -254,7 +254,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const config = {
         headers: { 
           'Authorization': `Bearer ${ownerToken}`,
-          'Content-Type': 'multipart/form-data'
         }
       };
   
@@ -264,11 +263,13 @@ const MenuPage = ({ handleOwnerLogout }) => {
         body: formData,
         headers: config.headers
       });
-
+  
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(errorData)}`);
       }
-
+  
+      const result = await response.json();
       fetchData();
       setItems(prevItems => prevItems.map(item => 
         item.id === id ? { ...item, is_available: !currentAvailability } : item
