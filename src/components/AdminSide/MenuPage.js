@@ -125,7 +125,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
           formData.append(key, values[key]);
         }
       }
-
+      formData.append('is_available', true);
       formData.append('coffee_shop', coffeeShopId);
 
       if (modalType === 'item') {
@@ -272,7 +272,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const result = await response.json();
       fetchData();
       setItems(prevItems => prevItems.map(item => 
-        item.id === id ? { ...item, is_available: !currentAvailability } : item
+        item.id === id ? { ...item, is_available: currentAvailability } : item
       ));
       message.success('Item availability updated successfully');
     } catch (error) {

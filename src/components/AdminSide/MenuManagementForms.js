@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) => {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ is_available: true });
   const [sizes, setSizes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,6 +58,7 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
     let data = new FormData();
 
     data.append('coffee_shop', shopId);
+    data.append('is_available', formData.is_available ? 'true' : 'false');
 
     if (formType === 'category') {
       data.append('name', formData.name);
