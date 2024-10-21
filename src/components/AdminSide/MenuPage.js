@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space } from 'antd';
+import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space, Checkbox } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import './SharedStyles.css';
 
@@ -17,6 +17,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [modalType, setModalType] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Menu');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sizes, setSizes] = useState([]);
+  const [useMainPrice, setUseMainPrice] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
@@ -33,26 +37,38 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const config = {
         headers: { Authorization: `Bearer ${ownerToken}` }
       };
 
       const [categoriesResponse, itemsResponse, promosResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`, config),
-        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`, config),
-        axios.get(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config)
+        fetch(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`, config),
+        fetch(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`, config),
+        fetch(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config)
       ]);
-      setCategories(categoriesResponse.data);
-      setItems(itemsResponse.data);
-      setPromos(promosResponse.data);
+
+      const [categoriesData, itemsData, promosData] = await Promise.all([
+        categoriesResponse.json(),
+        itemsResponse.json(),
+        promosResponse.json()
+      ]);
+
+      setCategories(categoriesData);
+      setItems(itemsData);
+      setPromos(promosData);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError('Failed to fetch menu data');
       if (error.response && error.response.status === 401) {
         message.error('Owner authentication failed. Please log in again.');
         handleOwnerLogout();
       } else {
         message.error('Failed to fetch menu data');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,8 +91,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
         ...record,
         image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
       });
+      setSizes(record.sizes || []);
+      setUseMainPrice(record.price != null);
     } else {
       form.resetFields();
+      setSizes([]);
+      setUseMainPrice(false);
     }
   };
 
@@ -84,15 +104,19 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setIsModalVisible(false);
     setSelectedItem(null);
     form.resetFields();
+    setSizes([]);
+    setUseMainPrice(false);
   };
 
   const handleFormSubmit = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const values = await form.validateFields();
       const formData = new FormData();
       for (let key in values) {
         if (key === 'sizes') {
-          formData.append(key, JSON.stringify(values[key]));
+          formData.append(key, JSON.stringify(sizes));
         } else if (key === 'image') {
           if (values[key] && values[key][0] && values[key][0].originFileObj) {
             formData.append(key, values[key][0].originFileObj);
@@ -102,53 +126,79 @@ const MenuPage = ({ handleOwnerLogout }) => {
         }
       }
 
-      const config = {
-        headers: { 
-          Authorization: `Bearer ${ownerToken}`,
-          'Content-Type': 'multipart/form-data'
+      formData.append('coffee_shop', coffeeShopId);
+
+      if (modalType === 'item') {
+        if (useMainPrice) {
+          formData.append('price', values.price);
+        } else {
+          formData.append('sizes', JSON.stringify(sizes));
         }
-      };
+      }
+      console.log('Submitting data:', Object.fromEntries(formData));
 
       let endpoint;
-      let method;
+    let method;
 
-      switch (modalType) {
-        case 'category':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
-          break;
-        case 'item':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
-          break;
-        case 'promo':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
-          break;
-        default:
-          throw new Error('Invalid modal type');
+    switch (modalType) {
+      case 'category':
+        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
+        break;
+      case 'item':
+        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
+        break;
+      case 'promo':
+        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
+        break;
+      default:
+        throw new Error('Invalid modal type');
+    }
+
+    if (selectedItem && selectedItem.id) {
+      endpoint += `${selectedItem.id}/`;
+      method = 'PATCH';
+    } else {
+      method = 'POST';
+    }
+
+    console.log('Submitting to endpoint:', endpoint);
+    console.log('Using method:', method);
+    console.log('Submitting data:', Object.fromEntries(formData));
+
+    const config = {
+      headers: { 
+        Authorization: `Bearer ${ownerToken}`,
+      }
+    };
+
+    const response = await fetch(endpoint, {
+      method,
+      body: formData,
+      headers: config.headers
+    });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      if (selectedItem && selectedItem.id) {
-        endpoint += `${selectedItem.id}/`;
-        method = 'put';
-      } else {
-        method = 'post';
-      }
-
-      const response = await axios[method](endpoint, formData, config);
-      
-      if (response.status === 200 || response.status === 201) {
-        message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
-        handleModalClose();
-        fetchData();
-      }
+      const result = await response.json();
+      message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
+      handleModalClose();
+      fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
-      message.error('Operation failed: ' + (error.response?.data?.error || error.message));
+      setError(`An error occurred while submitting the form: ${error.message}`);
+      message.error('Operation failed: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (type, id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
+        setLoading(true);
+        setError(null);
         const config = {
           headers: { Authorization: `Bearer ${ownerToken}` }
         };
@@ -168,23 +218,36 @@ const MenuPage = ({ handleOwnerLogout }) => {
             throw new Error('Invalid delete type');
         }
 
-        await axios.delete(endpoint, config);
+        const response = await fetch(endpoint, {
+          method: 'DELETE',
+          headers: config.headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         message.success('Deleted successfully');
         fetchData();
       } catch (error) {
         console.error('Error deleting:', error);
+        setError(`An error occurred while deleting: ${error.message}`);
         if (error.response && error.response.status === 401) {
           message.error('Owner authentication failed. Please log in again.');
           handleOwnerLogout();
         } else {
           message.error('Delete operation failed');
         }
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const handleAvailabilityToggle = async (id, currentAvailability) => {
     try {
+      setLoading(true);
+      setError(null);
       const formData = new FormData();
       formData.append('is_available', !currentAvailability);
   
@@ -196,7 +259,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
       };
   
       const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
-      await axios.patch(endpoint, formData, config);
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        body: formData,
+        headers: config.headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       fetchData();
       setItems(prevItems => prevItems.map(item => 
         item.id === id ? { ...item, is_available: !currentAvailability } : item
@@ -204,8 +276,25 @@ const MenuPage = ({ handleOwnerLogout }) => {
       message.success('Item availability updated successfully');
     } catch (error) {
       console.error('Error toggling availability:', error);
+      setError(`An error occurred while updating availability: ${error.message}`);
       message.error('Failed to update item availability');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSizeChange = (index, field, value) => {
+    const newSizes = [...sizes];
+    newSizes[index][field] = value;
+    setSizes(newSizes);
+  };
+
+  const addSize = () => {
+    setSizes([...sizes, { size: '', price: '' }]);
+  };
+
+  const removeSize = (index) => {
+    setSizes(sizes.filter((_, i) => i !== index));
   };
 
   const categoryColumns = [
@@ -370,36 +459,42 @@ const MenuPage = ({ handleOwnerLogout }) => {
                     <Button icon={<UploadOutlined />}>Click to upload</Button>
                   </Upload>
                 </Form.Item>
-                <Form.List name="sizes" rules={[{ required: true, message: 'Please add at least one size' }]}>
-                  {(fields, { add, remove }) => (
-                    <>
-                      {fields.map(({ key, name, ...restField }) => (
-                        <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'size']}
-                            rules={[{ required: true, message: 'Missing size' }]}
-                          >
-                            <Input placeholder="Size" />
-                          </Form.Item>
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'price']}
-                            rules={[{ required: true, message: 'Missing price' }]}
-                          >
-                            <Input placeholder="Price" />
-                          </Form.Item>
-                          <Button onClick={() => remove(name)} type="text" danger icon={<DeleteOutlined />} />
-                        </Space>
-                      ))}
-                      <Form.Item>
-                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                          Add Size
-                        </Button>
-                      </Form.Item>
-                    </>
-                  )}
-                </Form.List>
+                <Form.Item name="useMainPrice" valuePropName="checked">
+                  <Checkbox onChange={(e) => setUseMainPrice(e.target.checked)}>
+                    Use main price (no sizes)
+                  </Checkbox>
+                </Form.Item>
+                {useMainPrice ? (
+                  <Form.Item name="price" label="Price" rules={[{ required: true }]}>
+                    <Input type="number" step="0.01" />
+                  </Form.Item>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Sizes and Prices</label>
+                    {sizes.map((size, index) => (
+                      <div key={index} className="flex items-center space-x-2 mt-2">
+                        <Input
+                          value={size.size}
+                          onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
+                          placeholder="Size"
+                          className="w-1/3"
+                        />
+                        <Input
+                          type="number"
+                          value={size.price}
+                          onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
+                          placeholder="Price"
+                          step="0.01"
+                          className="w-1/3"
+                        />
+                        <Button onClick={() => removeSize(index)} icon={<DeleteOutlined />} />
+                      </div>
+                    ))}
+                    <Button type="dashed" onClick={addSize} className="mt-2">
+                      + Add Size
+                    </Button>
+                  </div>
+                )}
               </>
             )}
             {modalType === 'promo' && (

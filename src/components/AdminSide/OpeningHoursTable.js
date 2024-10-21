@@ -21,6 +21,7 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
       console.log('Fetched opening hours:', response.data);
       const sortedHours = sortOpeningHours(response.data);
       setOpeningHours(sortedHours);
+      onUpdate(sortedHours); // Update parent component
     } catch (error) {
       console.error('Error fetching opening hours:', error);
       setError('Failed to fetch opening hours. Please try again.');
@@ -38,33 +39,11 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
     const updatedHours = [...openingHours];
     updatedHours[index] = { ...updatedHours[index], [field]: value };
     setOpeningHours(updatedHours);
-    onUpdate(updatedHours); // Pass the updated hours to parent component
-  };
-
-  const saveOpeningHours = async () => {
-    try {
-      const formattedHours = openingHours.map(hour => ({
-        id: hour.id,
-        day: hour.day,
-        opening_time: hour.opening_time || null,
-        closing_time: hour.closing_time || null,
-        coffee_shop: coffeeShopId
-      }));
-
-      console.log('Sending data:', formattedHours);
-
-      // Pass the formatted hours to the parent component
-      onUpdate(formattedHours);
-
-      setError(null);
-    } catch (error) {
-      console.error('Error saving opening hours:', error);
-      setError('Failed to save opening hours. Please try again.');
-    }
+    onUpdate(updatedHours);
   };
 
   return (
-    <div className="opening-hours-table">
+    <div>
       <table className="w-full">
         <thead>
           <tr>
@@ -99,7 +78,7 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
           ))}
         </tbody>
       </table>
-      {error && <div className="error-message mt-4 text-red-500">{error}</div>}
+      {error && <div className="text-red-500 mt-2">{error}</div>}
     </div>
   );
 };

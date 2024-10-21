@@ -7,14 +7,17 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [useMainPrice, setUseMainPrice] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
       setSizes(initialData.sizes || []);
+      setUseMainPrice(initialData.price != null);
     } else {
       setFormData({});
       setSizes([]);
+      setUseMainPrice(false);
     }
   }, [initialData]);
 
@@ -66,7 +69,11 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
       }
 
       if (formType === 'item') {
-        data.append('sizes', JSON.stringify(sizes));
+        if (useMainPrice) {
+          data.append('price', formData.price);
+        } else {
+          data.append('sizes', JSON.stringify(sizes));
+        }
       }
     }
 
@@ -204,32 +211,60 @@ const MenuManagementForms = ({ onSubmit, initialData, formType, categories }) =>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Sizes and Prices</label>
-          {sizes.map((size, index) => (
-            <div key={index} className="flex items-center space-x-2 mt-2">
-              <input
-                type="text"
-                value={size.size || ''}
-                onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                placeholder="Size"
-                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-              <input
-                type="number"
-                value={size.price || ''}
-                onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
-                placeholder="Price"
-                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-              <button type="button" onClick={() => removeSize(index)} className="text-red-500">
-                <X size={20} />
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={addSize} className="mt-2 text-blue-500">
-            + Add Size
-          </button>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={useMainPrice}
+              onChange={() => setUseMainPrice(!useMainPrice)}
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 mr-2"
+            />
+            <span className="text-sm font-medium text-gray-700">Use main price (no sizes)</span>
+          </label>
         </div>
+        {useMainPrice ? (
+          <div>
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              value={formData.price || ''}
+              onChange={handleInputChange}
+              step="0.01"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Sizes and Prices</label>
+            {sizes.map((size, index) => (
+              <div key={index} className="flex items-center space-x-2 mt-2">
+                <input
+                  type="text"
+                  value={size.size || ''}
+                  onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
+                  placeholder="Size"
+                  className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                />
+                <input
+                  type="number"
+                  value={size.price || ''}
+                  onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
+                  placeholder="Price"
+                  step="0.01"
+                  className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                />
+                <button type="button" onClick={() => removeSize(index)} className="text-red-500">
+                  <X size={20} />
+                </button>
+              </div>
+            ))}
+            <button type="button" onClick={addSize} className="mt-2 text-blue-500">
+              + Add Size
+            </button>
+          </div>
+        )}
         <div>
           <label htmlFor="is_available" className="flex items-center">
             <input

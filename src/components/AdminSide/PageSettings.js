@@ -18,7 +18,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     address: '',
     latitude: null,
     longitude: null,
-    
     description: '',
     image: null,
     is_under_maintenance: false
@@ -49,10 +48,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
     fetchCoffeeShop();
   }, []);
 
-  
-
-  
-
   const fetchCoffeeShop = async () => {
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/owner/coffee-shop/', {
@@ -69,15 +64,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
           setMapCenter({ lat: parseFloat(fetchedCoffeeShop.latitude), lng: parseFloat(fetchedCoffeeShop.longitude) });
         }
-        
       }
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');
     }
   };
-
-  
 
   const handleMaintenanceToggle = async (checked) => {
     setIsUpdatingMaintenance(true);
@@ -104,6 +96,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
     } finally {
       setIsUpdatingMaintenance(false);
     }
+  };
+
+  const handleOpeningHoursUpdate = (updatedHours) => {
+    setOpeningHours(updatedHours);
   };
 
   const handleShopUpdate = async (e) => {
@@ -135,32 +131,22 @@ const PageSettings = ({ handleOwnerLogout }) => {
       });
 
       // Update opening hours
-      const openingHoursPromises = openingHours.map(hour => {
-        const hourData = {
-          day: hour.day,
-          opening_time: hour.opening_time || null,
-          closing_time: hour.closing_time || null,
-          coffee_shop: coffeeShop.id
-        };
+      const formattedHours = openingHours.map(hour => ({
+        day: hour.day,
+        opening_time: hour.opening_time || null,
+        closing_time: hour.closing_time || null,
+      })).filter(hour => hour.opening_time !== null && hour.closing_time !== null);
 
-        if (hour.id) {
-          return axios.put(`https://khlcle.pythonanywhere.com/api/opening-hours/${hour.id}/`, hourData, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        } else {
-          return axios.post(`https://khlcle.pythonanywhere.com/api/opening-hours/`, hourData, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-              'Content-Type': 'application/json'
-            }
-          });
+      await axios.post(
+        'https://khlcle.pythonanywhere.com/api/opening-hours/',
+        formattedHours,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
-
-      await Promise.all(openingHoursPromises);
+      );
 
       await fetchCoffeeShop();
 
@@ -174,10 +160,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
       }
       setError('Failed to update coffee shop details. Please try again.');
     }
-  };
-
-  const handleOpeningHoursUpdate = (updatedHours) => {
-    setOpeningHours(updatedHours);
   };
 
   const handleInputChange = (e) => {
@@ -434,14 +416,14 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
           )}
 
-          <div className="settings-section">
+        <div className="settings-section">
           <h2>Opening Hours</h2>
           <OpeningHoursTable 
             coffeeShopId={coffeeShop.id} 
             isEditMode={isEditMode}
             onUpdate={handleOpeningHoursUpdate}
           />
-          </div>
+        </div>
 
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
