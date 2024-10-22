@@ -33,7 +33,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
   const [openingHours, setOpeningHours] = useState([]);
 
-  const apiKey = 'AIzaSyBEvPia5JJC-eYWLlO_Zlt27cDnPuyJxmw'; // Replace with your API key
+  const apiKey = 'AIzaSyBDU3QWyXnmPdcmphWACu71LSnJJlsImKU'; // Replace with your API key
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
