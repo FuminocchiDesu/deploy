@@ -1,6 +1,7 @@
 // SidebarMenu.js
 import React from 'react';
 import { Bell, Coffee, Home, LogOut, Edit, User, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
   const menuItems = [
@@ -13,7 +14,12 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <User className="menu-icon" />
+      <Link 
+          to="/dashboard/profile" 
+          className="user-profile-link hover:opacity-80 transition-opacity"
+        >
+          <User className="menu-icon" />
+        </Link>
         <span className="admin-title">Admin</span>
         <Bell className="menu-icon" />
       </div>

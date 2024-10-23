@@ -5,6 +5,7 @@ import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
 import MenuPage from './components/AdminSide/MenuPage';
 import ReviewsPage from './components/AdminSide/ReviewsPage';
+import UserProfile from './components/AdminSide/UserProfile';
 import './App.css';
 
 const App = () => {
@@ -84,10 +85,18 @@ const App = () => {
               : <Navigate to="/admin-login" />
           } 
         />
-
+        <Route 
+          path="/dashboard/profile" 
+          element={
+            isOwnerAuthenticated 
+              ? <UserProfile handleOwnerLogout={handleOwnerLogout} /> 
+              : <Navigate to="/admin-login" />
+          } 
+        />
         <Route path="/" element={<Navigate to={isOwnerAuthenticated ? "/dashboard" : "/admin-login"} />} />
 
         <Route path="*" element={<Navigate to="/" />} />
+        
       </Routes>
     </Router>
   );
