@@ -416,10 +416,6 @@ body {
   min-height: 100vh;
 }
 
-.main-content {
-  flex: 1;
-  padding: 1.5rem;
-}
 
 .page-title {
   font-size: 1.5rem;
@@ -557,11 +553,7 @@ body {
   min-height: 100vh;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  background-color: #f5f5f5;
-}
+
 
 .dashboard-header {
   margin-bottom: 2rem;
