@@ -30,6 +30,8 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
     } catch (err) {
       setError('Failed to fetch reviews. Please try again.');
       console.error('Error fetching reviews:', err);
+      handleOwnerLogout();
+      navigate('/admin-login');
     }
   };
 

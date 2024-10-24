@@ -18,7 +18,6 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` },
         params: { coffee_shop: coffeeShopId }
       });
-      console.log('Fetched opening hours:', response.data);
       const sortedHours = sortOpeningHours(response.data);
       setOpeningHours(sortedHours);
       onUpdate(sortedHours); // Update parent component

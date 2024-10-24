@@ -20,7 +20,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
     longitude: null,
     description: '',
     image: null,
-    is_under_maintenance: false
+    is_under_maintenance: false,
+    is_terminated: false  // Add this line
   });
   
   const [error, setError] = useState(null);
@@ -58,7 +59,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
         setCoffeeShop(prevState => ({
           ...prevState,
           ...fetchedCoffeeShop,
-          is_under_maintenance: fetchedCoffeeShop.is_under_maintenance
+          is_under_maintenance: fetchedCoffeeShop.is_under_maintenance,
+          is_terminated: fetchedCoffeeShop.is_terminated
         }));
         setImagePreview(fetchedCoffeeShop.image);
         if (fetchedCoffeeShop.latitude && fetchedCoffeeShop.longitude) {
@@ -68,6 +70,33 @@ const PageSettings = ({ handleOwnerLogout }) => {
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');
+      handleOwnerLogout();
+      navigate('/admin-login');
+    }
+  };
+
+  const handleTerminateToggle = async (checked) => {
+    try {
+      const response = await axios.patch(
+        `https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`,
+        { is_terminated: checked },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      setCoffeeShop(prev => ({
+        ...prev,
+        is_terminated: checked
+      }));
+  
+      setSuccess(checked ? 'Coffee shop marked as permanently closed' : 'Coffee shop marked as open');
+    } catch (error) {
+      console.error('Error updating termination status:', error);
+      setError('Failed to update shop status. Please try again.');
     }
   };
 
@@ -303,6 +332,16 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 disabled={isUpdatingMaintenance}
               />
             </div>
+
+            <div className="terminate-toggle mr-4">
+            <label htmlFor="terminate-mode" className="mr-2 text-red-600">Permanently Closed</label>
+            <Switch
+              id="terminate-mode"
+              checked={coffeeShop.is_terminated}
+              onChange={handleTerminateToggle}
+            />
+            </div>
+
             <button onClick={toggleEditMode} className="button primary">
               {isEditMode ? 'Cancel Edit' : 'Edit'}
             </button>
@@ -333,6 +372,11 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
           <div className="settings-section">
             <h2>Basic Information</h2>
+            {coffeeShop.is_terminated && (
+              <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">
+                This coffee shop is marked as permanently closed
+              </div>
+            )}
             <div className="mb-4">
               <label htmlFor="name">Name</label>
               <input

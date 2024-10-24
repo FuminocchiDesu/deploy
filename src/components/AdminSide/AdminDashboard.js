@@ -65,6 +65,8 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
       setReviewsData(response.data);
     } catch (error) {
       handleError(error);
+      handleOwnerLogout();
+      navigate('/admin-login');
     }
   };
 
