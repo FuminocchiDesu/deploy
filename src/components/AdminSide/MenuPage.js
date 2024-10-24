@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, Input, DatePicker, message, Select, Upload, Space, Checkbox } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Table, Modal, Form, message, Space } from 'antd';
 import SidebarMenu from './SideBarMenu';
+import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
@@ -61,9 +61,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch menu data');
+      onLogout();
       if (error.response && error.response.status === 401) {
         message.error('Owner authentication failed. Please log in again.');
-        handleOwnerLogout();
+     
       } else {
         message.error('Failed to fetch menu data');
       }
@@ -114,6 +115,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setError(null);
       const values = await form.validateFields();
       const formData = new FormData();
+
+      // Append basic form fields
       for (let key in values) {
         if (key === 'sizes') {
           formData.append(key, JSON.stringify(sizes));
@@ -121,10 +124,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
           if (values[key] && values[key][0] && values[key][0].originFileObj) {
             formData.append(key, values[key][0].originFileObj);
           }
-        } else {
+        } else if (key !== 'additional_images') {
           formData.append(key, values[key]);
         }
       }
+
       formData.append('is_available', true);
       formData.append('coffee_shop', coffeeShopId);
 
@@ -135,53 +139,49 @@ const MenuPage = ({ handleOwnerLogout }) => {
           formData.append('sizes', JSON.stringify(sizes));
         }
       }
-      console.log('Submitting data:', Object.fromEntries(formData));
 
-      let endpoint;
-    let method;
-
-    switch (modalType) {
-      case 'category':
-        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/`;
-        break;
-      case 'item':
-        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/`;
-        break;
-      case 'promo':
-        endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`;
-        break;
-      default:
-        throw new Error('Invalid modal type');
-    }
-
-    if (selectedItem && selectedItem.id) {
-      endpoint += `${selectedItem.id}/`;
-      method = 'PATCH';
-    } else {
-      method = 'POST';
-    }
-
-    console.log('Submitting to endpoint:', endpoint);
-    console.log('Using method:', method);
-    console.log('Submitting data:', Object.fromEntries(formData));
-
-    const config = {
-      headers: { 
-        Authorization: `Bearer ${ownerToken}`,
+      if (values.additional_images) {
+        values.additional_images.forEach((file) => {
+          if (file.originFileObj) {
+            formData.append('additional_images', file.originFileObj);
+          }
+        });
       }
-    };
 
-    const response = await fetch(endpoint, {
-      method,
-      body: formData,
-      headers: config.headers
-    });
+      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
+      switch (modalType) {
+        case 'category':
+          endpoint += 'menu-categories/';
+          break;
+        case 'item':
+          endpoint += 'menu-items/';
+          break;
+        case 'promo':
+          endpoint += 'promos/';
+          break;
+        default:
+          throw new Error('Invalid modal type');
+      }
+
+      if (selectedItem && selectedItem.id) {
+        endpoint += `${selectedItem.id}/`;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${ownerToken}` }
+      };
+
+      const response = await fetch(endpoint, {
+        method: selectedItem ? 'PATCH' : 'POST',
+        body: formData,
+        headers: config.headers
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
+      await response.json();
       message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
       handleModalClose();
       fetchData();
@@ -203,21 +203,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
           headers: { Authorization: `Bearer ${ownerToken}` }
         };
 
-        let endpoint;
-        switch (type) {
-          case 'category':
-            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`;
-            break;
-          case 'item':
-            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
-            break;
-          case 'promo':
-            endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`;
-            break;
-          default:
-            throw new Error('Invalid delete type');
-        }
-
+        const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/${type}s/${id}/`;
         const response = await fetch(endpoint, {
           method: 'DELETE',
           headers: config.headers
@@ -250,29 +236,26 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setError(null);
       const formData = new FormData();
       formData.append('is_available', !currentAvailability);
-  
+
       const config = {
-        headers: { 
-          'Authorization': `Bearer ${ownerToken}`,
-        }
+        headers: { Authorization: `Bearer ${ownerToken}` }
       };
-  
+
       const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
       const response = await fetch(endpoint, {
         method: 'PATCH',
         body: formData,
         headers: config.headers
       });
-  
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
-      const result = await response.json();
+
+      await response.json();
       fetchData();
-      setItems(prevItems => prevItems.map(item => 
-        item.id === id ? { ...item, is_available: currentAvailability } : item
+      setItems(prevItems => prevItems.map(item =>
+        item.id === id ? { ...item, is_available: !currentAvailability } : item
       ));
       message.success('Item availability updated successfully');
     } catch (error) {
@@ -298,6 +281,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setSizes(sizes.filter((_, i) => i !== index));
   };
 
+  const handleAdditionalImagesPreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+  };
+
   const categoryColumns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
     {
@@ -317,18 +310,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const itemColumns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Description', dataIndex: 'description', key: 'description' },
-    { 
-      title: 'Category', 
-      dataIndex: 'category', 
+    {
+      title: 'Category',
+      dataIndex: 'category',
       key: 'category',
       render: (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         return category ? category.name : 'Unknown Category';
       }
     },
-    { 
-      title: 'Availability', 
-      dataIndex: 'is_available', 
+    {
+      title: 'Availability',
+      dataIndex: 'is_available',
       key: 'is_available',
       render: (isAvailable, record) => (
         <Button
@@ -425,100 +418,22 @@ const MenuPage = ({ handleOwnerLogout }) => {
           onOk={handleFormSubmit}
           onCancel={handleModalClose}
         >
-          <Form form={form} layout="vertical">
-            {modalType === 'category' && (
-              <Form.Item name="name" label="Category Name" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-            )}
-            {modalType === 'item' && (
-              <>
-                <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
-                  <Input />
-                </Form.Item>
-                <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="category" label="Category" rules={[{ required: true }]}>
-                  <Select>
-                    {categories.map(category => (
-                      <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={(e) => {
-                  if (Array.isArray(e)) {
-                    return e;
-                  }
-                  return e && e.fileList;
-                }}>
-                  <Upload 
-                    beforeUpload={() => false}
-                    listType="picture"
-                    maxCount={1}
-                  >
-                    <Button icon={<UploadOutlined />}>Click to upload</Button>
-                  </Upload>
-                </Form.Item>
-                <Form.Item name="useMainPrice" valuePropName="checked">
-                  <Checkbox onChange={(e) => setUseMainPrice(e.target.checked)}>
-                    Use main price (no sizes)
-                  </Checkbox>
-                </Form.Item>
-                {useMainPrice ? (
-                  <Form.Item name="price" label="Price" rules={[{ required: true }]}>
-                    <Input type="number" step="0.01" />
-                  </Form.Item>
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Sizes and Prices</label>
-                    {sizes.map((size, index) => (
-                      <div key={index} className="flex items-center space-x-2 mt-2">
-                        <Input
-                          value={size.size}
-                          onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                          placeholder="Size"
-                          className="w-1/3"
-                        />
-                        <Input
-                          type="number"
-                          value={size.price}
-                          onChange={(e) => handleSizeChange(index, 'price', e.target.value)}
-                          placeholder="Price"
-                          step="0.01"
-                          className="w-1/3"
-                        />
-                        <Button onClick={() => removeSize(index)} icon={<DeleteOutlined />} />
-                      </div>
-                    ))}
-                    <Button type="dashed" onClick={addSize} className="mt-2">
-                      + Add Size
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-            {modalType === 'promo' && (
-              <>
-                <Form.Item name="name" label="Promo Name" rules={[{ required: true }]}>
-                  <Input />
-                </Form.Item>
-                <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
-                  <DatePicker />
-                </Form.Item>
-                <Form.Item name="end_date" label="End Date" rules={[{ required: true }]}>
-                  <DatePicker />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </div>
+      <Form form={form} layout="vertical">
+        <MenuManagementForms
+          modalType={modalType}
+          categories={categories}
+          useMainPrice={useMainPrice}
+          setUseMainPrice={setUseMainPrice}
+          sizes={sizes}
+          handleSizeChange={handleSizeChange}
+          addSize={addSize}
+          removeSize={removeSize}
+          handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+        />
+      </Form>
+      </Modal>
     </div>
-  );
+    </div>
+);
 };
-
-export default MenuPage;
+export default MenuPage;  
