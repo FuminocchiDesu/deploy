@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Star, QrCode } from 'lucide-react';
+import { Star, QrCode, Timer } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
 import './SharedStyles.css';
 
@@ -10,14 +10,45 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
   const [error, setError] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
   const [qrCodeUrl, setQrCodeUrl] = useState(null);
+  const [qrExpiryTime, setQrExpiryTime] = useState(null);
+  const [remainingTime, setRemainingTime] = useState(null);
   const [duration, setDuration] = useState('1d');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchReviews();
-    fetchLatestQRCode(); // Add this line to fetch the QR code on component mount
+    fetchLatestQRCode();
   }, []);
+
+  useEffect(() => {
+    let timer;
+    if (qrExpiryTime) {
+      timer = setInterval(() => {
+        const now = new Date().getTime();
+        const expiry = new Date(qrExpiryTime).getTime();
+        const timeLeft = expiry - now;
+
+        if (timeLeft <= 0) {
+          setRemainingTime(null);
+          setQrCodeUrl(null);
+          setQrExpiryTime(null);
+          clearInterval(timer);
+        } else {
+          const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+          setRemainingTime({ days, hours, minutes, seconds });
+        }
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [qrExpiryTime]);
 
   const fetchReviews = async () => {
     try {
@@ -39,18 +70,28 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/latest-qr-code/`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Accept': '*/*',
-        },
-        responseType: 'blob'
+      
+      // First fetch the QR code metadata
+      const metadataResponse = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/qr-metadata/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      const url = URL.createObjectURL(response.data);
-      setQrCodeUrl(url);
+      
+      if (metadataResponse.data.expires_at) {
+        setQrExpiryTime(metadataResponse.data.expires_at);
+        
+        // Then fetch the QR code image
+        const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/latest-qr-code/`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': '*/*',
+          },
+          responseType: 'blob'
+        });
+        const url = URL.createObjectURL(response.data);
+        setQrCodeUrl(url);
+      }
     } catch (err) {
-      console.error('Error fetching latest QR code:', err);
-      // Don't set an error message here, as there might not be an active QR code
+      console.error('Error fetching QR code:', err);
     }
   };
 
@@ -70,6 +111,9 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
       
       const url = URL.createObjectURL(response.data);
       setQrCodeUrl(url);
+      
+      // Fetch the updated metadata after generating new QR code
+      await fetchLatestQRCode();
       setShowConfirmDialog(false);
     } catch (err) {
       console.error('Error generating QR code:', err);
@@ -87,6 +131,22 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
       />
     ))
   }
+
+  const renderRemainingTime = () => {
+    if (!remainingTime) return null;
+    
+    return (
+      <div className="flex items-center text-sm text-gray-600 mt-2">
+        <Timer className="mr-2" size={16} />
+        <span>
+          Expires in: {remainingTime.days > 0 ? `${remainingTime.days}d ` : ''}
+          {remainingTime.hours.toString().padStart(2, '0')}:
+          {remainingTime.minutes.toString().padStart(2, '0')}:
+          {remainingTime.seconds.toString().padStart(2, '0')}
+        </span>
+      </div>
+    );
+  };
 
   const handleMenuItemClick = (item) => {
     setActiveMenuItem(item.name);
@@ -123,8 +183,8 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
             <div className="mt-4 mb-6">
               <h2 className="text-lg font-semibold mb-2">Current Active QR Code for Ratings</h2>
               <img src={qrCodeUrl} alt="QR Code for Ratings" className="w-64 h-64 mb-4" />
-              
-              <a href={qrCodeUrl} download="ratings-qr-code.png">
+              {renderRemainingTime()}
+              <a href={qrCodeUrl} download="ratings-qr-code.png" className="mt-4 inline-block">
                 <button className="button primary flex items-center">
                   <QrCode className="mr-2" size={20} />
                   Download QR Code

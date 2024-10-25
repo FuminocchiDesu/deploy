@@ -34,6 +34,8 @@ const UserProfile = ({ handleOwnerLogout }) => {
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
+      handleOwnerLogout();
+      navigate('/admin-login');
     }
   };
 
