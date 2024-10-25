@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Star, QrCode, Timer } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
 import './SharedStyles.css';
 
-const ReviewsPage = ({ handleOwnerLogout }) => {
+function ReviewsPage({ handleOwnerLogout }) {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
@@ -16,10 +16,53 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const navigate = useNavigate();
 
+  const fetchReviews = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('ownerToken');
+      const shopId = localStorage.getItem('coffeeShopId');
+      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/ratings/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setReviews(response.data);
+    } catch (err) {
+      setError('Failed to fetch reviews. Please try again.');
+      console.error('Error fetching reviews:', err);
+      handleOwnerLogout();
+      navigate('/admin-login');
+    }
+  }, [handleOwnerLogout, navigate]);
+
+  const fetchLatestQRCode = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('ownerToken');
+      const shopId = localStorage.getItem('coffeeShopId');
+      
+      const metadataResponse = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/qr-metadata/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (metadataResponse.data.expires_at) {
+        setQrExpiryTime(metadataResponse.data.expires_at);
+        
+        const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/latest-qr-code/`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': '*/*',
+          },
+          responseType: 'blob'
+        });
+        const url = URL.createObjectURL(response.data);
+        setQrCodeUrl(url);
+      }
+    } catch (err) {
+      console.error('Error fetching QR code:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchReviews();
     fetchLatestQRCode();
-  }, []);
+  }, [fetchReviews, fetchLatestQRCode]);
 
   useEffect(() => {
     let timer;
@@ -50,51 +93,6 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
     };
   }, [qrExpiryTime]);
 
-  const fetchReviews = async () => {
-    try {
-      const token = localStorage.getItem('ownerToken');
-      const shopId = localStorage.getItem('coffeeShopId');
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/ratings/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setReviews(response.data);
-    } catch (err) {
-      setError('Failed to fetch reviews. Please try again.');
-      console.error('Error fetching reviews:', err);
-      handleOwnerLogout();
-      navigate('/admin-login');
-    }
-  };
-
-  const fetchLatestQRCode = async () => {
-    try {
-      const token = localStorage.getItem('ownerToken');
-      const shopId = localStorage.getItem('coffeeShopId');
-      
-      // First fetch the QR code metadata
-      const metadataResponse = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/qr-metadata/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (metadataResponse.data.expires_at) {
-        setQrExpiryTime(metadataResponse.data.expires_at);
-        
-        // Then fetch the QR code image
-        const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/latest-qr-code/`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Accept': '*/*',
-          },
-          responseType: 'blob'
-        });
-        const url = URL.createObjectURL(response.data);
-        setQrCodeUrl(url);
-      }
-    } catch (err) {
-      console.error('Error fetching QR code:', err);
-    }
-  };
-
   const generateQRCode = async () => {
     try {
       const token = localStorage.getItem('ownerToken');
@@ -112,7 +110,6 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
       const url = URL.createObjectURL(response.data);
       setQrCodeUrl(url);
       
-      // Fetch the updated metadata after generating new QR code
       await fetchLatestQRCode();
       setShowConfirmDialog(false);
     } catch (err) {
@@ -136,8 +133,8 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
     if (!remainingTime) return null;
     
     return (
-      <div className="flex items-center text-sm text-gray-600 mt-2">
-        <Timer className="mr-2" size={16} />
+      <div className="remaining-time">
+        <Timer className="timer-icon" size={16} />
         <span>
           Expires in: {remainingTime.days > 0 ? `${remainingTime.days}d ` : ''}
           {remainingTime.hours.toString().padStart(2, '0')}:
@@ -168,41 +165,38 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
 
       <main className="main-content">
         <header className="page-header">
-          <h1 className="text-2xl font-bold mb-4">Customer Reviews</h1>
+          <h1>Customer Reviews</h1>
         </header>
 
         <div className="dashboard-content">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline"> {error}</span>
+            <div className="error-message" role="alert">
+              <strong>Error!</strong> {error}
             </div>
           )}
           
           {qrCodeUrl && (
-            <div className="mt-4 mb-6">
-              <h2 className="text-lg font-semibold mb-2">Current Active QR Code for Ratings</h2>
-              <img src={qrCodeUrl} alt="QR Code for Ratings" className="w-64 h-64 mb-4" />
+            <div className="qr-code-container">
+              <h2>Current Active QR Code for Ratings</h2>
+              <img src={qrCodeUrl} alt="QR Code for Ratings" className="qr-code-image" />
               {renderRemainingTime()}
-              <a href={qrCodeUrl} download="ratings-qr-code.png" className="mt-4 inline-block">
-                <button className="button primary flex items-center">
-                  <QrCode className="mr-2" size={20} />
-                  Download QR Code
-                </button>
+              <a href={qrCodeUrl} download="ratings-qr-code.png" className="download-button">
+                <QrCode size={20} />
+                Download QR Code
               </a>
             </div>
           )}
 
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
-            <h1 className="font-bold">QR Code Generator</h1>
+          <div className="info-box">
+            <h2>QR Code Generator</h2>
             <p>Generate a QR code to allow customers to rate your coffee shop.</p>
           </div>
 
-          <div className="flex items-center mb-4">
+          <div className="qr-generator">
             <select 
               value={duration} 
               onChange={(e) => setDuration(e.target.value)}
-              className="mr-4 p-2 border rounded"
+              className="duration-select"
             >
               <option value="1d">1 Day</option>
               <option value="1w">1 Week</option>
@@ -211,39 +205,33 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
 
             <button 
               onClick={() => setShowConfirmDialog(true)} 
-              className="button primary flex items-center"
+              className="generate-button"
             >
-              <QrCode className="mr-2" size={20} />
+              <QrCode size={20} />
               Generate QR Code
             </button>
           </div>
 
           {showConfirmDialog && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
-              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <div className="mt-3 text-center">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">Generate New QR Code?</h3>
-                  <div className="mt-2 px-7 py-3">
-                    <p className="text-sm text-gray-500">
-                      This will generate a new QR code for customer ratings. Do you want to proceed?
-                    </p>
-                  </div>
-                  <div className="items-center px-4 py-3">
-                    <button
-                      id="ok-btn"
-                      className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      onClick={generateQRCode}
-                    >
-                      Continue
-                    </button>
-                    <button
-                      id="cancel-btn"
-                      className="mt-3 px-4 py-2 bg-white text-gray-500 text-base font-medium rounded-md w-full shadow-sm border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                      onClick={() => setShowConfirmDialog(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Generate New QR Code?</h3>
+                <p>
+                  This will generate a new QR code for customer ratings. Do you want to proceed?
+                </p>
+                <div className="modal-actions">
+                  <button
+                    className="confirm-button"
+                    onClick={generateQRCode}
+                  >
+                    Continue
+                  </button>
+                  <button
+                    className="cancel-button"
+                    onClick={() => setShowConfirmDialog(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>
@@ -254,7 +242,7 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
               {reviews.map(review => (
                 <li key={review.id} className="review-item">
                   <div className="review-header">
-                    <span className="font-semibold">{review.user.username}</span>
+                    <span className="review-author">{review.user.username}</span>
                     <div className="review-rating">{renderStars(review.stars)}</div>
                   </div>
                   <p className="review-content">{review.description}</p>
@@ -267,8 +255,261 @@ const ReviewsPage = ({ handleOwnerLogout }) => {
           </div>
         </div>
       </main>
+
+      <style jsx>{`
+        .admin-layout {
+          display: flex;
+          min-height: 100vh;
+          background-color: #f5f5f5;
+        }
+
+        .main-content {
+          flex: 1;
+          padding: 2rem;
+          overflow-y: auto;
+        }
+
+        .page-header h1 {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #333;
+          margin-bottom: 1.5rem;
+        }
+
+        .error-message {
+          background-color: #fee2e2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+          padding: 0.75rem;
+          border-radius: 0.375rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .qr-code-container {
+          background-color: white;
+          border-radius: 0.5rem;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-code-container h2 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          color: #333;
+        }
+
+        .qr-code-image {
+          width: 200px;
+          height: 200px;
+          margin-bottom: 1rem;
+        }
+
+        .remaining-time {
+          display: flex;
+          align-items: center;
+          font-size: 0.875rem;
+          color: #666;
+          margin-bottom: 1rem;
+        }
+
+        .timer-icon {
+          margin-right: 0.5rem;
+        }
+
+        .download-button {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          background-color: #4f46e5;
+          color: white;
+          border-radius: 0.375rem;
+          text-decoration: none;
+          font-weight: 500;
+          transition: background-color 0.2s;
+        }
+
+        .download-button:hover {
+          background-color: #4338ca;
+        }
+
+        .download-button svg {
+          margin-right: 0.5rem;
+        }
+
+        .info-box {
+          background-color: #e0f2fe;
+          border-left: 4px solid #3b82f6;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+          border-radius: 0.375rem;
+        }
+
+        .info-box h2 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: #1e40af;
+        }
+
+        .info-box p {
+          color: #1e40af;
+          margin: 0;
+        }
+
+        .qr-generator {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .duration-select {
+          padding: 0.5rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          margin-right: 1rem;
+          background-color: white;
+        }
+
+        .generate-button {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          background-color: #4f46e5;
+          color: white;
+          border: none;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .generate-button:hover {
+          background-color: #4338ca;
+        }
+
+        .generate-button svg {
+          margin-right: 0.5rem;
+        }
+
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .modal-content {
+          background-color: white;
+          padding: 2rem;
+          border-radius: 0.5rem;
+          max-width: 400px;
+          width: 100%;
+        }
+
+        .modal-content h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          color: #333;
+        }
+
+        .modal-content p {
+          margin-bottom: 1.5rem;
+          color: #666;
+        }
+
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .modal-actions button {
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .confirm-button {
+          background-color: #4f46e5;
+          color: white;
+          border: none;
+          margin-right: 0.5rem;
+        }
+
+        .confirm-button:hover {
+          background-color: #4338ca;
+        }
+
+        .cancel-button {
+          background-color: white;
+          color: #666;
+          border: 1px solid #d1d5db;
+        }
+
+        
+
+        .cancel-button:hover {
+          background-color: #f3f4f6;
+        }
+
+        .reviews-container {
+          background-color: white;
+          border-radius: 0.5rem;
+          padding: 1.5rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .review-list {
+          list-style-type: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .review-item {
+          border-bottom: 1px solid #e5e7eb;
+          padding: 1rem 0;
+        }
+
+        .review-item:last-child {
+          border-bottom: none;
+        }
+
+        .review-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
+        }
+
+        .review-author {
+          font-weight: 600;
+          color: #333;
+        }
+
+        .review-rating {
+          display: flex;
+        }
+
+        .review-content {
+          margin-bottom: 0.5rem;
+          color: #4b5563;
+        }
+
+        .review-date {
+          font-size: 0.875rem;
+          color: #9ca3af;
+        }
+      `}</style>
     </div>
   );
-};
+}
 
 export default ReviewsPage;
