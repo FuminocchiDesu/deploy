@@ -8,6 +8,7 @@ import './SharedStyles.css';
 import SidebarMenu from './SideBarMenu';
 import Switch from './CustomSwitch';
 import OpeningHoursTable from './OpeningHoursTable';
+import ContactDetailsTab from './ContactDetailsTab';
 
 const libraries = ['places'];
 
@@ -23,7 +24,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     is_under_maintenance: false,
     is_terminated: false  // Add this line
   });
-  
+  const [activeTab, setActiveTab] = useState('basic');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
@@ -48,6 +49,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
   useEffect(() => {
     fetchCoffeeShop();
   }, []);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
 
   const fetchCoffeeShop = async () => {
     try {
@@ -319,6 +324,31 @@ const PageSettings = ({ handleOwnerLogout }) => {
         onLogout={onLogout}
       />
 
+    <div className="mb-6 border-b">
+      <nav className="flex space-x-4">
+        <button
+          className={`py-2 px-4 ${
+            activeTab === 'basic'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => handleTabChange('basic')}
+        >
+          Basic Information
+        </button>
+        <button
+          className={`py-2 px-4 ${
+            activeTab === 'contact'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => handleTabChange('contact')}
+        >
+          Contact Details
+        </button>
+      </nav>
+    </div>
+
       <main className="main-content">
         <header className="page-header flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Page Settings</h1>
@@ -348,6 +378,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
           </div>
         </header>
 
+        {activeTab === 'basic' ? (
         <form onSubmit={handleShopUpdate} className="settings-form">
           <div className="settings-section">
             <h2>Coffee Shop Image</h2>
@@ -480,6 +511,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
           )}
         </form>
+        ) : (
+          <ContactDetailsTab 
+            coffeeShopId={coffeeShop.id}
+            isEditMode={isEditMode}
+          />
+        )}
       </main>
     </div>
   );

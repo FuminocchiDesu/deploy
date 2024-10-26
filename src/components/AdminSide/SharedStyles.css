@@ -847,6 +847,36 @@ body {
   cursor: not-allowed;
 }
 
+.settings-tab-container {
+  margin-top: 1rem;
+}
+
+.tab-nav {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.tab-button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.tab-button:hover:not(.active) {
+  color: #4b5563;
+}
+
+.tab-content {
+  padding: 1rem 0;
+}
+
 /* Responsive Styles */
 @media (max-width: 640px) {
   .login-card {
