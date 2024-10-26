@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
-import './AdminLogin.css';
+import './SharedStyles.css';
 
 const AdminLogin = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });

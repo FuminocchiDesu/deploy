@@ -1,5 +1,5 @@
 import React from 'react';
-import './Switch.css'; // We'll create this CSS file next
+import './SharedStyles.css'; // We'll create this CSS file next
 
 const Switch = ({ id, checked, onChange, disabled }) => {
   return (
