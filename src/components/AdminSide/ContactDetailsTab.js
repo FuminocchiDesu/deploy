@@ -1,7 +1,7 @@
-// ContactDetailsTab.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SharedStyles.css';
+
 const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
   const [contactInfo, setContactInfo] = useState({
     contact_name: '',
@@ -15,6 +15,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isExisting, setIsExisting] = useState(false);
 
   useEffect(() => {
     fetchContactInfo();
@@ -23,17 +24,20 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
   const fetchContactInfo = async () => {
     try {
       const response = await axios.get(
-        `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/details/`,
+        `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/`,
         {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
         }
       );
       setContactInfo(response.data);
+      setIsExisting(true);
     } catch (error) {
       console.error('Error fetching contact information:', error);
+      // Only set error if it's not a 404, since 404 is expected for new shops
       if (error.response?.status !== 404) {
         setError('Failed to fetch contact information');
       }
+      setIsExisting(false);
     }
   };
 
@@ -51,21 +55,27 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
     setSuccess(null);
 
     try {
-      await axios.post(
-        `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/`,
-        contactInfo,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-            'Content-Type': 'application/json'
-          }
+      const method = isExisting ? 'put' : 'post';
+      const response = await axios({
+        method,
+        url: `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/`,
+        data: contactInfo,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+          'Content-Type': 'application/json'
         }
-      );
+      });
 
+      setContactInfo(response.data);
+      setIsExisting(true);
       setSuccess('Contact information updated successfully');
     } catch (error) {
       console.error('Error updating contact information:', error);
-      setError('Failed to update contact information');
+      setError(
+        error.response?.data?.error || 
+        error.response?.data?.detail || 
+        'Failed to update contact information'
+      );
     }
   };
 
@@ -192,7 +202,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
         {isEditMode && (
           <div className="flex justify-end mt-4">
             <button type="submit" className="button primary">
-              Save Contact Information
+              {isExisting ? 'Update' : 'Save'} Contact Information
             </button>
           </div>
         )}
