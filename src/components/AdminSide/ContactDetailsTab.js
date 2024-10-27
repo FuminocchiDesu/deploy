@@ -202,7 +202,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
         {isEditMode && (
           <div className="flex justify-end mt-4">
             <button type="submit" className="button primary">
-              {isExisting ? 'Update' : 'Save'} Contact Information
+              Save Contact Information
             </button>
           </div>
         )}
