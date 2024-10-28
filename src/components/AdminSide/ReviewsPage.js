@@ -165,7 +165,7 @@ function ReviewsPage({ handleOwnerLogout }) {
 
       <main className="main-content">
         <header className="page-header">
-          <h1>Customer Reviews</h1>
+          <h1 className='page-title'>Customer Reviews</h1>
         </header>
 
         <div className="dashboard-content">
@@ -268,14 +268,7 @@ function ReviewsPage({ handleOwnerLogout }) {
           padding: 2rem;
           overflow-y: auto;
         }
-
-        .page-header h1 {
-          font-size: 2rem;
-          font-weight: bold;
-          color: #333;
-          margin-bottom: 1.5rem;
-        }
-
+          
         .error-message {
           background-color: #fee2e2;
           border: 1px solid #fecaca;
@@ -322,7 +315,7 @@ function ReviewsPage({ handleOwnerLogout }) {
           display: inline-flex;
           align-items: center;
           padding: 0.5rem 1rem;
-          background-color: #4f46e5;
+          background-color: #A0522D;
           color: white;
           border-radius: 0.375rem;
           text-decoration: none;
@@ -331,7 +324,7 @@ function ReviewsPage({ handleOwnerLogout }) {
         }
 
         .download-button:hover {
-          background-color: #4338ca;
+          background-color: #D2B48C;
         }
 
         .download-button svg {
@@ -339,8 +332,8 @@ function ReviewsPage({ handleOwnerLogout }) {
         }
 
         .info-box {
-          background-color: #e0f2fe;
-          border-left: 4px solid #3b82f6;
+          background-color: #F5DEB3;
+          border-left: 4px solid #A0522D;
           padding: 1rem;
           margin-bottom: 1.5rem;
           border-radius: 0.375rem;
@@ -350,11 +343,11 @@ function ReviewsPage({ handleOwnerLogout }) {
           font-size: 1.125rem;
           font-weight: 600;
           margin-bottom: 0.5rem;
-          color: #1e40af;
+          color: #A0522D;
         }
 
         .info-box p {
-          color: #1e40af;
+          color: #A0522D;
           margin: 0;
         }
 
@@ -376,7 +369,7 @@ function ReviewsPage({ handleOwnerLogout }) {
           display: inline-flex;
           align-items: center;
           padding: 0.5rem 1rem;
-          background-color: #4f46e5;
+          background-color: #A0522D;
           color: white;
           border: none;
           border-radius: 0.375rem;
@@ -386,7 +379,7 @@ function ReviewsPage({ handleOwnerLogout }) {
         }
 
         .generate-button:hover {
-          background-color: #4338ca;
+          background-color: #D2B48C;
         }
 
         .generate-button svg {
@@ -438,14 +431,14 @@ function ReviewsPage({ handleOwnerLogout }) {
         }
 
         .confirm-button {
-          background-color: #4f46e5;
+          background-color: #A0522D;
           color: white;
           border: none;
           margin-right: 0.5rem;
         }
 
         .confirm-button:hover {
-          background-color: #4338ca;
+          background-color: #D2B48C;
         }
 
         .cancel-button {

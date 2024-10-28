@@ -351,7 +351,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
       <main className="main-content">
         <header className="page-header flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Page Settings</h1>
+          <h1 className="page-title">Page Settings</h1>
           <div className="flex items-center">
             <div className="maintenance-toggle mr-4">
               <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
