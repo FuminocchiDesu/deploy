@@ -16,7 +16,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isExisting, setIsExisting] = useState(false);
-const[, setIsEditMode]= useState(false);
   useEffect(() => {
     fetchContactInfo();
   }, [coffeeShopId]);
@@ -69,7 +68,11 @@ const[, setIsEditMode]= useState(false);
       setContactInfo(response.data);
       setIsExisting(true);
       setSuccess('Contact information updated successfully');
-      setIsEditMode(false);
+
+      // Clear the success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
     } catch (error) {
       console.error('Error updating contact information:', error);
       setError(
