@@ -184,8 +184,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
       );
 
       await fetchCoffeeShop();
-
-      setSuccess('Coffee shop details and opening hours updated successfully.');
       setIsEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
@@ -343,22 +341,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         </nav>
       </div>
       <header className="page-header flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Page Settings</h1>
-        
-      </header>
-
-        {activeTab === 'basic' ? (
-          
-          <form onSubmit={(e) => e.preventDefault()} className="settings-form">
-            <EditActionButtons 
-          isEditMode={isEditMode}
-          onEdit={() => setIsEditMode(true)}
-          onCancel={() => {
-            setIsEditMode(false);
-            fetchCoffeeShop(); // Reset to original data
-          }}
-          onSave={handleShopUpdate}
-        />
+      <h1 className="page-title">Page Settings</h1>
           <div className="flex items-center">
             <div className="maintenance-toggle mr-4">
               <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
@@ -378,7 +361,15 @@ const PageSettings = ({ handleOwnerLogout }) => {
               onChange={handleTerminateToggle}
             />
             </div>
+
+            <button onClick={toggleEditMode} className="button primary">
+              {isEditMode ? 'Cancel Edit' : 'Edit'}
+            </button>
           </div>
+        </header>
+
+        {activeTab === 'basic' ? (
+        <form onSubmit={handleShopUpdate} className="settings-form">
           <div className="settings-section">
             <h2>Coffee Shop Image</h2>
             {imagePreview ? (
@@ -501,10 +492,19 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
+
+          {isEditMode && (
+            <div className="flex justify-end">
+              <button type="submit" className="button primary">
+                Save Changes
+              </button>
+            </div>
+          )}
         </form>
         ) : (
           <ContactDetailsTab 
             coffeeShopId={coffeeShop.id}
+            isEditMode={isEditMode}
           />
         )}
       </main>

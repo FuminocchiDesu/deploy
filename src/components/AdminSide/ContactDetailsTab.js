@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SharedStyles.css';
-import EditActionButtons from './EditActionButtons';
 
-const ContactDetailsTab = ({ coffeeShopId}) => {
+const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
   const [contactInfo, setContactInfo] = useState({
     contact_name: '',
     primary_phone: '',
@@ -17,8 +16,7 @@ const ContactDetailsTab = ({ coffeeShopId}) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isExisting, setIsExisting] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-
+const[, setIsEditMode]= useState(false);
   useEffect(() => {
     fetchContactInfo();
   }, [coffeeShopId]);
@@ -71,6 +69,7 @@ const ContactDetailsTab = ({ coffeeShopId}) => {
       setContactInfo(response.data);
       setIsExisting(true);
       setSuccess('Contact information updated successfully');
+      setIsEditMode(false);
     } catch (error) {
       console.error('Error updating contact information:', error);
       setError(
@@ -83,20 +82,7 @@ const ContactDetailsTab = ({ coffeeShopId}) => {
 
   return (
     <div className="contact-details-tab">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-xl font-bold">Contact Information</h2>
-      <EditActionButtons 
-        isEditMode={isEditMode}
-        onEdit={() => setIsEditMode(true)} // You'll need to add this prop
-        onCancel={() => {
-          setIsEditMode(false);
-          fetchContactInfo(); // Reset to original data
-        }}
-        onSave={handleSubmit}
-      />
-    </div>
-
-    <form onSubmit={(e) => e.preventDefault()}>
+      <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="mb-4">
             <label htmlFor="contact_name">Contact Name</label>
@@ -215,12 +201,12 @@ const ContactDetailsTab = ({ coffeeShopId}) => {
         {success && <div className="success-message mt-4">{success}</div>}
 
         {isEditMode && (
-        <div className="flex justify-end mt-4">
-          <button type="submit" className="button primary">
-            Save Contact Information
-          </button>
-        </div>
-      )}
+          <div className="flex justify-end mt-4">
+            <button type="submit" className="button primary">
+              Save Contact Information
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );
