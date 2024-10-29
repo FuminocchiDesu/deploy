@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
 import './SharedStyles.css';
+import PasswordInput from './PasswordInput';
 
 const AdminLogin = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -85,16 +86,12 @@ const AdminLogin = ({ onLogin }) => {
             </div>
             <div className="form-group">
               <label htmlFor="password" className="form-label">Password</label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
-                className="form-input"
-                placeholder="Enter your password"
                 value={credentials.password}
                 onChange={handleChange}
-                required
-                autoComplete="current-password"
+                placeholder="Enter your password"
               />
             </div>
             <button type="submit" className="submit-button" disabled={loading}>
