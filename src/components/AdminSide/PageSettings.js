@@ -9,7 +9,6 @@ import SidebarMenu from './SideBarMenu';
 import Switch from './CustomSwitch';
 import OpeningHoursTable from './OpeningHoursTable';
 import ContactDetailsTab from './ContactDetailsTab';
-import EditActionButtons from './EditActionButtons';
 
 const libraries = ['places'];
 
