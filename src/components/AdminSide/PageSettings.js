@@ -9,6 +9,7 @@ import SidebarMenu from './SideBarMenu';
 import Switch from './CustomSwitch';
 import OpeningHoursTable from './OpeningHoursTable';
 import ContactDetailsTab from './ContactDetailsTab';
+import EditActionButtons from './EditActionButtons';
 
 const libraries = ['places'];
 
@@ -324,34 +325,40 @@ const PageSettings = ({ handleOwnerLogout }) => {
         onLogout={onLogout}
       />
 
-    <div className="mb-6 border-b">
-      <nav className="flex space-x-4">
-        <button
-          className={`py-2 px-4 ${
-            activeTab === 'basic'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          onClick={() => handleTabChange('basic')}
-        >
-          Basic Information
-        </button>
-        <button
-          className={`py-2 px-4 ${
-            activeTab === 'contact'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          onClick={() => handleTabChange('contact')}
-        >
-          Contact Details
-        </button>
-      </nav>
-    </div>
+<main className="main-content">
+      <div className="tab-navigation">
+        <nav className="tab-list">
+          <button
+            className={`tab-button ${activeTab === 'basic' ? 'active' : ''}`}
+            onClick={() => handleTabChange('basic')}
+          >
+            Basic Information
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'contact' ? 'active' : ''}`}
+            onClick={() => handleTabChange('contact')}
+          >
+            Contact Details
+          </button>
+        </nav>
+      </div>
+      <header className="page-header flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Page Settings</h1>
+        
+      </header>
 
-      <main className="main-content">
-        <header className="page-header flex justify-between items-center mb-6">
-          <h1 className="page-title">Page Settings</h1>
+        {activeTab === 'basic' ? (
+          
+          <form onSubmit={(e) => e.preventDefault()} className="settings-form">
+            <EditActionButtons 
+          isEditMode={isEditMode}
+          onEdit={() => setIsEditMode(true)}
+          onCancel={() => {
+            setIsEditMode(false);
+            fetchCoffeeShop(); // Reset to original data
+          }}
+          onSave={handleShopUpdate}
+        />
           <div className="flex items-center">
             <div className="maintenance-toggle mr-4">
               <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
@@ -371,15 +378,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
               onChange={handleTerminateToggle}
             />
             </div>
-
-            <button onClick={toggleEditMode} className="button primary">
-              {isEditMode ? 'Cancel Edit' : 'Edit'}
-            </button>
           </div>
-        </header>
-
-        {activeTab === 'basic' ? (
-        <form onSubmit={handleShopUpdate} className="settings-form">
           <div className="settings-section">
             <h2>Coffee Shop Image</h2>
             {imagePreview ? (
@@ -502,19 +501,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
-
-          {isEditMode && (
-            <div className="flex justify-end">
-              <button type="submit" className="button primary">
-                Save Changes
-              </button>
-            </div>
-          )}
         </form>
         ) : (
           <ContactDetailsTab 
             coffeeShopId={coffeeShop.id}
-            isEditMode={isEditMode}
           />
         )}
       </main>
