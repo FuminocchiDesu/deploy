@@ -316,11 +316,19 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
+  // Define fixed column widths for each table
   const categoryColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { 
+      title: 'Name', 
+      dataIndex: 'name', 
+      key: 'name',
+      width: '80%',
+      ellipsis: true 
+    },
     {
       title: 'Actions',
       key: 'actions',
+      width: '20%',
       render: (_, record) => (
         isEditMode && (
           <Space>
@@ -333,12 +341,26 @@ const MenuPage = ({ handleOwnerLogout }) => {
   ];
 
   const itemColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Description', dataIndex: 'description', key: 'description' },
+    { 
+      title: 'Name', 
+      dataIndex: 'name', 
+      key: 'name',
+      width: '20%',
+      ellipsis: true 
+    },
+    { 
+      title: 'Description', 
+      dataIndex: 'description', 
+      key: 'description',
+      width: '30%',
+      ellipsis: true 
+    },
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
+      width: '15%',
+      ellipsis: true,
       render: (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         return category ? category.name : 'Unknown Category';
@@ -348,6 +370,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       title: 'Availability',
       dataIndex: 'is_available',
       key: 'is_available',
+      width: '15%',
       render: (isAvailable, record) => (
         <Button
           type={isAvailable ? 'primary' : 'danger'}
@@ -360,6 +383,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     {
       title: 'Actions',
       key: 'actions',
+      width: '20%',
       render: (_, record) => (
         isEditMode && (
           <Space>
@@ -372,13 +396,36 @@ const MenuPage = ({ handleOwnerLogout }) => {
   ];
 
   const promoColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Description', dataIndex: 'description', key: 'description' },
-    { title: 'Start Date', dataIndex: 'start_date', key: 'start_date' },
-    { title: 'End Date', dataIndex: 'end_date', key: 'end_date' },
+    { 
+      title: 'Name', 
+      dataIndex: 'name', 
+      key: 'name',
+      width: '20%',
+      ellipsis: true 
+    },
+    { 
+      title: 'Description', 
+      dataIndex: 'description', 
+      key: 'description',
+      width: '30%',
+      ellipsis: true 
+    },
+    { 
+      title: 'Start Date', 
+      dataIndex: 'start_date', 
+      key: 'start_date',
+      width: '15%' 
+    },
+    { 
+      title: 'End Date', 
+      dataIndex: 'end_date', 
+      key: 'end_date',
+      width: '15%' 
+    },
     {
       title: 'Actions',
       key: 'actions',
+      width: '20%',
       render: (_, record) => (
         isEditMode && (
           <Space>
@@ -389,6 +436,14 @@ const MenuPage = ({ handleOwnerLogout }) => {
       ),
     },
   ];
+
+  // Common table props to ensure consistent layout
+  const tableProps = {
+    loading: loading,
+    scroll: { x: 800 },
+    style: { minHeight: 400 },
+    
+  };
 
   return (
     <div className="admin-layout">
@@ -415,6 +470,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
             </Button>
           )}
           <Table 
+            {...tableProps}
             dataSource={categories} 
             columns={categoryColumns} 
             rowKey="id"
@@ -438,6 +494,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
             </Button>
           )}
           <Table 
+            {...tableProps}
             dataSource={items} 
             columns={itemColumns} 
             rowKey="id"
@@ -460,8 +517,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
               Add Promo
             </Button>
           )}
-          <Table dataSource={promoPaginatedData} columns={promoColumns} rowKey="id" />
           <Table 
+            {...tableProps}
             dataSource={promos} 
             columns={promoColumns} 
             rowKey="id"
