@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
 import './SharedStyles.css';
 import PasswordInput from './PasswordInput';
+import ForgotPassword from './ForgotPassword';
 
 const AdminLogin = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -59,6 +60,10 @@ const AdminLogin = ({ onLogin }) => {
     }
   };
 
+  const handleForgotPassword = () => {
+    navigate('/forgot-password');
+  };
+  
   return (
     <div className="admin-login-page">
       <div className="login-card">
@@ -93,6 +98,9 @@ const AdminLogin = ({ onLogin }) => {
                 onChange={handleChange}
                 placeholder="Enter your password"
               />
+              <div className="forgot-password-link">
+                <a href="#" onClick={handleForgotPassword}>Forgot Password?</a>
+              </div>
             </div>
             <button type="submit" className="submit-button" disabled={loading}>
               {loading ? (
@@ -107,6 +115,7 @@ const AdminLogin = ({ onLogin }) => {
                 </>
               )}
             </button>
+            
           </form>
           {error && (
             <div className="error-alert">

@@ -6,6 +6,7 @@ import PageSettings from './components/AdminSide/PageSettings';
 import MenuPage from './components/AdminSide/MenuPage';
 import ReviewsPage from './components/AdminSide/ReviewsPage';
 import UserProfile from './components/AdminSide/UserProfile';
+import ForgotPassword from './components/AdminSide/ForgotPassword';
 import './App.css';
 
 const App = () => {
@@ -49,7 +50,7 @@ const App = () => {
               : <AdminLogin onLogin={handleOwnerLogin} />
           } 
         />
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route 
           path="/dashboard" 
           element={

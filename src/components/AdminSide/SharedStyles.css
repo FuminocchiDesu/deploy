@@ -914,3 +914,12 @@ body {
   width: 1.25rem;
   height: 1.25rem;
 }
+
+.forgot-password-link a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.forgot-password-link a:hover {
+  color: brown;
+}
+
