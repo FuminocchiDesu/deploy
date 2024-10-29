@@ -125,6 +125,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
       }));
       
       setSuccess('Maintenance mode updated successfully');
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
     } catch (error) {
       console.error('Error updating maintenance mode:', error);
       setError('Failed to update maintenance mode. Please try again.');
@@ -184,7 +187,14 @@ const PageSettings = ({ handleOwnerLogout }) => {
       );
 
       await fetchCoffeeShop();
+      setSuccess('Contact information updated successfully');
+
+      // Clear the success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
       setIsEditMode(false);
+      
     } catch (error) {
       console.error('Error updating coffee shop:', error);
       if (error.response) {
