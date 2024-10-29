@@ -440,9 +440,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   // Common table props to ensure consistent layout
   const tableProps = {
     loading: loading,
-    scroll: { x: 800 },
-    style: { minHeight: 400 },
-    
+    scroll: { x: 800 }, 
   };
 
   return (
