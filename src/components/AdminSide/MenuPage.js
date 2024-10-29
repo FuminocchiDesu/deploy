@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, message, Space } from 'antd';
+import { Button, Table, Modal, Form, message, Space, Pagination } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
@@ -25,6 +25,31 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const navigate = useNavigate();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken');
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categoryPageSize, setCategoryPageSize] = useState(5);
+  const [itemPage, setItemPage] = useState(1);
+  const [itemPageSize, setItemPageSize] = useState(5);
+  const [promoPage, setPromoPage] = useState(1);
+  const [promoPageSize, setPromoPageSize] = useState(5);
+
+  const handleCategoryPageChange = (page, pageSize) => {
+    setCategoryPage(page);
+    setCategoryPageSize(pageSize);
+  };
+
+  const handleItemPageChange = (page, pageSize) => {
+    setItemPage(page);
+    setItemPageSize(pageSize);
+  };
+
+  const handlePromoPageChange = (page, pageSize) => {
+    setPromoPage(page);
+    setPromoPageSize(pageSize);
+  };
+
+  const categoryPaginatedData = categories.slice((categoryPage - 1) * categoryPageSize, categoryPage * categoryPageSize);
+  const itemPaginatedData = items.slice((itemPage - 1) * itemPageSize, itemPage * itemPageSize);
+  const promoPaginatedData = promos.slice((promoPage - 1) * promoPageSize, promoPage * promoPageSize);
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
@@ -389,7 +414,20 @@ const MenuPage = ({ handleOwnerLogout }) => {
               Add Category
             </Button>
           )}
-          <Table dataSource={categories} columns={categoryColumns} rowKey="id" />
+          <Table 
+            dataSource={categories} 
+            columns={categoryColumns} 
+            rowKey="id"
+            pagination={{
+              current: categoryPage,
+              pageSize: categoryPageSize,
+              total: categories.length,
+              onChange: (page, pageSize) => {
+                setCategoryPage(page);
+                setCategoryPageSize(pageSize);
+              }
+            }}
+          />
         </section>
 
         <section className="menu-section mb-8">
@@ -399,7 +437,20 @@ const MenuPage = ({ handleOwnerLogout }) => {
               Add Item
             </Button>
           )}
-          <Table dataSource={items} columns={itemColumns} rowKey="id" />
+          <Table 
+            dataSource={items} 
+            columns={itemColumns} 
+            rowKey="id"
+            pagination={{
+              current: itemPage,
+              pageSize: itemPageSize,
+              total: items.length,
+              onChange: (page, pageSize) => {
+                setItemPage(page);
+                setItemPageSize(pageSize);
+              }
+            }}
+          />
         </section>
 
         <section className="menu-section">
@@ -409,7 +460,21 @@ const MenuPage = ({ handleOwnerLogout }) => {
               Add Promo
             </Button>
           )}
-          <Table dataSource={promos} columns={promoColumns} rowKey="id" />
+          <Table dataSource={promoPaginatedData} columns={promoColumns} rowKey="id" />
+          <Table 
+            dataSource={promos} 
+            columns={promoColumns} 
+            rowKey="id"
+            pagination={{
+              current: promoPage,
+              pageSize: promoPageSize,
+              total: promos.length,
+              onChange: (page, pageSize) => {
+                setPromoPage(page);
+                setPromoPageSize(pageSize);
+              }
+            }}
+          />
         </section>
 
         <Modal
