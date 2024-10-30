@@ -146,6 +146,7 @@ body {
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
+  border-width: 0px;
 }
 
 .card-header {
@@ -654,6 +655,7 @@ body {
   background-color: white;
   border-radius: 0.5rem;
   padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .settings-section {
