@@ -32,25 +32,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [promoPage, setPromoPage] = useState(1);
   const [promoPageSize, setPromoPageSize] = useState(5);
 
-  const handleCategoryPageChange = (page, pageSize) => {
-    setCategoryPage(page);
-    setCategoryPageSize(pageSize);
-  };
-
-  const handleItemPageChange = (page, pageSize) => {
-    setItemPage(page);
-    setItemPageSize(pageSize);
-  };
-
-  const handlePromoPageChange = (page, pageSize) => {
-    setPromoPage(page);
-    setPromoPageSize(pageSize);
-  };
-
-  const categoryPaginatedData = categories.slice((categoryPage - 1) * categoryPageSize, categoryPage * categoryPageSize);
-  const itemPaginatedData = items.slice((itemPage - 1) * itemPageSize, itemPage * itemPageSize);
-  const promoPaginatedData = promos.slice((promoPage - 1) * promoPageSize, promoPage * promoPageSize);
-
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
       fetchData();
@@ -89,7 +70,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
       onLogout();
       if (error.response && error.response.status === 401) {
         message.error('Owner authentication failed. Please log in again.');
-     
       } else {
         message.error('Failed to fetch menu data');
       }
@@ -141,7 +121,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const values = await form.validateFields();
       const formData = new FormData();
 
-      // Append basic form fields
       for (let key in values) {
         if (key === 'sizes') {
           formData.append(key, JSON.stringify(sizes));
@@ -316,7 +295,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
-  // Define fixed column widths for each table
   const categoryColumns = [
     { 
       title: 'Name', 
@@ -373,7 +351,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
       width: '15%',
       render: (isAvailable, record) => (
         <Button
-          type={isAvailable ? 'primary' : 'danger'}
+          style={{ 
+            backgroundColor: isAvailable ? '#a0522d' : '#ff4d4f', 
+            borderColor: isAvailable ? '#a0522d' : '#ff4d4f', 
+            color: 'white' 
+          }}
           onClick={() => handleAvailabilityToggle(record.id, isAvailable)}
         >
           {isAvailable ? 'Available' : 'Unavailable'}
@@ -437,7 +419,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
     },
   ];
 
-  // Common table props to ensure consistent layout
   const tableProps = {
     loading: loading,
     scroll: { x: 800 }, 
@@ -461,7 +442,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
         </Button>
         
         <section className="menu-section mb-8">
-          <h2 className="text-xl font-semibold mb-2">Categories</h2>
+          <h2 className="text-xl font-semibold  mb-2">Categories</h2>
           {isEditMode && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
               Add Category
@@ -538,22 +519,23 @@ const MenuPage = ({ handleOwnerLogout }) => {
           onOk={handleFormSubmit}
           onCancel={handleModalClose}
         >
-      <Form form={form} layout="vertical">
-        <MenuManagementForms
-          modalType={modalType}
-          categories={categories}
-          useMainPrice={useMainPrice}
-          setUseMainPrice={setUseMainPrice}
-          sizes={sizes}
-          handleSizeChange={handleSizeChange}
-          addSize={addSize}
-          removeSize={removeSize}
-          handleAdditionalImagesPreview={handleAdditionalImagesPreview}
-        />
-      </Form>
-      </Modal>
+          <Form form={form} layout="vertical">
+            <MenuManagementForms
+              modalType={modalType}
+              categories={categories}
+              useMainPrice={useMainPrice}
+              setUseMainPrice={setUseMainPrice}
+              sizes={sizes}
+              handleSizeChange={handleSizeChange}
+              addSize={addSize}
+              removeSize={removeSize}
+              handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+            />
+          </Form>
+        </Modal>
+      </div>
     </div>
-    </div>
-);
+  );
 };
-export default MenuPage;  
+
+export default MenuPage;
