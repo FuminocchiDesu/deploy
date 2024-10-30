@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, message, Space, Pagination } from 'antd';
+import { Button, Table, Modal, Form, message, Space, Pagination, ConfigProvider } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
@@ -352,8 +352,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
       render: (isAvailable, record) => (
         <Button
           style={{ 
-            backgroundColor: isAvailable ? '#a0522d' : '#ff4d4f', 
-            borderColor: isAvailable ? '#a0522d' : '#ff4d4f', 
+            backgroundColor: isAvailable ? '#717a50' : '#ff4d4f', 
+            borderColor: isAvailable ? '#717a50' : '#ff4d4f', 
             color: 'white' 
           }}
           onClick={() => handleAvailabilityToggle(record.id, isAvailable)}
@@ -424,8 +424,27 @@ const MenuPage = ({ handleOwnerLogout }) => {
     scroll: { x: 800 }, 
   };
 
+  const paginationTheme = {
+    token: {
+      colorPrimary: '#a0522d',
+    },
+  };
+
+  const buttonTheme = {
+    components: {
+      Button: {
+        colorPrimary: '#a0522d',
+        colorPrimaryHover: '#8B4513',
+        colorPrimaryActive: '#8B4513',
+        defaultBg: '#ffffff',
+        defaultColor: '#a0522d',
+        defaultBorderColor: '#a0522d',
+      },
+    },
+  };
+
   return (
-    <div className="admin-layout">
+    <div  className="admin-layout">
       <SidebarMenu
         activeMenuItem={activeMenuItem}
         handleMenuItemClick={handleMenuItemClick}
@@ -433,85 +452,89 @@ const MenuPage = ({ handleOwnerLogout }) => {
       />
       <div className="main-content">
         <h1 className="page-title">Menu Management</h1>
-        <Button 
-          type={isEditMode ? "primary" : "default"}
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="mb-4"
-        >
-          {isEditMode ? 'View Mode' : 'Edit Mode'}
-        </Button>
+        <ConfigProvider theme={buttonTheme}>
+          <Button 
+            type={isEditMode ? "primary" : "default"}
+            onClick={() => setIsEditMode(!isEditMode)}
+            className="mb-4"
+          >
+            {isEditMode ? 'View Mode' : 'Edit Mode'}
+          </Button>
+        </ConfigProvider>
         
-        <section className="menu-section mb-8">
-          <h2 className="text-xl font-semibold  mb-2">Categories</h2>
-          {isEditMode && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
-              Add Category
-            </Button>
-          )}
-          <Table 
-            {...tableProps}
-            dataSource={categories} 
-            columns={categoryColumns} 
-            rowKey="id"
-            pagination={{
-              current: categoryPage,
-              pageSize: categoryPageSize,
-              total: categories.length,
-              onChange: (page, pageSize) => {
-                setCategoryPage(page);
-                setCategoryPageSize(pageSize);
-              }
-            }}
-          />
-        </section>
+        <ConfigProvider theme={paginationTheme}>
+          <section className="menu-section mb-8">
+            <h2 className="text-xl font-semibold  mb-2">Categories</h2>
+            {isEditMode && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
+                Add Category
+              </Button>
+            )}
+            <Table 
+              {...tableProps}
+              dataSource={categories} 
+              columns={categoryColumns} 
+              rowKey="id"
+              pagination={{
+                current: categoryPage,
+                pageSize: categoryPageSize,
+                total: categories.length,
+                onChange: (page, pageSize) => {
+                  setCategoryPage(page);
+                  setCategoryPageSize(pageSize);
+                }
+              }}
+            />
+          </section>
 
-        <section className="menu-section mb-8">
-          <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
-          {isEditMode && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('item')} className="mb-2">
-              Add Item
-            </Button>
-          )}
-          <Table 
-            {...tableProps}
-            dataSource={items} 
-            columns={itemColumns} 
-            rowKey="id"
-            pagination={{
-              current: itemPage,
-              pageSize: itemPageSize,
-              total: items.length,
-              onChange: (page, pageSize) => {
-                setItemPage(page);
-                setItemPageSize(pageSize);
-              }
-            }}
-          />
-        </section>
+          <section className="menu-section mb-8">
+            <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
+            {isEditMode && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('item')} className="mb-2">
+                Add Item
+              </Button>
+            )}
+            <Table 
+              {...tableProps}
+              dataSource={items} 
+              columns={itemColumns} 
+              rowKey="id"
+              pagination={{
+                current: itemPage,
+                pageSize: itemPageSize,
+                total: items.length,
+                onChange: (page, pageSize) => {
+                  setItemPage(page);
+                  setItemPageSize(pageSize);
+                }
+              }}
+            />
+          </section>
 
-        <section className="menu-section">
-          <h2 className="text-xl font-semibold mb-2">Promos</h2>
-          {isEditMode && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('promo')} className="mb-2">
-              Add Promo
-            </Button>
-          )}
-          <Table 
-            {...tableProps}
-            dataSource={promos} 
-            columns={promoColumns} 
-            rowKey="id"
-            pagination={{
-              current: promoPage,
-              pageSize: promoPageSize,
-              total: promos.length,
-              onChange: (page, pageSize) => {
-                setPromoPage(page);
-                setPromoPageSize(pageSize);
-              }
-            }}
-          />
-        </section>
+          <section className="menu-section">
+            <h2 className="text-xl font-semibold mb-2">Promos</h2>
+            {isEditMode && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('promo')} className="mb-2">
+                Add Promo
+              </Button>
+            )}
+            <Table 
+              {...tableProps}
+              dataSource={promos} 
+              columns={promoColumns} 
+              rowKey="id"
+              pagination={{
+                current: promoPage,
+                pageSize: promoPageSize,
+                total: promos.length,
+                onChange: (page, pageSize) => {
+                  setPromoPage(page);
+                  setPromoPageSize(pageSize);
+                }
+              }}
+            />
+          </section>
+        </ConfigProvider>
 
         <Modal
           title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
