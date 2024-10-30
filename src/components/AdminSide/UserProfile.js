@@ -19,7 +19,7 @@ const UserProfile = ({ handleOwnerLogout }) => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile', {
+      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`
         }
@@ -48,7 +48,7 @@ const UserProfile = ({ handleOwnerLogout }) => {
         }
       })
 
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile', {
+      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile/', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`
