@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Edit, Save } from 'lucide-react'
 import SidebarMenu from './SideBarMenu'
 import './SharedStyles.css'
+import AccountSettings from './AccountSettings'
 
 const UserProfile = ({ handleOwnerLogout }) => {
   const [profile, setProfile] = useState(null)
@@ -175,10 +176,12 @@ const UserProfile = ({ handleOwnerLogout }) => {
                     rows={4}
                   />
                 </div>
+                
               </div>
             </div>
-          </div>
+          </div><AccountSettings/>
         </div>
+        
       </main>
     </div>
   )
