@@ -119,7 +119,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
         <div className="dashboard-content">
           {/* Visits Chart */}
-          <div className="card">
+          <div className="settings-form">
             <div className="card-header">
               <h2 className="card-title">Visits Over Time</h2>
               <FilterButtons
@@ -150,7 +150,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
           </div>
 
           {/* Reviews Chart */}
-          <div className="card">
+          <div className="settings-form">
             <div className="card-header">
               <h2 className="card-title">Reviews Analysis</h2>
               <FilterButtons
@@ -202,7 +202,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
           <div className="dashboard-grid">
             {/* Favorites Card */}
-            <div className="card">
+            <div className="settings-form">
               <div className="card-header">
                 <h2 className="card-title">Favorites</h2>
               </div>
@@ -213,7 +213,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
             </div>
 
             {/* Recent Reviews Card */}
-            <div className="card">
+            <div className="settings-form">
               <div className="card-header">
                 <h2 className="card-title">Recent Reviews</h2>
               </div>
