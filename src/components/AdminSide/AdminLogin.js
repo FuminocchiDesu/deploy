@@ -66,64 +66,137 @@ const AdminLogin = ({ onLogin }) => {
   
   return (
     <div className="admin-login-page">
-      <div className="login-card">
-        <div className="login-header">
-          <h2 className="login-title">Coffee Shop Owner Login</h2>
-          <p className="login-description">
-            Enter your credentials to access your coffee shop dashboard
-          </p>
-        </div>
-        <div className="login-form">
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="username" className="form-label">Username</label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                className="form-input"
-                placeholder="Enter your username"
-                value={credentials.username}
-                onChange={handleChange}
-                required
-                autoComplete="username"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">Password</label>
-              <PasswordInput
-                id="password"
-                name="password"
-                value={credentials.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-              />
-              <div className="forgot-password-link">
-                <a href="#" onClick={handleForgotPassword}>Forgot Password?</a>
-              </div>
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="submit-button-icon" />
-                  Logging in...
-                </>
-              ) : (
-                <>
-                  <Coffee className="submit-button-icon" />
-                  Login
-                </>
-              )}
-            </button>
+      <div style={{
+        width: '100%',
+        maxWidth: '1000px',
+        display: 'flex',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div style={{
+          flex: '1',
+          padding: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}>
+          <div style={{ maxWidth: '400px', margin: '0 auto', width: '100%' }}>
+            <h2 style={{
+              fontSize: '1.875rem',
+              fontWeight: '700',
+              color: 'var(--color-primary)',
+              marginBottom: '0.5rem'
+            }}>Coffee Shop Owner Login</h2>
+            <p style={{
+              color: 'var(--color-text-light)',
+              marginBottom: '2rem'
+            }}>Enter your credentials to access your coffee shop dashboard</p>
             
-          </form>
-          {error && (
-            <div className="error-alert">
-              <AlertCircle className="error-alert-icon" />
-              <div className="error-alert-title">Error</div>
-              <div className="error-alert-description">{error}</div>
-            </div>
-          )}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">Username</label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter your username"
+                  value={credentials.username}
+                  onChange={handleChange}
+                  required
+                  autoComplete="username"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  value={credentials.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                />
+                <div style={{
+                  textAlign: 'right',
+                  marginTop: '0.5rem'
+                }}>
+                  <a
+                    href="#"
+                    onClick={handleForgotPassword}
+                    style={{
+                      color: 'var(--color-text)',
+                      textDecoration: 'none',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={loading}
+                style={{ marginTop: '1.5rem' }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="submit-button-icon" />
+                    Logging in...
+                  </>
+                ) : (
+                  <>
+                    <Coffee className="submit-button-icon" />
+                    Login
+                  </>
+                )}
+              </button>
+            </form>
+            
+            {error && (
+              <div className="error-alert">
+                <AlertCircle className="error-alert-icon" />
+                <div className="error-alert-title">Error</div>
+                <div className="error-alert-description">{error}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div style={{
+          flex: '1',
+          position: 'relative',
+          backgroundColor: 'var(--color-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yl5yTCrtDoB2lrgxZoEXp5tyGfjCku.png)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: '0.6'
+          }} />
+          <div style={{
+            position: 'relative',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <Coffee size={48} />
+            <h2 style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              marginTop: '1rem'
+            }}>KohiLocale</h2>
+            <p style={{
+              marginTop: '0.5rem',
+              opacity: '0.9'
+            }}>Brewing success, one cup at a time.</p>
+          </div>
         </div>
       </div>
     </div>

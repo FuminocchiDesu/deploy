@@ -348,26 +348,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </button>
           </nav>
         </div>
-        <header className="page-header flex justify-between items-center mb-6">
-          <h1 className="page-title">Page Settings</h1>
-          <div className="flex items-center">
-            <div className="maintenance-toggle mr-4">
-              <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
-              <Switch
-                id="maintenance-mode"
-                checked={coffeeShop.is_under_maintenance}
-                onChange={handleMaintenanceToggle}
-                disabled={isUpdatingMaintenance}
-              />
-            </div>
-
-            
-
-            <button onClick={toggleEditMode} className="button primary">
-              {isEditMode ? 'Cancel Edit' : 'Edit'}
-            </button>
-          </div>
-        </header>
 
         {showWarning && (
           <div className="warning-modal">
@@ -392,7 +372,25 @@ const PageSettings = ({ handleOwnerLogout }) => {
         )}
 
         {activeTab === 'basic' ? (
+          
           <form onSubmit={handleShopUpdate} className="settings-form">
+            <header className="page-header flex justify-between items-center mb-6">
+          <h1 className="page-title">Page Settings</h1>
+          <div className="flex items-center">
+            <div className="maintenance-toggle mr-4">
+              <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
+              <Switch
+                id="maintenance-mode"
+                checked={coffeeShop.is_under_maintenance}
+                onChange={handleMaintenanceToggle}
+                disabled={isUpdatingMaintenance}
+              />
+            </div>
+            <button onClick={toggleEditMode} className="button primary">
+              {isEditMode ? 'Cancel Edit' : 'Edit'}
+            </button>
+          </div>
+        </header>
             <div className="settings-section">
               <h2>Coffee Shop Image</h2>
               {imagePreview ? (
@@ -524,6 +522,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 </button>
               </div>
             )}
+            <button 
+              onClick={handleTerminateClick} 
+              className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'} mr-4`}
+            >
+              {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
+            </button>
           </form>
           
         ) : (
@@ -532,13 +536,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
             isEditMode={isEditMode}
           />
         )}
-
-<button 
-              onClick={handleTerminateClick} 
-              className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'} mr-4`}
-            >
-              {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
-            </button>
       </main>
     </div>
   );
