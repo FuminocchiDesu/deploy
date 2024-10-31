@@ -151,6 +151,28 @@ const MenuManagementForms = ({
       >
         <DatePicker format="YYYY-MM-DD" />
       </Form.Item>
+      <Form.Item 
+        name="image" 
+        label="Promo Image" 
+        valuePropName="fileList" 
+        getValueFromEvent={(e) => {
+          if (Array.isArray(e)) {
+            return e;
+          }
+          return e && e.fileList;
+        }}
+      >
+        <Upload 
+          beforeUpload={() => false}
+          listType="picture-card"
+          maxCount={1}
+        >
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Promo Image</div>
+          </div>
+        </Upload>
+      </Form.Item>
     </>
   );
 
