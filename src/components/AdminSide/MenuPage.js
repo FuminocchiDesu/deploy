@@ -120,22 +120,35 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setError(null);
       const values = await form.validateFields();
       const formData = new FormData();
-
+  
       for (let key in values) {
-        if (key === 'sizes') {
+        if ((key === 'start_date' || key === 'end_date') && values[key]) {
+          // Check if it's a Moment object or already an ISO date string
+          const dateValue = values[key];
+          const formattedDate = dateValue.toISOString 
+            ? dateValue.toISOString().split('T')[0]  // Moment object
+            : dateValue;  // Assume it's already a string
+          formData.append(key, formattedDate);
+        } else if (key === 'sizes') {
           formData.append(key, JSON.stringify(sizes));
         } else if (key === 'image') {
           if (values[key] && values[key][0] && values[key][0].originFileObj) {
             formData.append(key, values[key][0].originFileObj);
           }
-        } else if (key !== 'additional_images') {
+        } else if (key !== 'additional_images' && key !== 'useMainPrice') {
           formData.append(key, values[key]);
         }
       }
-
-      formData.append('is_available', true);
-      formData.append('coffee_shop', coffeeShopId);
-
+  
+      // Special handling for promos
+      if (modalType === 'promo') {
+        formData.append('coffee_shop', coffeeShopId);
+      } else {
+        formData.append('is_available', true);
+        formData.append('coffee_shop', coffeeShopId);
+      }
+  
+      // Handle item-specific price logic
       if (modalType === 'item') {
         if (useMainPrice) {
           formData.append('price', values.price);
@@ -143,7 +156,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
           formData.append('sizes', JSON.stringify(sizes));
         }
       }
-
+  
+      // Handle additional images for items
       if (values.additional_images) {
         values.additional_images.forEach((file) => {
           if (file.originFileObj) {
@@ -151,7 +165,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
           }
         });
       }
-
+  
+      // Determine endpoint based on modal type
       let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
       switch (modalType) {
         case 'category':
@@ -166,25 +181,27 @@ const MenuPage = ({ handleOwnerLogout }) => {
         default:
           throw new Error('Invalid modal type');
       }
-
+  
+      // Add ID for update operations
       if (selectedItem && selectedItem.id) {
         endpoint += `${selectedItem.id}/`;
       }
-
+  
       const config = {
         headers: { Authorization: `Bearer ${ownerToken}` }
       };
-
+  
       const response = await fetch(endpoint, {
         method: selectedItem ? 'PATCH' : 'POST',
         body: formData,
         headers: config.headers
       });
-
+  
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
       }
-
+  
       await response.json();
       message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
       handleModalClose();

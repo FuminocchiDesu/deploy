@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Select, Upload, Button, DatePicker, Checkbox } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 const MenuManagementForms = ({
   modalType,
@@ -130,11 +131,25 @@ const MenuManagementForms = ({
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <Input.TextArea />
       </Form.Item>
-      <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
-        <DatePicker />
+      <Form.Item 
+        name="start_date" 
+        label="Start Date" 
+        rules={[{ required: true }]}
+        getValueProps={(value) => ({
+          value: value ? moment(value) : null
+        })}
+      >
+        <DatePicker format="YYYY-MM-DD" />
       </Form.Item>
-      <Form.Item name="end_date" label="End Date" rules={[{ required: true }]}>
-        <DatePicker />
+      <Form.Item 
+        name="end_date" 
+        label="End Date" 
+        rules={[{ required: true }]}
+        getValueProps={(value) => ({
+          value: value ? moment(value) : null
+        })}
+      >
+        <DatePicker format="YYYY-MM-DD" />
       </Form.Item>
     </>
   );
