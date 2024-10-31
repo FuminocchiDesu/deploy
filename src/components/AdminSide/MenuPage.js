@@ -206,32 +206,39 @@ const MenuPage = ({ handleOwnerLogout }) => {
         const config = {
           headers: { Authorization: `Bearer ${ownerToken}` }
         };
-
-        const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/${type}s/${id}/`;
-        const response = await fetch(endpoint, {
-          method: 'DELETE',
-          headers: config.headers
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        message.success('Deleted successfully');
-        fetchData();
-      } catch (error) {
-        console.error('Error deleting:', error);
-        setError(`An error occurred while deleting: ${error.message}`);
-        if (error.response && error.response.status === 401) {
-          message.error('Owner authentication failed. Please log in again.');
-          handleOwnerLogout();
-        } else {
-          message.error('Delete operation failed');
-        }
-      } finally {
-        setLoading(false);
+  
+      let endpoint;
+      switch (type) {
+        case 'category':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`;
+          break;
+        case 'item':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
+          break;
+        case 'promo':
+          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`;
+          break;
+        default:
+          throw new Error('Invalid type');
       }
+  
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: config.headers
+      });
+  
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+      }
+  
+      message.success('Deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting:', error);
+      message.error('Delete operation failed: ' + error.message);
     }
+  }
   };
 
   const handleAvailabilityToggle = async (id, currentAvailability) => {
