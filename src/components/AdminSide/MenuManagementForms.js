@@ -12,7 +12,8 @@ const MenuManagementForms = ({
   handleSizeChange,
   addSize,
   removeSize,
-  handleAdditionalImagesPreview
+  handleAdditionalImagesPreview,
+  form 
 }) => {
   const renderItemForm = () => (
     <>
@@ -132,25 +133,52 @@ const MenuManagementForms = ({
         <Input.TextArea />
       </Form.Item>
       <Form.Item 
-        name="start_date" 
-        label="Start Date" 
-        rules={[{ required: true }]}
-        getValueProps={(value) => ({
-          value: value ? moment(value) : null
-        })}
-      >
-        <DatePicker format="YYYY-MM-DD" />
-      </Form.Item>
-      <Form.Item 
-        name="end_date" 
-        label="End Date" 
-        rules={[{ required: true }]}
-        getValueProps={(value) => ({
-          value: value ? moment(value) : null
-        })}
-      >
-        <DatePicker format="YYYY-MM-DD" />
-      </Form.Item>
+  name="start_date" 
+  label="Start Date" 
+  rules={[{ required: true }]}
+  getValueProps={(value) => ({
+    value: value ? (typeof value === 'string' ? moment(value) : value) : null
+  })}
+>
+  <DatePicker 
+    format="YYYY-MM-DD" 
+    disabledDate={(current) => current && current < moment().startOf('day')}
+  />
+</Form.Item>
+<Form.Item 
+  name="end_date" 
+  label="End Date" 
+  rules={[
+    { required: true },
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        const startDate = getFieldValue('start_date');
+        if (!value || !startDate) {
+          return Promise.resolve();
+        }
+        if (value < startDate) {
+          return Promise.reject(new Error('End date must be after start date'));
+        }
+        return Promise.resolve();
+      },
+    }),
+  ]}
+  dependencies={['start_date']}
+  getValueProps={(value) => ({
+    value: value ? (typeof value === 'string' ? moment(value) : value) : null
+  })}
+>
+  <DatePicker 
+    format="YYYY-MM-DD" 
+    disabledDate={(current) => {
+      const startDate = form?.getFieldValue('start_date');
+      return current && (
+        current < (startDate || moment().startOf('day')) || 
+        current > moment().add(1, 'year')
+      );
+    }}
+  />
+</Form.Item>
       <Form.Item 
         name="image" 
         label="Promo Image" 

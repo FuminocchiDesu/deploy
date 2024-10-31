@@ -577,6 +577,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
               addSize={addSize}
               removeSize={removeSize}
               handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+              form={form}
             />
           </Form>
         </Modal>
