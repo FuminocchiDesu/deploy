@@ -370,7 +370,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
           </div>
         )}
-
+<button onClick={toggleEditMode} className="button primary">
+              {isEditMode ? 'Cancel Edit' : 'Edit'}
+            </button>
         {activeTab === 'basic' ? (
           
           <form onSubmit={handleShopUpdate} className="settings-form">
@@ -386,9 +388,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 disabled={isUpdatingMaintenance}
               />
             </div>
-            <button onClick={toggleEditMode} className="button primary">
-              {isEditMode ? 'Cancel Edit' : 'Edit'}
-            </button>
+            
           </div>
         </header>
             <div className="settings-section">
