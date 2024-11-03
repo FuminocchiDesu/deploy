@@ -57,24 +57,34 @@ const MenuPage = ({ handleOwnerLogout }) => {
         fetch(`${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, config)
       ]);
 
+      // Check if responses are ok before trying to parse JSON
+      if (!categoriesResponse.ok || !itemsResponse.ok || !promosResponse.ok) {
+        throw new Error('One or more API requests failed');
+      }
+
       const [categoriesData, itemsData, promosData] = await Promise.all([
         categoriesResponse.json(),
         itemsResponse.json(),
         promosResponse.json()
       ]);
 
-      setCategories(categoriesData);
-      setItems(itemsData);
-      setPromos(promosData);
-      console.log(itemsData);
+      // Ensure we're setting arrays, with fallbacks if the API returns null or undefined
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      setItems(Array.isArray(itemsData) ? itemsData : []);
+      setPromos(Array.isArray(promosData) ? promosData : []);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch menu data');
-      onLogout();
-      if (error.response && error.response.status === 401) {
+      messageApi.error('Failed to fetch menu data');
+      // Initialize with empty arrays on error
+      setCategories([]);
+      setItems([]);
+      setPromos([]);
+      handleOwnerLogout();
+      navigate('/admin-login');
+      if (error.response?.status === 401) {
         messageApi.error('Owner authentication failed. Please log in again.');
-      } else {
-        messageApi.error('Failed to fetch menu data');
+        onLogout();
       }
     } finally {
       setLoading(false);
@@ -281,6 +291,135 @@ const MenuPage = ({ handleOwnerLogout }) => {
   }
   };
 
+  const handleItemDeletion = async ({ 
+    itemId, 
+    deleteType, 
+    additionalId = null,
+    coffeeShopId, 
+    ownerToken, 
+    messageApi, 
+    refreshData 
+  }) => {
+    try {
+      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}`;
+      
+      // Construct the appropriate endpoint based on deletion type
+      switch (deleteType) {
+        case 'primary-image':
+          endpoint += '/remove-primary-image/';
+          break;
+        case 'additional-image':
+          endpoint += `/remove-additional-image/${additionalId}/`;
+          break;
+        case 'size':
+          endpoint += `/sizes/${additionalId}/`;
+          break;
+        case 'item':
+          // Use base endpoint for full item deletion
+          break;
+        default:
+          throw new Error('Invalid deletion type');
+      }
+  
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${ownerToken}`
+        }
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete: ${errorText}`);
+      }
+  
+      // Show success message
+      const messages = {
+        'primary-image': 'Primary image removed successfully',
+        'additional-image': 'Additional image removed successfully',
+        'size': 'Size option removed successfully',
+        'item': 'Menu item deleted successfully'
+      };
+      messageApi.success(messages[deleteType]);
+  
+      // Refresh data if needed
+      if (refreshData) {
+        await refreshData();
+      }
+  
+      return true;
+    } catch (error) {
+      console.error('Delete operation failed:', error);
+      messageApi.error(`Failed to delete: ${error.message}`);
+      return false;
+    }
+  };
+  
+  // Usage functions that can be added to the MenuPage component
+  const menuPageDeletionMethods = {
+    // Delete entire menu item
+    handleDeleteMenuItem: async function(itemId) {
+      if (window.confirm('Are you sure you want to delete this menu item?')) {
+        return handleItemDeletion({
+          itemId,
+          deleteType: 'item',
+          coffeeShopId: this.coffeeShopId,
+          ownerToken: this.ownerToken,
+          messageApi: this.messageApi,
+          refreshData: this.fetchData
+        });
+      }
+      return false;
+    },
+  
+    // Remove primary image
+    handleRemovePrimaryImage: async function(itemId) {
+      if (window.confirm('Are you sure you want to remove the primary image?')) {
+        return handleItemDeletion({
+          itemId,
+          deleteType: 'primary-image',
+          coffeeShopId: this.coffeeShopId,
+          ownerToken: this.ownerToken,
+          messageApi: this.messageApi,
+          refreshData: this.fetchData
+        });
+      }
+      return false;
+    },
+  
+    // Remove additional image
+    handleRemoveAdditionalImage: async function(itemId, imageId) {
+      if (window.confirm('Are you sure you want to remove this image?')) {
+        return handleItemDeletion({
+          itemId,
+          deleteType: 'additional-image',
+          additionalId: imageId,
+          coffeeShopId: this.coffeeShopId,
+          ownerToken: this.ownerToken,
+          messageApi: this.messageApi,
+          refreshData: this.fetchData
+        });
+      }
+      return false;
+    },
+  
+    // Remove size option
+    handleRemoveSize: async function(itemId, sizeId) {
+      if (window.confirm('Are you sure you want to remove this size option?')) {
+        return handleItemDeletion({
+          itemId,
+          deleteType: 'size',
+          additionalId: sizeId,
+          coffeeShopId: this.coffeeShopId,
+          ownerToken: this.ownerToken,
+          messageApi: this.messageApi,
+          refreshData: this.fetchData
+        });
+      }
+      return false;
+    }
+  };
+
   const handleAvailabilityToggle = async (id, currentAvailability) => {
     try {
       setLoading(true);
@@ -417,11 +556,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
         isEditMode && (
           <Space>
             <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('item', record.id)} danger />
+            <Button icon={<DeleteOutlined />} onClick={() => menuPageDeletionMethods.handleDeleteMenuItem.call({
+              coffeeShopId,
+              ownerToken,
+              messageApi,
+              fetchData
+            }, record.id)} danger />
           </Space>
         )
       ),
-    },
+    }
   ];
 
   const promoColumns = [
@@ -584,26 +728,43 @@ const MenuPage = ({ handleOwnerLogout }) => {
         </ConfigProvider>
 
         <Modal
-          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
-          open={isModalVisible}
-          onOk={handleFormSubmit}
-          onCancel={handleModalClose}
-        >
-          <Form form={form} layout="vertical">
-            <MenuManagementForms
-              modalType={modalType}
-              categories={categories}
-              useMainPrice={useMainPrice}
-              setUseMainPrice={setUseMainPrice}
-              sizes={sizes}
-              handleSizeChange={handleSizeChange}
-              addSize={addSize}
-              removeSize={removeSize}
-              handleAdditionalImagesPreview={handleAdditionalImagesPreview}
-              form={form}
-            />
-          </Form>
-        </Modal>
+        title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
+        open={isModalVisible}
+        onOk={handleFormSubmit}
+        onCancel={handleModalClose}
+      >
+        <Form form={form} layout="vertical">
+          <MenuManagementForms
+            modalType={modalType}
+            categories={categories}
+            useMainPrice={useMainPrice}
+            setUseMainPrice={setUseMainPrice}
+            sizes={sizes}
+            handleSizeChange={handleSizeChange}
+            addSize={addSize}
+            removeSize={removeSize}
+            handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+            handleRemoveAdditionalImage={(itemId, imageId) => 
+              menuPageDeletionMethods.handleRemoveAdditionalImage.call({
+                coffeeShopId,
+                ownerToken,
+                messageApi,
+                fetchData
+              }, itemId, imageId)
+            }
+            handleRemoveSize={(itemId, sizeId) => 
+              menuPageDeletionMethods.handleRemoveSize.call({
+                coffeeShopId,
+                ownerToken,
+                messageApi,
+                fetchData
+              }, itemId, sizeId)
+            }
+            selectedItem={selectedItem}
+            form={form}
+          />
+        </Form>
+      </Modal>
       </div>
     </div>
   );

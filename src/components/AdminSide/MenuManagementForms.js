@@ -14,8 +14,10 @@ const MenuManagementForms = ({
   addSize,
   removeSize,
   handleAdditionalImagesPreview,
-  form 
-  
+  handleRemoveAdditionalImage,
+  handleRemoveSize,
+  selectedItem,
+  form
 }) => {
   const renderItemForm = () => (
     <>
@@ -33,65 +35,62 @@ const MenuManagementForms = ({
         </Select>
       </Form.Item>
       <Form.Item 
-      name="image" 
-      label="Primary Image" 
-      valuePropName="fileList" 
-      getValueFromEvent={(e) => {
-        if (Array.isArray(e)) {
-          return e;
-        }
-        return e?.fileList;
-      }}
-    >
-      <Upload 
-        beforeUpload={() => false}
-        listType="picture-card"
-        maxCount={1}
-        accept="image/*"
-      >
-        {form.getFieldValue('image')?.length < 1 && (
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Primary Image</div>
-          </div>
-        )}
-      </Upload>
-    </Form.Item>
-
-    <Form.Item 
-      name="additional_images" 
-      label="Additional Images"
-      valuePropName="fileList"
-      getValueFromEvent={(e) => {
-        if (Array.isArray(e)) {
-          return e;
-        }
-        return e?.fileList;
-      }}
-    >
-      <Upload
-        beforeUpload={() => false}
-        listType="picture-card"
-        multiple={true}
-        accept="image/*"
-        onPreview={async (file) => {
-          if (!file.url && !file.preview) {
-            file.preview = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file.originFileObj);
-              reader.onload = () => resolve(reader.result);
-            });
+        name="image" 
+        label="Primary Image" 
+        valuePropName="fileList" 
+        getValueFromEvent={(e) => {
+          if (Array.isArray(e)) {
+            return e;
           }
-          // Open image in new window for preview
-          window.open(file.url || file.preview, '_blank');
+          return e?.fileList;
         }}
       >
-        <div>
-          <PlusOutlined />
-          <div style={{ marginTop: 8 }}>Additional Images</div>
-        </div>
-      </Upload>
-    </Form.Item>
+        <Upload 
+          beforeUpload={() => false}
+          listType="picture-card"
+          maxCount={1}
+          accept="image/*"
+          onRemove={(file) => {
+            if (file.id && selectedItem) {
+              handleRemoveAdditionalImage(selectedItem.id, file.id);
+            }
+            return true;
+          }}
+        >
+          {form.getFieldValue('image')?.length < 1 && (
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Primary Image</div>
+            </div>
+          )}
+        </Upload>
+      </Form.Item>
+
+      <Form.Item 
+        name="additional_images" 
+        label="Additional Images"
+        valuePropName="fileList"
+        getValueFromEvent={(e) => {
+          if (Array.isArray(e)) {
+            return e;
+          }
+          return e?.fileList;
+        }}
+      >
+        <Upload
+          beforeUpload={() => false}
+          listType="picture-card"
+          multiple={true}
+          accept="image/*"
+          onPreview={handleAdditionalImagesPreview}
+        >
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Additional Images</div>
+          </div>
+        </Upload>
+      </Form.Item>
+      
       <Form.Item name="useMainPrice" valuePropName="checked">
         <Checkbox onChange={(e) => setUseMainPrice(e.target.checked)}>
           Use main price (no sizes)
@@ -121,7 +120,16 @@ const MenuManagementForms = ({
                 step="0.01"
                 className="w-1/3"
               />
-              <Button onClick={() => removeSize(index)} icon={<DeleteOutlined />} />
+              <Button 
+                onClick={() => {
+                  if (size.id && selectedItem) {
+                    handleRemoveSize(selectedItem.id, size.id);
+                  } else {
+                    removeSize(index);
+                  }
+                }} 
+                icon={<DeleteOutlined />} 
+              />
             </div>
           ))}
           <Button type="dashed" onClick={addSize} className="mt-2">
