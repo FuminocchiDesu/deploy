@@ -152,7 +152,12 @@ export default function Component({ onLogin }) {
                 />
               </div>
               
-              <div className="form-group" style={{ marginTop: '1rem' }}>
+              <div className="form-group" style={{ 
+                marginTop: '1rem', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center' 
+              }}>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -163,38 +168,34 @@ export default function Component({ onLogin }) {
                   />
                   <span className="remember-me-txt">Remember me</span>
                 </label>
-              </div>
-
-              <div className="forgot-password-link" style={{
-                textAlign: 'right',
-                marginTop: '0.5rem'
-              }}>
-                <a
-                  href="#"
-                  onClick={handleForgotPassword}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                  style={{
-                    color: 'var(--color-text)',
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    position: 'relative',
-                    display: 'inline-block'
-                  }}
-                >
-                  Forgot Password?
-                  <span style={{
-                    position: 'absolute',
-                    left: 0,
-                    bottom: '-2px',
-                    width: '100%',
-                    height: '1px',
-                    backgroundColor: 'var(--color-primary)',
-                    transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
-                    transition: 'transform 0.3s ease-in-out',
-                    transformOrigin: 'left'
-                  }} />
-                </a>
+                <div className="forgot-password-link">
+                  <a
+                    href="#"
+                    onClick={handleForgotPassword}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    style={{
+                      color: 'var(--color-text)',
+                      textDecoration: 'none',
+                      fontSize: '0.875rem',
+                      position: 'relative',
+                      display: 'inline-block'
+                    }}
+                  >
+                    Forgot Password?
+                    <span style={{
+                      position: 'absolute',
+                      left: 0,
+                      bottom: '-2px',
+                      width: '100%',
+                      height: '1px',
+                      backgroundColor: 'var(--color-primary)',
+                      transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+                      transition: 'transform 0.3s ease-in-out',
+                      transformOrigin: 'left'
+                    }} />
+                  </a>
+                </div>
               </div>
               
               <button
