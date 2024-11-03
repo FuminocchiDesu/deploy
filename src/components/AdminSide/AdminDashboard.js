@@ -51,6 +51,8 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
       setVisitsData(response.data);
     } catch (error) {
       handleError(error);
+      handleOwnerLogout();
+      navigate('/admin-login');
     }
   };
 
@@ -220,7 +222,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
               <div className="card-content">
                 <div className="reviews-list">
                   {reviewsData.recent_reviews.map((review, index) => (
-                    <div key={index} className="review-item">
+                    <div key={index} className="review-item-dashboard">
                       <p className="review-content">{review.content}</p>
                       <div className="review-footer">
                         <p className="review-author">- {review.author}</p>

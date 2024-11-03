@@ -26,7 +26,6 @@ function ReviewsPage({ handleOwnerLogout }) {
       setReviews(response.data);
     } catch (err) {
       setError('Failed to fetch reviews. Please try again.');
-      console.error('Error fetching reviews:', err);
       handleOwnerLogout();
       navigate('/admin-login');
     }
@@ -55,7 +54,7 @@ function ReviewsPage({ handleOwnerLogout }) {
         setQrCodeUrl(url);
       }
     } catch (err) {
-      console.error('Error fetching QR code:', err);
+      
     }
   }, []);
 
@@ -113,7 +112,7 @@ function ReviewsPage({ handleOwnerLogout }) {
       await fetchLatestQRCode();
       setShowConfirmDialog(false);
     } catch (err) {
-      console.error('Error generating QR code:', err);
+      
       setError('Failed to generate QR code. Please try again.');
     }
   };
@@ -214,7 +213,7 @@ function ReviewsPage({ handleOwnerLogout }) {
 
           {showConfirmDialog && (
             <div className="modal-overlay">
-              <div className="modal-content">
+              <div className="modal-content-review">
                 <h3>Generate New QR Code?</h3>
                 <p>
                   This will generate a new QR code for customer ratings. Do you want to proceed?
@@ -255,252 +254,6 @@ function ReviewsPage({ handleOwnerLogout }) {
           </div>
         </div>
       </main>
-
-      <style jsx>{`
-        .admin-layout {
-          display: flex;
-          min-height: 100vh;
-          background-color: #f5f5f5;
-        }
-
-        .main-content {
-          flex: 1;
-          padding: 2rem;
-          overflow-y: auto;
-        }
-          
-        .error-message {
-          background-color: #fee2e2;
-          border: 1px solid #fecaca;
-          color: #991b1b;
-          padding: 0.75rem;
-          border-radius: 0.375rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .qr-code-container {
-          background-color: white;
-          border-radius: 0.5rem;
-          padding: 1.5rem;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .qr-code-container h2 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          color: #333;
-        }
-
-        .qr-code-image {
-          width: 200px;
-          height: 200px;
-          margin-bottom: 1rem;
-        }
-
-        .remaining-time {
-          display: flex;
-          align-items: center;
-          font-size: 0.875rem;
-          color: #666;
-          margin-bottom: 1rem;
-        }
-
-        .timer-icon {
-          margin-right: 0.5rem;
-        }
-
-        .download-button {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.5rem 1rem;
-          background-color: #A0522D;
-          color: white;
-          border-radius: 0.375rem;
-          text-decoration: none;
-          font-weight: 500;
-          transition: background-color 0.2s;
-        }
-
-        .download-button:hover {
-          background-color: #D2B48C;
-        }
-
-        .download-button svg {
-          margin-right: 0.5rem;
-        }
-
-        .info-box {
-          background-color: #F5DEB3;
-          border-left: 4px solid #A0522D;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-          border-radius: 0.375rem;
-        }
-
-        .info-box h2 {
-          font-size: 1.125rem;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
-          color: #A0522D;
-        }
-
-        .info-box p {
-          color: #A0522D;
-          margin: 0;
-        }
-
-        .qr-generator {
-          display: flex;
-          align-items: center;
-          margin-bottom: 1.5rem;
-        }
-
-        .duration-select {
-          padding: 0.5rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.375rem;
-          margin-right: 1rem;
-          background-color: white;
-        }
-
-        .generate-button {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.5rem 1rem;
-          background-color: #A0522D;
-          color: white;
-          border: none;
-          border-radius: 0.375rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .generate-button:hover {
-          background-color: #D2B48C;
-        }
-
-        .generate-button svg {
-          margin-right: 0.5rem;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .modal-content {
-          background-color: white;
-          padding: 2rem;
-          border-radius: 0.5rem;
-          max-width: 400px;
-          width: 100%;
-        }
-
-        .modal-content h3 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          color: #333;
-        }
-
-        .modal-content p {
-          margin-bottom: 1.5rem;
-          color: #666;
-        }
-
-        .modal-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .modal-actions button {
-          padding: 0.5rem 1rem;
-          border-radius: 0.375rem;
-          font-weight: 500;
-          cursor: pointer;
-        }
-
-        .confirm-button {
-          background-color: #A0522D;
-          color: white;
-          border: none;
-          margin-right: 0.5rem;
-        }
-
-        .confirm-button:hover {
-          background-color: #D2B48C;
-        }
-
-        .cancel-button {
-          background-color: white;
-          color: #666;
-          border: 1px solid #d1d5db;
-        }
-
-        
-
-        .cancel-button:hover {
-          background-color: #f3f4f6;
-        }
-
-        .reviews-container {
-          background-color: white;
-          border-radius: 0.5rem;
-          padding: 1.5rem;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .review-list {
-          list-style-type: none;
-          padding: 0;
-          margin: 0;
-        }
-
-        .review-item {
-          border-bottom: 1px solid #e5e7eb;
-          padding: 1rem 0;
-        }
-
-        .review-item:last-child {
-          border-bottom: none;
-        }
-
-        .review-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
-        }
-
-        .review-author {
-          font-weight: 600;
-          color: #333;
-        }
-
-        .review-rating {
-          display: flex;
-        }
-
-        .review-content {
-          margin-bottom: 0.5rem;
-          color: #4b5563;
-        }
-
-        .review-date {
-          font-size: 0.875rem;
-          color: #9ca3af;
-        }
-      `}</style>
     </div>
   );
 }

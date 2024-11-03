@@ -38,6 +38,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     } else {
       message.error('Coffee shop ID or owner token not found');
       handleOwnerLogout();
+      navigate('/admin-login');
     }
   }, [coffeeShopId, ownerToken]);
 
