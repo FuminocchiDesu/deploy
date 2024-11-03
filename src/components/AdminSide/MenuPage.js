@@ -563,7 +563,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
         <Modal
           title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
-          visible={isModalVisible}
+          open={isModalVisible}
           onOk={handleFormSubmit}
           onCancel={handleModalClose}
         >
