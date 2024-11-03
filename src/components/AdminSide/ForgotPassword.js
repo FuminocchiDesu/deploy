@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 import { AlertCircle, Mail, Loader2, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 const ForgotPassword = () => {
@@ -68,6 +69,9 @@ const ForgotPassword = () => {
       })
       if (response.data.success) {
         setSuccess(true)
+        setTimeout(() => {
+          window.location.href = '/admin-login'
+        }, 2000)
       } else {
         setError(response.data.error)
       }
@@ -84,8 +88,17 @@ const ForgotPassword = () => {
 
   return (
     <div className="admin-login-page">
+      
       <div className="login-card">
+      <Link 
+        to="/admin-login" 
+        className="absolute left-4 top-4 flex items-center text-brown-600 hover:text-brown-800 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4 mr-1" />
+        Back to Login
+      </Link>
         <div className="login-header">
+          
           <h2 className="login-title">Forgot Password</h2>
           <p className="login-description">
             {step === 1 && "Enter your email or username to get a reset code"}
@@ -160,7 +173,6 @@ const ForgotPassword = () => {
               </button>
               <button
                 className="button outline full-width"
-                id="back-btn-dom"
                 onClick={() => setStep(1)}
               >
                 <ArrowLeft className="mr-2" />
@@ -214,7 +226,6 @@ const ForgotPassword = () => {
               </button>
               <button
                 className="button outline full-width"
-                id="back-btn-dom"
                 onClick={() => setStep(2)}
               >
                 <ArrowLeft className="mr-2" />
