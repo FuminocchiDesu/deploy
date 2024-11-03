@@ -1,97 +1,99 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { AlertCircle, Mail, Loader2, Check } from 'lucide-react';
-import PasswordInput from './PasswordInput';
+import React, { useState } from 'react'
+import axios from 'axios'
+import { AlertCircle, Mail, Loader2, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 const ForgotPassword = () => {
-  const [step, setStep] = useState(1);
-  const [emailOrUsername, setEmailOrUsername] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [step, setStep] = useState(1)
+  const [emailOrUsername, setEmailOrUsername] = useState('')
+  const [resetCode, setResetCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleRequestCode = async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true)
+    setError('')
     try {
-      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername });
+      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername })
       if (response.data.success) {
-        setStep(2);
+        setStep(2)
       } else {
-        setError(response.data.error);
+        setError(response.data.error)
       }
     } catch (err) {
       if (err.response) {
-        setError(err.response.data.error);
+        setError(err.response.data.error)
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unexpected error occurred. Please try again.')
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleVerifyCode = async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true)
+    setError('')
     try {
       const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/verify/', {
         email_or_username: emailOrUsername,
         reset_code: resetCode,
-      });
+      })
       if (response.data.success) {
-        setStep(3);
+        setStep(3)
       } else {
-        setError(response.data.error);
+        setError(response.data.error)
       }
     } catch (err) {
       if (err.response) {
-        setError(err.response.data.error);
+        setError(err.response.data.error)
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unexpected error occurred. Please try again.')
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleResetPassword = async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true)
+    setError('')
     try {
       const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/confirm/', {
         email_or_username: emailOrUsername,
         new_password: newPassword,
         code: resetCode,
-      });
+      })
       if (response.data.success) {
-        setSuccess(true);
+        setSuccess(true)
       } else {
-        setError(response.data.error);
+        setError(response.data.error)
       }
     } catch (err) {
       if (err.response) {
-        setError(err.response.data.error);
+        setError(err.response.data.error)
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unexpected error occurred. Please try again.')
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="forgot-password-page">
-      <div className="forgot-password-card">
-        <div className="forgot-password-header">
-          <h2 className="forgot-password-title">Forgot Password</h2>
-          <p className="forgot-password-description">
-            Enter your email or username to get a reset code
+    <div className="admin-login-page">
+      <div className="login-card">
+        <div className="login-header">
+          <h2 className="login-title">Forgot Password</h2>
+          <p className="login-description">
+            {step === 1 && "Enter your email or username to get a reset code"}
+            {step === 2 && "Enter the reset code sent to your email"}
+            {step === 3 && "Enter your new password"}
           </p>
         </div>
-        <div className="forgot-password-form">
+        <div className="login-form">
           {step === 1 && (
             <div className="form-group">
               <label htmlFor="email-or-username" className="form-label">
@@ -113,7 +115,7 @@ const ForgotPassword = () => {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="submit-button-icon" />
+                    <Loader2 className="submit-button-icon animate-spin" />
                     Sending Code...
                   </>
                 ) : (
@@ -146,7 +148,7 @@ const ForgotPassword = () => {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="submit-button-icon" />
+                    <Loader2 className="submit-button-icon animate-spin" />
                     Verifying Code...
                   </>
                 ) : (
@@ -156,6 +158,14 @@ const ForgotPassword = () => {
                   </>
                 )}
               </button>
+              <button
+                className="button outline full-width"
+                id="back-btn-dom"
+                onClick={() => setStep(1)}
+              >
+                <ArrowLeft className="mr-2" />
+                Back
+              </button>
             </div>
           )}
           {step === 3 && (
@@ -163,13 +173,28 @@ const ForgotPassword = () => {
               <label htmlFor="new-password" className="form-label">
                 New Password
               </label>
-              <PasswordInput
-                id="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter your new password"
-                required
-              />
+              <div className="password-input-container">
+                <input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  className="form-input password-input"
+                  placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className={`password-toggle-button ${showPassword ? 'visible' : ''}`}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="password-toggle-icon" />
+                  ) : (
+                    <Eye className="password-toggle-icon" />
+                  )}
+                </button>
+              </div>
               <button
                 className="submit-button"
                 onClick={handleResetPassword}
@@ -177,7 +202,7 @@ const ForgotPassword = () => {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="submit-button-icon" />
+                    <Loader2 className="submit-button-icon animate-spin" />
                     Resetting Password...
                   </>
                 ) : (
@@ -186,6 +211,14 @@ const ForgotPassword = () => {
                     Reset Password
                   </>
                 )}
+              </button>
+              <button
+                className="button outline full-width"
+                id="back-btn-dom"
+                onClick={() => setStep(2)}
+              >
+                <ArrowLeft className="mr-2" />
+                Back
               </button>
             </div>
           )}
@@ -197,18 +230,18 @@ const ForgotPassword = () => {
             </div>
           )}
           {success && (
-            <div className="success-alert">
-              <Check className="success-alert-icon" />
-              <div className="success-alert-title">Success</div>
-              <div className="success-alert-description">
-                Password reset successful. You can now log in with your new password.
+            <div className="alert success">
+              <Check className="mr-2" />
+              <div>
+                <div className="font-bold">Success</div>
+                <div>Password reset successful. You can now log in with your new password.</div>
               </div>
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ForgotPassword;
+export default ForgotPassword

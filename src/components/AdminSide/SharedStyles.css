@@ -989,6 +989,14 @@ body {
   margin-left: 0.5rem;
 }
 
+.submit-button {
+  margin-top: 2rem;
+}
+
+#back-btn-dom {
+  margin-top: 2rem;
+}
+
 /* Admin Login Page Styles */
 .admin-login-page {
   display: flex;
