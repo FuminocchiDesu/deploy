@@ -1,7 +1,8 @@
-import React from 'react';
-import { Form, Input, Select, Upload, Button, DatePicker, Checkbox } from 'antd';
+import React, {useState} from 'react';
+import { Form, Input, Select, Upload, Button, Checkbox } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import DatePicker from './DatePicker';
 
 const MenuManagementForms = ({
   modalType,
@@ -14,7 +15,10 @@ const MenuManagementForms = ({
   removeSize,
   handleAdditionalImagesPreview,
   form 
+  
 }) => {
+
+  const [selectedDate, setSelectedDate] = useState('');
   const renderItemForm = () => (
     <>
       <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
@@ -132,18 +136,17 @@ const MenuManagementForms = ({
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <Input.TextArea />
       </Form.Item>
-        <Form.Item 
+      <Form.Item 
         name="start_date" 
         label="Start Date" 
         rules={[{ required: true }]}
-        getValueProps={(value) => ({
-          value: value ? (typeof value === 'string' ? moment(value) : value) : null
-        })}
       >
         <DatePicker 
-          format="YYYY-MM-DD" 
+          value={form.getFieldValue('start_date')}
+          onChange={(date) => form.setFieldsValue({ start_date: date })}
         />
       </Form.Item>
+
       <Form.Item 
         name="end_date" 
         label="End Date" 
@@ -155,7 +158,7 @@ const MenuManagementForms = ({
               if (!value || !startDate) {
                 return Promise.resolve();
               }
-              if (value < startDate) {
+              if (new Date(value) < new Date(startDate)) {
                 return Promise.reject(new Error('End date must be after start date'));
               }
               return Promise.resolve();
@@ -163,12 +166,10 @@ const MenuManagementForms = ({
           }),
         ]}
         dependencies={['start_date']}
-        getValueProps={(value) => ({
-          value: value ? (typeof value === 'string' ? moment(value) : value) : null
-        })}
       >
         <DatePicker 
-          format="YYYY-MM-DD" 
+          value={form.getFieldValue('end_date')}
+          onChange={(date) => form.setFieldsValue({ end_date: date })}
         />
       </Form.Item>
       <Form.Item 
