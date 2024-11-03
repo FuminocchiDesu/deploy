@@ -108,16 +108,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
     if (record) {
       // Transform the additional_images array into the format expected by Ant Design Upload
       const transformedAdditionalImages = record.additional_images?.map((img, index) => ({
-        uid: `-${index}`,
+        uid: `existing-${img.id}`, // Add 'existing-' prefix to identify existing images
         name: `image-${index}.jpg`,
         status: 'done',
-        url: img.image || img, // Handle both object format and direct URL
+        url: img.image || img,
         thumbUrl: img.image || img
       })) || [];
   
       // Transform the main image into the format expected by Ant Design Upload
       const mainImage = record.image ? [{
-        uid: '-1',
+        uid: 'existing-main',
         name: 'main-image.jpg',
         status: 'done',
         url: record.image,

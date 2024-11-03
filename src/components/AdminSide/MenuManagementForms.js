@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import { Form, Input, Select, Upload, Button, Checkbox } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import moment from 'moment';
 import DatePicker from './DatePicker';
 
 const MenuManagementForms = ({
@@ -19,6 +18,37 @@ const MenuManagementForms = ({
   selectedItem,
   form
 }) => {
+  const handleImageRemove = async (file) => {
+    if (selectedItem) {
+      if (file.uid && file.uid.startsWith('existing-')) {
+        // This is an existing image
+        const imageId = file.uid.replace('existing-', '');
+        const success = await handleRemoveAdditionalImage(selectedItem.id, imageId);
+        if (success) {
+          // Remove from form
+          const currentImages = form.getFieldValue('additional_images') || [];
+          form.setFieldsValue({
+            additional_images: currentImages.filter(img => img.uid !== file.uid)
+          });
+        }
+        return false; // Prevent default Upload removal
+      }
+    }
+    return true; // Allow removal of newly added images
+  };
+
+  const handlePrimaryImageRemove = async (file) => {
+    if (selectedItem && file.url) {
+      // This is an existing primary image
+      const currentImages = form.getFieldValue('image') || [];
+      form.setFieldsValue({
+        image: []
+      });
+      return false; // Prevent default Upload removal
+    }
+    return true; // Allow removal of newly added images
+  };
+
   const renderItemForm = () => (
     <>
       <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
@@ -50,12 +80,7 @@ const MenuManagementForms = ({
           listType="picture-card"
           maxCount={1}
           accept="image/*"
-          onRemove={(file) => {
-            if (file.id && selectedItem) {
-              handleRemoveAdditionalImage(selectedItem.id, file.id);
-            }
-            return true;
-          }}
+          onRemove={handlePrimaryImageRemove}
         >
           {form.getFieldValue('image')?.length < 1 && (
             <div>
@@ -83,6 +108,7 @@ const MenuManagementForms = ({
           multiple={true}
           accept="image/*"
           onPreview={handleAdditionalImagesPreview}
+          onRemove={handleImageRemove}
         >
           <div>
             <PlusOutlined />
