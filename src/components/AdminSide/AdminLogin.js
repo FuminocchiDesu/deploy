@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
@@ -7,36 +7,71 @@ import PasswordInput from './PasswordInput';
 import ForgotPassword from './ForgotPassword';
 
 const AdminLogin = ({ onLogin }) => {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ 
+    username: '', 
+    password: '',
+    rememberMe: false 
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+    
+    if (savedUsername && savedRememberMe) {
+      setCredentials(prev => ({
+        ...prev,
+        username: savedUsername,
+        rememberMe: true
+      }));
+    }
+  }, []);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
-      const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', credentials);
+      const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', {
+        username: credentials.username,
+        password: credentials.password
+      });
+
       if (response && response.data) {
         if (response.data.access) {
+          // Handle Remember Me functionality
+          if (credentials.rememberMe) {
+            localStorage.setItem('rememberedUsername', credentials.username);
+            localStorage.setItem('rememberMe', 'true');
+          } else {
+            localStorage.removeItem('rememberedUsername');
+            localStorage.setItem('rememberMe', 'false');
+          }
+
+          // Store authentication token
           localStorage.setItem('ownerToken', response.data.access);
+
+          if (response.data.coffee_shop_id) {
+            localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
+            onLogin();
+            navigate('/dashboard');
+          } else {
+            setError('No coffee shop associated with this account');
+          }
         } else {
           setError('Login successful, but token not received. Please try again.');
-          return;
-        }
-
-        if (response.data.coffee_shop_id) {
-          localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
-          onLogin(); // Notify that owner has logged in
-          navigate('/dashboard'); // Redirect to Dashboard after successful login
-        } else {
-          setError('No coffee shop associated with this account');
         }
       } else {
         setError('Unexpected response from server. Please try again.');
@@ -118,23 +153,39 @@ const AdminLogin = ({ onLogin }) => {
                   onChange={handleChange}
                   placeholder="Enter your password"
                 />
-                <div style={{
-                  textAlign: 'right',
-                  marginTop: '0.5rem'
-                }}>
-                  <a
-                    href="#"
-                    onClick={handleForgotPassword}
-                    style={{
-                      color: 'var(--color-text)',
-                      textDecoration: 'none',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
               </div>
+              
+              {/* Remember Me Checkbox */}
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={credentials.rememberMe}
+                    onChange={handleChange}
+                    className="form-checkbox"
+                  />
+                  <span className="text-sm text-gray-600">Remember me</span>
+                </label>
+              </div>
+
+              <div style={{
+                textAlign: 'right',
+                marginTop: '0.5rem'
+              }}>
+                <a
+                  href="#"
+                  onClick={handleForgotPassword}
+                  style={{
+                    color: 'var(--color-text)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Forgot Password?
+                </a>
+              </div>
+              
               <button
                 type="submit"
                 className="submit-button"
