@@ -221,10 +221,14 @@ body {
   border: none;
 }
 
+#mg-left {
+  margin-left: 1rem;
+}
+
 .button:hover {
   opacity: 0.9;
 }
-
+ 
 .submit-button {
   display: flex;
   width: 100%;

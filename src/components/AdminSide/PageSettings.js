@@ -399,7 +399,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 </div>
               </div>
             </header>
-            <button onClick={toggleBasicInfoEditMode} className="button primary">
+            <button onClick={toggleBasicInfoEditMode} className="button primary" id="color-btn-dom" style={{ backgroundColor: '#a0522d' }}>
               {basicInfoEditMode ? 'Cancel Edit' : 'Edit Basic Info'}
             </button>
           </div>
@@ -409,6 +409,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 {imagePreview ? (
                   <div className="image-preview">
                     <img src={imagePreview} alt="Coffee Shop" />
+                  
                   </div>
                 ) : (
                   <p>No image uploaded</p>
@@ -527,19 +528,19 @@ const PageSettings = ({ handleOwnerLogout }) => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
-            {basicInfoEditMode && (
-                <div className="flex justify-end">
-                  <button type="submit" className="button primary">
-                    Save Changes
-                  </button>
-                </div>
-              )}
+            <div className="flex justify-end space-x-4">
               <button 
-              onClick={handleTerminateClick} 
-              className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'} mr-4`}
-            >
-              {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
-            </button>
+                onClick={handleTerminateClick} 
+                className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'}`}
+              >
+                {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
+              </button>
+              {basicInfoEditMode && (
+                <button type="submit" className="button primary" id="mg-left" style={{ backgroundColor: '#a0522d' }}>
+                  Save Changes
+                </button>
+              )}
+            </div>
             </form>
           </>
         ) : (
