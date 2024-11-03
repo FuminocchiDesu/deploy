@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SharedStyles.css';
 
-const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
+const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
   const [contactInfo, setContactInfo] = useState({
     contact_name: '',
     primary_phone: '',
@@ -68,7 +68,9 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
       setContactInfo(response.data);
       setIsExisting(true);
       setSuccess('Contact information updated successfully');
-
+      if (onSave) {
+        onSave();
+      }
       // Clear the success message after 3 seconds
       setTimeout(() => {
         setSuccess(null);
@@ -82,7 +84,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode }) => {
       );
     }
   };
-
+  
   return (
     <div className="contact-details-tab">
       <form onSubmit={handleSubmit}>

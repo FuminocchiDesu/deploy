@@ -30,7 +30,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [basicInfoEditMode, setBasicInfoEditMode] = useState(false);
+  const [contactEditMode, setContactEditMode] = useState(false);
   const navigate = useNavigate();
   const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
   const [openingHours, setOpeningHours] = useState([]);
@@ -197,7 +198,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
       setTimeout(() => {
         setSuccess(null);
       }, 3000);
-      setIsEditMode(false);
+      setBasicInfoEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
       if (error.response) {
@@ -248,12 +249,22 @@ const PageSettings = ({ handleOwnerLogout }) => {
     navigate('/admin-login');
   };
 
-  const toggleEditMode = () => {
-    setIsEditMode(!isEditMode);
+  const toggleBasicInfoEditMode = () => {
+    setBasicInfoEditMode(!basicInfoEditMode);
+  };
+
+  const toggleContactEditMode = () => {
+    setContactEditMode(!contactEditMode);
   };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    // Reset edit modes when switching tabs
+    if (tab === 'basic') {
+      setContactEditMode(false);
+    } else {
+      setBasicInfoEditMode(false);
+    }
   };
 
   useEffect(() => {
@@ -278,7 +289,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   };
 
   const handleMapClick = (event) => {
-    if (isEditMode && window.google) {
+    if (basicInfoEditMode && window.google) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
       
@@ -370,48 +381,49 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
           </div>
         )}
-<button onClick={toggleEditMode} className="button primary">
-              {isEditMode ? 'Cancel Edit' : 'Edit'}
-            </button>
+
         {activeTab === 'basic' ? (
-          
-          <form onSubmit={handleShopUpdate} className="settings-form">
-            <header className="page-header flex justify-between items-center mb-6">
-          <h1 className="page-title">Page Settings</h1>
-          <div className="flex items-center">
-            <div className="maintenance-toggle mr-4">
-              <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
-              <Switch
-                id="maintenance-mode"
-                checked={coffeeShop.is_under_maintenance}
-                onChange={handleMaintenanceToggle}
-                disabled={isUpdatingMaintenance}
-              />
-            </div>
-            
-          </div>
-        </header>
-            <div className="settings-section">
-              <h2>Coffee Shop Image</h2>
-              {imagePreview ? (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="Coffee Shop" />
+          <>
+          <div className="flex justify-end mb-4">
+          <header className="page-header flex justify-between items-center mb-6">
+              <h1 className="page-title">Page Settings</h1>
+              <div className="flex items-center">
+                <div className="maintenance-toggle mr-4">
+                  <label htmlFor="maintenance-mode" className="mr-2">Maintenance Mode</label>
+                  <Switch
+                    id="maintenance-mode"
+                    checked={coffeeShop.is_under_maintenance}
+                    onChange={handleMaintenanceToggle}
+                    disabled={isUpdatingMaintenance}
+                  />
                 </div>
-              ) : (
-                <p>No image uploaded</p>
-              )}
-              {isEditMode && (
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  accept="image/*"
-                  
-                  onChange={handleInputChange}
-                  className="form-input mt-1 block w-full"
-                />
-              )}
-            </div>
+              </div>
+            </header>
+            <button onClick={toggleBasicInfoEditMode} className="button primary">
+              {basicInfoEditMode ? 'Cancel Edit' : 'Edit Basic Info'}
+            </button>
+          </div>
+          <form onSubmit={handleShopUpdate} className="settings-form">
+          <div className="settings-section">
+                <h2>Coffee Shop Image</h2>
+                {imagePreview ? (
+                  <div className="image-preview">
+                    <img src={imagePreview} alt="Coffee Shop" />
+                  </div>
+                ) : (
+                  <p>No image uploaded</p>
+                )}
+                {basicInfoEditMode && (
+                  <input
+                    type="file"
+                    name="image"
+                    id="image"
+                    accept="image/*"
+                    onChange={handleInputChange}
+                    className="form-input mt-1 block w-full"
+                  />
+                )}
+              </div>
 
             <div className="settings-section">
               <h2>Basic Information</h2>
@@ -428,7 +440,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   id="name"
                   value={coffeeShop.name}
                   onChange={handleInputChange}
-                  disabled={!isEditMode}
+                  disabled={!basicInfoEditMode }
                   className="form-input"
                   required
                 />
@@ -436,7 +448,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
               <div className="mb-4">
                 <label htmlFor="address">Address</label>
-                {isEditMode ? (
+                {basicInfoEditMode  ? (
                   <PlacesAutocomplete
                     value={coffeeShop.address}
                     onChange={handleAddressChange}
@@ -485,7 +497,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   onChange={handleInputChange}
                   className="form-textarea"
                   rows="4"
-                  disabled={!isEditMode}
+                  disabled={!basicInfoEditMode }
                 ></textarea>
               </div>
             </div>
@@ -507,7 +519,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
               <h2>Opening Hours</h2>
               <OpeningHoursTable 
                 coffeeShopId={coffeeShop.id} 
-                isEditMode={isEditMode}
+                isEditMode={basicInfoEditMode }
                 onUpdate={handleOpeningHoursUpdate}
               />
             </div>
@@ -515,26 +527,34 @@ const PageSettings = ({ handleOwnerLogout }) => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
-            {isEditMode && (
-              <div className="flex justify-end">
-                <button type="submit" className="button primary">
-                  Save Changes
-                </button>
-              </div>
-            )}
-            <button 
+            {basicInfoEditMode && (
+                <div className="flex justify-end">
+                  <button type="submit" className="button primary">
+                    Save Changes
+                  </button>
+                </div>
+              )}
+              <button 
               onClick={handleTerminateClick} 
               className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'} mr-4`}
             >
               {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
             </button>
-          </form>
-          
+            </form>
+          </>
         ) : (
-          <ContactDetailsTab 
+          <>
+            <div className="flex justify-end mb-4">
+              <button onClick={toggleContactEditMode} className="button primary">
+                {contactEditMode ? 'Cancel Edit' : 'Edit Contact Info'}
+              </button>
+            </div>
+            <ContactDetailsTab 
             coffeeShopId={coffeeShop.id}
-            isEditMode={isEditMode}
+            isEditMode={contactEditMode}
+            onSave={() => setContactEditMode(false)}
           />
+          </>
         )}
       </main>
     </div>
