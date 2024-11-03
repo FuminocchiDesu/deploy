@@ -985,6 +985,10 @@ body {
   opacity: 0.9;
 }
 
+.remember-me-txt {
+  margin-left: 0.5rem;
+}
+
 /* Admin Login Page Styles */
 .admin-login-page {
   display: flex;

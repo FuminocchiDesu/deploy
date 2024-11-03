@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
 import './SharedStyles.css';
 import PasswordInput from './PasswordInput';
-import ForgotPassword from './ForgotPassword';
 
-const AdminLogin = ({ onLogin }) => {
+export default function Component({ onLogin }) {
   const [credentials, setCredentials] = useState({ 
     username: '', 
     password: '',
@@ -14,9 +13,9 @@ const AdminLogin = ({ onLogin }) => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
-  // Load saved credentials on component mount
   useEffect(() => {
     const savedUsername = localStorage.getItem('rememberedUsername');
     const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
@@ -51,7 +50,6 @@ const AdminLogin = ({ onLogin }) => {
 
       if (response && response.data) {
         if (response.data.access) {
-          // Handle Remember Me functionality
           if (credentials.rememberMe) {
             localStorage.setItem('rememberedUsername', credentials.username);
             localStorage.setItem('rememberMe', 'true');
@@ -60,7 +58,6 @@ const AdminLogin = ({ onLogin }) => {
             localStorage.setItem('rememberMe', 'false');
           }
 
-          // Store authentication token
           localStorage.setItem('ownerToken', response.data.access);
 
           if (response.data.coffee_shop_id) {
@@ -155,7 +152,6 @@ const AdminLogin = ({ onLogin }) => {
                 />
               </div>
               
-              {/* Remember Me Checkbox */}
               <div className="form-group" style={{ marginTop: '1rem' }}>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -165,24 +161,39 @@ const AdminLogin = ({ onLogin }) => {
                     onChange={handleChange}
                     className="form-checkbox"
                   />
-                  <span className="text-sm text-gray-600">Remember me</span>
+                  <span className="remember-me-txt">Remember me</span>
                 </label>
               </div>
 
-              <div style={{
+              <div className="forgot-password-link" style={{
                 textAlign: 'right',
                 marginTop: '0.5rem'
               }}>
                 <a
                   href="#"
                   onClick={handleForgotPassword}
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
                   style={{
                     color: 'var(--color-text)',
                     textDecoration: 'none',
-                    fontSize: '0.875rem'
+                    fontSize: '0.875rem',
+                    position: 'relative',
+                    display: 'inline-block'
                   }}
                 >
                   Forgot Password?
+                  <span style={{
+                    position: 'absolute',
+                    left: 0,
+                    bottom: '-2px',
+                    width: '100%',
+                    height: '1px',
+                    backgroundColor: 'var(--color-primary)',
+                    transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+                    transition: 'transform 0.3s ease-in-out',
+                    transformOrigin: 'left'
+                  }} />
                 </a>
               </div>
               
@@ -252,6 +263,4 @@ const AdminLogin = ({ onLogin }) => {
       </div>
     </div>
   );
-};
-
-export default AdminLogin;
+}
