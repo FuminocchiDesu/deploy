@@ -66,6 +66,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setCategories(categoriesData);
       setItems(itemsData);
       setPromos(promosData);
+      console.log(itemsData);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch menu data');
@@ -95,9 +96,29 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setSelectedItem(record);
     setIsModalVisible(true);
     if (record) {
+      // Transform the additional_images array into the format expected by Ant Design Upload
+      const transformedAdditionalImages = record.additional_images?.map((img, index) => ({
+        uid: `-${index}`,
+        name: `image-${index}.jpg`,
+        status: 'done',
+        url: img.image || img, // Handle both object format and direct URL
+        thumbUrl: img.image || img
+      })) || [];
+  
+      // Transform the main image into the format expected by Ant Design Upload
+      const mainImage = record.image ? [{
+        uid: '-1',
+        name: 'main-image.jpg',
+        status: 'done',
+        url: record.image,
+        thumbUrl: record.image
+      }] : [];
+  
       form.setFieldsValue({
         ...record,
-        image: record.image ? [{ uid: '-1', name: 'image.png', status: 'done', url: record.image }] : []
+        image: mainImage,
+        additional_images: transformedAdditionalImages,
+        useMainPrice: record.price != null
       });
       setSizes(record.sizes || []);
       setUseMainPrice(record.price != null);
