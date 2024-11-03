@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, message, Space, Pagination, ConfigProvider } from 'antd';
+import { Button, Table, Modal, Form, Space, Pagination, ConfigProvider, App } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
@@ -23,6 +23,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [useMainPrice, setUseMainPrice] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { message: messageApi } = App.useApp();
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken');
   const [categoryPage, setCategoryPage] = useState(1);
@@ -36,7 +37,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     if (coffeeShopId && ownerToken) {
       fetchData();
     } else {
-      message.error('Coffee shop ID or owner token not found');
+      messageApi.error('Coffee shop ID or owner token not found');
       handleOwnerLogout();
       navigate('/admin-login');
     }
@@ -70,9 +71,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setError('Failed to fetch menu data');
       onLogout();
       if (error.response && error.response.status === 401) {
-        message.error('Owner authentication failed. Please log in again.');
+        messageApi.error('Owner authentication failed. Please log in again.');
       } else {
-        message.error('Failed to fetch menu data');
+        messageApi.error('Failed to fetch menu data');
       }
     } finally {
       setLoading(false);
@@ -204,13 +205,13 @@ const MenuPage = ({ handleOwnerLogout }) => {
       }
   
       await response.json();
-      message.success(`${selectedItem ? 'Update' : 'Create'} successful`);
+      messageApi.success(`${selectedItem ? 'Update' : 'Create'} successful`);
       handleModalClose();
       fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError(`An error occurred while submitting the form: ${error.message}`);
-      message.error('Operation failed: ' + error.message);
+      setError(`An error occurred while submitting the form: ${error.messageApi}`);
+      messageApi.error('Operation failed: ' + error.messageApi);
     } finally {
       setLoading(false);
     }
@@ -250,11 +251,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
         throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
       }
   
-      message.success('Deleted successfully');
+      messageApi.success('Deleted successfully');
       fetchData();
     } catch (error) {
       console.error('Error deleting:', error);
-      message.error('Delete operation failed: ' + error.message);
+      messageApi.error('Delete operation failed: ' + error.messageApi);
     }
   }
   };
@@ -286,11 +287,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setItems(prevItems => prevItems.map(item =>
         item.id === id ? { ...item, is_available: !currentAvailability } : item
       ));
-      message.success('Item availability updated successfully');
+      messageApi.success('Item availability updated successfully');
     } catch (error) {
       console.error('Error toggling availability:', error);
-      setError(`An error occurred while updating availability: ${error.message}`);
-      message.error('Failed to update item availability');
+      setError(`An error occurred while updating availability: ${error.messageApi}`);
+      messageApi.error('Failed to update item availability');
     } finally {
       setLoading(false);
     }
