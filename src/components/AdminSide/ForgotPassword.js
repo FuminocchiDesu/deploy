@@ -16,7 +16,7 @@ const ForgotPassword = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('/password-reset/', { email_or_username: emailOrUsername });
+      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername });
       if (response.data.success) {
         setStep(2);
       } else {
@@ -37,7 +37,7 @@ const ForgotPassword = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('/password-reset/verify/', {
+      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/verify/', {
         email_or_username: emailOrUsername,
         reset_code: resetCode,
       });
@@ -61,7 +61,7 @@ const ForgotPassword = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('/password-reset/confirm/', {
+      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/confirm/', {
         email_or_username: emailOrUsername,
         new_password: newPassword,
         code: resetCode,
