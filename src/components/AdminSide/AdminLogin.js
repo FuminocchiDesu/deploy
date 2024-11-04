@@ -5,7 +5,7 @@ import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
 import './SharedStyles.css';
 import PasswordInput from './PasswordInput';
 
-export default function Component({ onLogin }) {
+export default function AdminLogin({ onLogin }) {
   const [credentials, setCredentials] = useState({ 
     username: '', 
     password: '',
@@ -16,18 +16,37 @@ export default function Component({ onLogin }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
+  // Check for saved credentials on component mount
   useEffect(() => {
-    const savedUsername = localStorage.getItem('rememberedUsername');
-    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
-    
-    if (savedUsername && savedRememberMe) {
-      setCredentials(prev => ({
-        ...prev,
-        username: savedUsername,
-        rememberMe: true
-      }));
-    }
-  }, []);
+    const checkLoginStatus = async () => {
+      try {
+        const token = localStorage.getItem('ownerToken');
+        const rememberMe = localStorage.getItem('rememberMe') === 'true';
+        const savedUsername = localStorage.getItem('rememberedUsername');
+        
+        if (token && rememberMe) {
+          onLogin();
+          navigate('/dashboard');
+        } else if (savedUsername && rememberMe) {
+          // If there's a saved username and rememberMe was true, populate the username field
+          setCredentials(prev => ({
+            ...prev,
+            username: savedUsername,
+            rememberMe: true
+          }));
+          // Clear any existing tokens if not remembering
+          if (!rememberMe) {
+            localStorage.removeItem('ownerToken');
+            localStorage.removeItem('coffeeShopId');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, [navigate, onLogin]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -50,15 +69,22 @@ export default function Component({ onLogin }) {
 
       if (response && response.data) {
         if (response.data.access) {
+          // Handle remember me functionality
           if (credentials.rememberMe) {
             localStorage.setItem('rememberedUsername', credentials.username);
             localStorage.setItem('rememberMe', 'true');
+            localStorage.setItem('ownerToken', response.data.access);
+            if (response.data.refresh) {
+              localStorage.setItem('refreshToken', response.data.refresh);
+            }
           } else {
-            localStorage.removeItem('rememberedUsername');
+            // If remember me is not checked, only store temporary session data
             localStorage.setItem('rememberMe', 'false');
+            localStorage.setItem('ownerToken', response.data.access);
+            // Clear any previously remembered data
+            localStorage.removeItem('rememberedUsername');
+            localStorage.removeItem('refreshToken');
           }
-
-          localStorage.setItem('ownerToken', response.data.access);
 
           if (response.data.coffee_shop_id) {
             localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
