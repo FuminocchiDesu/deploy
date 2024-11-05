@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Star, QrCode, Timer, Calendar  } from 'lucide-react';
+import { Star, QrCode, Timer, Calendar, X } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
 import './SharedStyles.css';
 
@@ -286,35 +286,62 @@ function ReviewsPage({ handleOwnerLogout }) {
               </div>
             </div>
           )}
-          <div className="filters-section mb-6">
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-gray-500" />
-                <input
-                  type="date"
-                  name="startDate"
-                  value={dateRange.startDate}
-                  onChange={handleDateChange}
-                  className="px-3 py-2 border rounded-md"
-                />
-                <span className="text-gray-500">to</span>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={dateRange.endDate}
-                  onChange={handleDateChange}
-                  className="px-3 py-2 border rounded-md"
-                />
+          {/* Enhanced Filters Section */}
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={18} className="text-gray-500" />
+                    <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
+                  </div>
+                  {(dateRange.startDate || dateRange.endDate) && (
+                    <button
+                      onClick={clearFilters}
+                      className="flex items-center gap-1 px-2 py-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      <X size={16} />
+                      Clear
+                    </button>
+                  )}
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label htmlFor="startDate" className="block text-sm text-gray-600 mb-1">
+                      Start Date
+                    </label>
+                    <input
+                      id="startDate"
+                      type="date"
+                      name="startDate"
+                      value={dateRange.startDate}
+                      onChange={handleDateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="endDate" className="block text-sm text-gray-600 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      id="endDate"
+                      type="date"
+                      name="endDate"
+                      value={dateRange.endDate}
+                      onChange={handleDateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={clearFilters}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Clear Filters
-              </button>
-            </div>
-            <div className="mt-2 text-sm text-gray-500">
-              Showing {filteredReviews.length} of {reviews.length} reviews
+              
+              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                <p className="text-sm text-gray-600">
+                  Showing <span className="font-medium">{filteredReviews.length}</span> of{' '}
+                  <span className="font-medium">{reviews.length}</span> reviews
+                </p>
+              </div>
             </div>
           </div>
 
