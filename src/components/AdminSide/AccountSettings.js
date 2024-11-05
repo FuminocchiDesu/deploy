@@ -94,13 +94,13 @@ const AccountSettings = () => {
     <div className="card-content">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="form-group">
-          <button className="button primary" onClick={() => setActiveModal('password')}>Change Password</button>
+          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('password')}>Change Password</button>
         </div>
         <div className="form-group">
-          <button className="button primary" onClick={() => setActiveModal('email')}>Change Email</button>
+          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('email')}>Change Email</button>
         </div>
         <div className="form-group">
-          <button className="button primary" onClick={() => setActiveModal('username')}>Change Username</button>
+          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('username')}>Change Username</button>
         </div>
       </div>
 
@@ -121,7 +121,7 @@ const AccountSettings = () => {
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                   />
-                  <button className="button primary" onClick={handleVerifyPassword}>
+                  <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={handleVerifyPassword}>
                     Verify Password
                   </button>
                 </div>
@@ -175,7 +175,7 @@ const AccountSettings = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="button primary">Change Email</button>
+                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Email</button>
               </form>
             </div>
           </div>
@@ -201,7 +201,7 @@ const AccountSettings = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="button primary">Change Username</button>
+                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Username</button>
               </form>
             </div>
           </div>

@@ -99,8 +99,9 @@ const UserProfile = ({ handleOwnerLogout }) => {
             <button
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               className="button primary"
+              style={{ backgroundColor: '#a0522d' }}
             >
-              {isEditing ? <Save className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
+              {isEditing ? <Save className="mr-2 h-4 w-4" size={18} /> : <Edit className="mr-2 h-4 w-4" size={18}/>}
               {isEditing ? 'Save' : 'Edit'}
             </button>
           </div>
