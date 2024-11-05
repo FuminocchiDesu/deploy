@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Star, QrCode, Timer, Calendar, X } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
+import DateFilter from './DateFilter';
 import './SharedStyles.css';
 
 function ReviewsPage({ handleOwnerLogout }) {
@@ -98,12 +99,8 @@ function ReviewsPage({ handleOwnerLogout }) {
     setFilteredReviews(filtered);
   };
 
-  const handleDateChange = (e) => {
-    const { name, value } = e.target;
-    setDateRange(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleDateRangeChange = (newDateRange) => {
+    setDateRange(newDateRange);
   };
 
   const clearFilters = () => {
@@ -287,65 +284,19 @@ function ReviewsPage({ handleOwnerLogout }) {
             </div>
           )}
           {/* Enhanced Filters Section */}
-          <div className="mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-gray-500" />
-                    <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
-                  </div>
-                  {(dateRange.startDate || dateRange.endDate) && (
-                    <button
-                      onClick={clearFilters}
-                      className="flex items-center gap-1 px-2 py-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      <X size={16} />
-                      Clear
-                    </button>
-                  )}
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <label htmlFor="startDate" className="block text-sm text-gray-600 mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      id="startDate"
-                      type="date"
-                      name="startDate"
-                      value={dateRange.startDate}
-                      onChange={handleDateChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor="endDate" className="block text-sm text-gray-600 mb-1">
-                      End Date
-                    </label>
-                    <input
-                      id="endDate"
-                      type="date"
-                      name="endDate"
-                      value={dateRange.endDate}
-                      onChange={handleDateChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-                <p className="text-sm text-gray-600">
-                  Showing <span className="font-medium">{filteredReviews.length}</span> of{' '}
-                  <span className="font-medium">{reviews.length}</span> reviews
-                </p>
-              </div>
-            </div>
-          </div>
+          
 
           <div className="reviews-container">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar size={18} className="text-gray-500" />
+              <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
+            </div>
+            <DateFilter 
+              dateRange={dateRange}
+              onDateChange={handleDateRangeChange}
+            />
+          </div>
             <ul className="review-list">
               {filteredReviews.map(review => (
                 <li key={review.id} className="review-item">
