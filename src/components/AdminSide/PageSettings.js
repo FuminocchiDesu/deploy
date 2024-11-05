@@ -396,123 +396,35 @@ const PageSettings = ({ handleOwnerLogout }) => {
                       id="maintenance-mode"
                       checked={coffeeShop.is_under_maintenance}
                       onChange={handleMaintenanceToggle}
+                      
                       disabled={isUpdatingMaintenance}
                     />
                   </div>
                 </div>
               </header>
               <button onClick={toggleBasicInfoEditMode} className="button primary" id="color-btn-dom" style={{ backgroundColor: '#a0522d' }}>
-                {basicInfoEditMode ? 'Cancel Edit' : 'Edit Basic  Info'}
+                {basicInfoEditMode ? 'Cancel Edit' : 'Edit Basic Info'}
               </button>
             </div>
-            <form onSubmit={handleShopUpdate} className="settings-form" style={{ maxWidth: '800px', marginLeft: '0' }}>
-              <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
-                <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Coffee Shop Image</h2>
-                {imagePreview ? (
-                  <div className="image-preview">
-                    <img src={imagePreview} alt="Coffee Shop" />
-                  </div>
-                ) : (
-                  <p>No image uploaded</p>
-                )}
-                {basicInfoEditMode && (
-                  <input
-                    type="file"
-                    name="image"
-                    id="image"
-                    accept="image/*"
-                    onChange={handleInputChange}
-                    className="form-input mt-1 block w-full"
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #DEB887',
-                      borderRadius: '0.375rem',
-                      backgroundColor: '#ffffff',
-                      color: 'var(--color-text)',
-                      transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
-                    }}
-                  />
-                )}
-              </div>
-
-              <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
-                <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Basic Information</h2>
-                {coffeeShop.is_terminated && (
-                  <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">
-                    This coffee shop is marked as permanently closed
-                  </div>
-                )}
-                <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    value={coffeeShop.name}
-                    onChange={handleInputChange}
-                    disabled={!basicInfoEditMode}
-                    className="form-input"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #DEB887',
-                      borderRadius: '0.375rem',
-                      backgroundColor: '#ffffff',
-                      color: 'var(--color-text)',
-                      transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
-                    }}
-                  />
-                </div>
-
-                <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
-                  <label htmlFor="address">Address</label>
-                  {basicInfoEditMode ? (
-                    <PlacesAutocomplete
-                      value={coffeeShop.address}
-                      onChange={handleAddressChange}
-                      onSelect={handleAddressSelect}
-                    >
-                      {({ getInputProps, suggestions, getSuggestionItemProps }) => (
-                        <div>
-                          <input
-                            {...getInputProps({
-                              placeholder: 'Search address...',
-                              className: 'form-input',
-                            })}
-                            style={{
-                              width: '100%',
-                              padding: '0.75rem',
-                              border: '1px solid #DEB887',
-                              borderRadius: '0.375rem',
-                              backgroundColor: '#ffffff',
-                              color: 'var(--color-text)',
-                              transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
-                            }}
-                          />
-                          <div className="autocomplete-dropdown-container">
-                            {suggestions.map(suggestion => (
-                              <div
-                                {...getSuggestionItemProps(suggestion)}
-                                key={suggestion.placeId}
-                                className="suggestion-item"
-                              >
-                                {suggestion.description}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </PlacesAutocomplete>
+            <form onSubmit={handleShopUpdate} className="settings-form" style={{ maxWidth: '100%', marginLeft: '0' }}>
+              <div className="sf-contents" style={{ maxWidth: '100%', marginLeft: '0' }}>
+                <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
+                  <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Coffee Shop Image</h2>
+                  {imagePreview ? (
+                    <div className="image-preview">
+                      <img src={imagePreview} alt="Coffee Shop" />
+                    </div>
                   ) : (
+                    <p>No image uploaded</p>
+                  )}
+                  {basicInfoEditMode && (
                     <input
-                      type="text"
-                      name="address"
-                      id="address"
-                      value={coffeeShop.address}
-                      className="form-input"
-                      disabled
+                      type="file"
+                      name="image"
+                      id="image"
+                      accept="image/*"
+                      onChange={handleInputChange}
+                      className="form-input mt-1 block w-full"
                       style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -526,67 +438,162 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   )}
                 </div>
 
-                <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
-                  <label htmlFor="description">Description</label>
-                  <textarea
-                    name="description"
-                    id="description"
-                    value={coffeeShop.description}
-                    onChange={handleInputChange}
-                    className="form-textarea"
-                    rows="4"
-                    disabled={!basicInfoEditMode}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #DEB887',
-                      borderRadius: '0.375rem',
-                      backgroundColor: '#ffffff',
-                      color: 'var(--color-text)',
-                      transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
-                    }}
-                  ></textarea>
-                </div>
-              </div>
-
-              {isLoaded && (
                 <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
-                  <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Location on Map</h2>
-                  <GoogleMap
-                    mapContainerStyle={{ width: '100%', height: '400px' }}
-                    center={mapCenter}
-                    zoom={15}
-                    onClick={handleMapClick}
-                    onLoad={onMapLoad}
+                  <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Basic Information</h2>
+                  {coffeeShop.is_terminated && (
+                    <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">
+                      This coffee shop is marked as permanently closed
+                    </div>
+                  )}
+                  <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
+                    <label htmlFor="name">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      value={coffeeShop.name}
+                      onChange={handleInputChange}
+                      disabled={!basicInfoEditMode}
+                      className="form-input"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #DEB887',
+                        borderRadius: '0.375rem',
+                        backgroundColor: '#ffffff',
+                        color: 'var(--color-text)',
+                        transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                      }}
+                    />
+                  </div>
+
+                  <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
+                    <label htmlFor="address">Address</label>
+                    {basicInfoEditMode ? (
+                      <PlacesAutocomplete
+                        value={coffeeShop.address}
+                        onChange={handleAddressChange}
+                        onSelect={handleAddressSelect}
+                      >
+                        {({ getInputProps, suggestions, getSuggestionItemProps }) => (
+                          <div>
+                            <input
+                              {...getInputProps({
+                                placeholder: 'Search address...',
+                                className: 'form-input',
+                              })}
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #DEB887',
+                                borderRadius: '0.375rem',
+                                backgroundColor: '#ffffff',
+                                color: 'var(--color-text)',
+                                transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                              }}
+                            />
+                            <div className="autocomplete-dropdown-container">
+                              {suggestions.map(suggestion => (
+                                <div
+                                  {...getSuggestionItemProps(suggestion)}
+                                  key={suggestion.placeId}
+                                  className="suggestion-item"
+                                >
+                                  {suggestion.description}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </PlacesAutocomplete>
+                    ) : (
+                      <input
+                        type="text"
+                        name="address"
+                        id="address"
+                        value={coffeeShop.address}
+                        className="form-input"
+                        disabled
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: '1px solid #DEB887',
+                          borderRadius: '0.375rem',
+                          backgroundColor: '#ffffff',
+                          color: 'var(--color-text)',
+                          transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  <div className="mb-4" style={{ marginBottom: '1.5rem' }}>
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                      name="description"
+                      id="description"
+                      value={coffeeShop.description}
+                      onChange={handleInputChange}
+                      className="form-textarea"
+                      rows="4"
+                      disabled={!basicInfoEditMode}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #DEB887',
+                        borderRadius: '0.375rem',
+                        backgroundColor: '#ffffff',
+                        color: 'var(--color-text)',
+                        transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                      }}
+                    ></textarea>
+                  </div>
+                </div>
+
+                {isLoaded && (
+                  <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
+                    <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Location on Map</h2>
+                    <GoogleMap
+                      mapContainerStyle={{ width: '100%', height: '400px' }}
+                      center={mapCenter}
+                      zoom={15}
+                      onClick={handleMapClick}
+                      onLoad={onMapLoad}
+                    />
+                  </div>
+                )}
+
+                <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
+                  <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Opening Hours</h2>
+                  <OpeningHoursTable 
+                    coffeeShopId={coffeeShop.id} 
+                    isEditMode={basicInfoEditMode}
+                    onUpdate={handleOpeningHoursUpdate}
                   />
                 </div>
-              )}
 
-              <div className="settings-section" style={{ marginBottom: '2rem', paddingLeft: '1rem', borderLeft: '3px solid var(--color-primary)' }}>
-                <h2 style={{ color: '#a0522d', marginBottom: '1rem', fontSize: '1.25rem' }}>Opening Hours</h2>
-                <OpeningHoursTable 
-                  coffeeShopId={coffeeShop.id} 
-                  isEditMode={basicInfoEditMode}
-                  onUpdate={handleOpeningHoursUpdate}
-                />
-              </div>
+                {error && <div className="error-message">{error}</div>}
+                {success && <div className="success-message">{success}</div>}
 
-              {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">{success}</div>}
-
-              <div className="flex justify-end space-x-4">
-                <button 
-                  onClick={handleTerminateClick} 
-                  className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'}`}
-                  style={{ backgroundColor: coffeeShop.is_terminated ? '#6c757d' : '#dc3545' }}
-                >
-                  {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
-                </button>
-                {basicInfoEditMode && (
-                  <button type="submit" className="button primary" id="mg-left" style={{ backgroundColor: '#a0522d' }}>
-                    Save Changes
+                <div className="flex justify-end space-x-4">
+                  <button 
+                    onClick={handleTerminateClick} 
+                    className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'} flex items-center`}
+                    style={{ 
+                      backgroundColor: coffeeShop.is_terminated ? '#6c757d' : '#dc3545',
+                      color: 'white',
+                    }}
+                  >
+                    <AlertTriangle className="mr-4" size={18} />
+                    {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
                   </button>
-                )}
+                  {basicInfoEditMode && (
+                    <button type="submit" className="button primary" id="mg-left" style={{ backgroundColor: '#a0522d' }}>
+                      Save Changes
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </>
