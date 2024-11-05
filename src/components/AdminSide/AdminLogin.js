@@ -1,3 +1,4 @@
+// frontend/src/components/AdminSide/AdminLogin.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -16,37 +17,55 @@ export default function AdminLogin({ onLogin }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
-  // Check for saved credentials on component mount
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const token = localStorage.getItem('ownerToken');
         const rememberMe = localStorage.getItem('rememberMe') === 'true';
         const savedUsername = localStorage.getItem('rememberedUsername');
+        const token = localStorage.getItem('ownerToken');
         
         if (token && rememberMe) {
-          onLogin();
-          navigate('/dashboard');
+          // Validate token before auto-login
+          try {
+            const response = await axios.get('https://khlcle.pythonanywhere.com/api/validate-token/', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.data.valid) {
+              onLogin();
+              navigate('/dashboard');
+            } else {
+              clearAuthData();
+            }
+          } catch (error) {
+            clearAuthData();
+          }
         } else if (savedUsername && rememberMe) {
-          // If there's a saved username and rememberMe was true, populate the username field
           setCredentials(prev => ({
             ...prev,
             username: savedUsername,
             rememberMe: true
           }));
-          // Clear any existing tokens if not remembering
-          if (!rememberMe) {
-            localStorage.removeItem('ownerToken');
-            localStorage.removeItem('coffeeShopId');
-          }
+        } else {
+          clearAuthData();
         }
       } catch (error) {
         console.error('Error checking login status:', error);
+        clearAuthData();
       }
     };
 
     checkLoginStatus();
   }, [navigate, onLogin]);
+
+  const clearAuthData = () => {
+    localStorage.removeItem('ownerToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('coffeeShopId');
+    if (localStorage.getItem('rememberMe') !== 'true') {
+      localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('rememberMe');
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -67,54 +86,54 @@ export default function AdminLogin({ onLogin }) {
         password: credentials.password
       });
 
-      if (response && response.data) {
-        if (response.data.access) {
-          // Handle remember me functionality
-          if (credentials.rememberMe) {
-            localStorage.setItem('rememberedUsername', credentials.username);
-            localStorage.setItem('rememberMe', 'true');
-            localStorage.setItem('ownerToken', response.data.access);
-            if (response.data.refresh) {
-              localStorage.setItem('refreshToken', response.data.refresh);
-            }
-          } else {
-            // If remember me is not checked, only store temporary session data
-            localStorage.setItem('rememberMe', 'false');
-            localStorage.setItem('ownerToken', response.data.access);
-            // Clear any previously remembered data
-            localStorage.removeItem('rememberedUsername');
-            localStorage.removeItem('refreshToken');
-          }
-
-          if (response.data.coffee_shop_id) {
-            localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
-            onLogin();
-            navigate('/dashboard');
-          } else {
-            setError('No coffee shop associated with this account');
-          }
+      if (response?.data?.access) {
+        // Handle authentication data storage
+        if (credentials.rememberMe) {
+          localStorage.setItem('rememberedUsername', credentials.username);
+          localStorage.setItem('rememberMe', 'true');
+          localStorage.setItem('ownerToken', response.data.access);
+          localStorage.setItem('refreshToken', response.data.refresh);
         } else {
-          setError('Login successful, but token not received. Please try again.');
+          // Store only the essential data for the session
+          localStorage.setItem('ownerToken', response.data.access);
+          localStorage.setItem('refreshToken', response.data.refresh);
+          localStorage.setItem('rememberMe', 'false');
+          localStorage.removeItem('rememberedUsername');
+        }
+
+        if (response.data.coffee_shop_id) {
+          localStorage.setItem('coffeeShopId', response.data.coffee_shop_id);
+          onLogin();
+          navigate('/dashboard');
+        } else {
+          setError('No coffee shop associated with this account');
+          clearAuthData();
         }
       } else {
-        setError('Unexpected response from server. Please try again.');
+        setError('Login successful, but token not received. Please try again.');
+        clearAuthData();
       }
     } catch (err) {
-      if (err.response) {
-        if (err.response.status === 403) {
-          setError('Not authorized. Are you sure you are a shop owner?');
-        } else if (err.response.data && err.response.data.detail) {
-          setError(err.response.data.detail);
-        } else {
-          setError(`Server error: ${err.response.status}`);
-        }
-      } else if (err.request) {
-        setError('No response received from server. Please check your internet connection.');
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
+      handleLoginError(err);
+      clearAuthData();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLoginError = (err) => {
+    if (err.response) {
+      if (err.response.status === 403) {
+        setError('Not authorized. Are you sure you are a shop owner?');
+      } else if (err.response.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError(`Server error: ${err.response.status}`);
+      }
+    } else if (err.request) {
+      setError('No response received from server. Please check your internet connection.');
+    } else {
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
