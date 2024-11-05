@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from 'antd';
 import { Calendar, ChevronDown, X } from 'lucide-react';
+import DatePicker from './DatePicker';
 
-const DateFilter = ({ dateRange, onDateChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal }) => {
   const [selectedPreset, setSelectedPreset] = useState('7d');
   const [customDates, setCustomDates] = useState({
     startDate: dateRange.startDate || '',
@@ -18,7 +19,6 @@ const DateFilter = ({ dateRange, onDateChange }) => {
   ];
 
   useEffect(() => {
-    // Update display when dateRange prop changes
     setCustomDates({
       startDate: dateRange.startDate || '',
       endDate: dateRange.endDate || ''
@@ -29,7 +29,7 @@ const DateFilter = ({ dateRange, onDateChange }) => {
     setSelectedPreset(preset);
     
     if (preset === 'custom') {
-      return; // Don't close dropdown for custom selection
+      return;
     }
 
     const today = new Date();
@@ -59,7 +59,6 @@ const DateFilter = ({ dateRange, onDateChange }) => {
 
     setCustomDates(newDateRange);
     onDateChange(newDateRange);
-    setIsOpen(false);
   };
 
   const handleCustomDateChange = (field, value) => {
@@ -69,7 +68,6 @@ const DateFilter = ({ dateRange, onDateChange }) => {
     };
     setCustomDates(newCustomDates);
     
-    // Only trigger onChange if both dates are set
     if (newCustomDates.startDate && newCustomDates.endDate) {
       onDateChange(newCustomDates);
     }
@@ -80,7 +78,7 @@ const DateFilter = ({ dateRange, onDateChange }) => {
     setCustomDates(emptyDates);
     onDateChange(emptyDates);
     setSelectedPreset('7d');
-    setIsOpen(false);
+    onClose();
   };
 
   const getDisplayText = () => {
@@ -96,9 +94,9 @@ const DateFilter = ({ dateRange, onDateChange }) => {
   };
 
   return (
-    <div className="relative">
+    <>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onOpenModal}  // Changed from onClose(false) to onOpenModal
         className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
       >
         <Calendar className="w-4 h-4 text-gray-500" />
@@ -115,67 +113,65 @@ const DateFilter = ({ dateRange, onDateChange }) => {
         </button>
       )}
 
-      {isOpen && (
-        <div className="absolute top-full mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              {presets.slice(0, -1).map((preset) => (
-                <button
-                  key={preset.value}
-                  onClick={() => handlePresetClick(preset.value)}
-                  className={`px-3 py-2 text-sm rounded-md transition-colors ${
-                    selectedPreset === preset.value
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
+      <Modal
+        title="Select Date Range"
+        open={isOpen}
+        onCancel={onClose}
+        footer={null}
+        width={400}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            {presets.slice(0, -1).map((preset) => (
               <button
-                onClick={() => handlePresetClick('custom')}
-                className={`w-full px-3 py-2 text-sm rounded-md mb-2 transition-colors ${
-                  selectedPreset === 'custom'
+                key={preset.value}
+                onClick={() => handlePresetClick(preset.value)}
+                className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                  selectedPreset === preset.value
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Custom Range
+                {preset.label}
               </button>
-              
-              {selectedPreset === 'custom' && (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Start Date</label>
-                      <input
-                        type="date"
-                        value={customDates.startDate}
-                        onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">End Date</label>
-                      <input
-                        type="date"
-                        value={customDates.endDate}
-                        onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <button
+              onClick={() => handlePresetClick('custom')}
+              className={`w-full px-3 py-2 text-sm rounded-md mb-2 transition-colors ${
+                selectedPreset === 'custom'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Custom Range
+            </button>
+            
+            {selectedPreset === 'custom' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+                  <DatePicker
+                    value={customDates.startDate}
+                    onChange={(value) => handleCustomDateChange('startDate', value)}
+                  />
                 </div>
-              )}
-            </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">End Date</label>
+                  <DatePicker
+                    value={customDates.endDate}
+                    onChange={(value) => handleCustomDateChange('endDate', value)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
-    </div>
+      </Modal>
+    </>
   );
 };
 
-export default DateFilter;
+export default DateFilterModal;

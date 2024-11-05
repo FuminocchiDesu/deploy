@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Star, QrCode, Timer, Calendar, X } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
-import DateFilter from './DateFilter';
+import DateFilterModal from './DateFilterModal';
 import './SharedStyles.css';
 
 function ReviewsPage({ handleOwnerLogout }) {
@@ -20,6 +20,17 @@ function ReviewsPage({ handleOwnerLogout }) {
     startDate: '',
     endDate: ''
   });
+  const [isDateFilterModalOpen, setIsDateFilterModalOpen] = useState(false);
+
+  const openDateFilterModal = () => {
+    setIsDateFilterModalOpen(true);
+  };
+
+  // Add close handler for the modal
+  const closeDateFilterModal = () => {
+    setIsDateFilterModalOpen(false);
+  };
+
   const navigate = useNavigate();
 
   const fetchReviews = useCallback(async () => {
@@ -283,20 +294,24 @@ function ReviewsPage({ handleOwnerLogout }) {
               </div>
             </div>
           )}
-          {/* Enhanced Filters Section */}
-          
 
           <div className="reviews-container">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Calendar size={18} className="text-gray-500" />
-              <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={18} className="text-gray-500" />
+                <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
+              </div>
+              <div className="flex items-center">
+                <DateFilterModal 
+                  isOpen={isDateFilterModalOpen}
+                  onClose={closeDateFilterModal}
+                  dateRange={dateRange}
+                  onDateChange={handleDateRangeChange}
+                  onOpenModal={openDateFilterModal}
+                />
+              </div>
             </div>
-            <DateFilter 
-              dateRange={dateRange}
-              onDateChange={handleDateRangeChange}
-            />
-          </div>
+
             <ul className="review-list">
               {filteredReviews.map(review => (
                 <li key={review.id} className="review-item">
