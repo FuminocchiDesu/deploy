@@ -499,7 +499,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     { 
       title: 'Name', 
       dataIndex: 'name', 
-      key: 'name',
+      key: 'category_name',
       width: '80%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
@@ -524,7 +524,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     { 
       title: 'Name', 
       dataIndex: 'name', 
-      key: 'name',
+      key: 'item_name',
       width: '20%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
@@ -602,7 +602,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
     { 
       title: 'Name', 
       dataIndex: 'name', 
-      key: 'name',
+      key: 'promo_name',
       width: '20%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
