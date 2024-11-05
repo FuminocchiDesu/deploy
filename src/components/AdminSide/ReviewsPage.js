@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Star, QrCode, Timer } from 'lucide-react';
+import { Star, QrCode, Timer, Calendar  } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
 import './SharedStyles.css';
 
@@ -14,6 +14,11 @@ function ReviewsPage({ handleOwnerLogout }) {
   const [remainingTime, setRemainingTime] = useState(null);
   const [duration, setDuration] = useState('1d');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
   const navigate = useNavigate();
 
   const fetchReviews = useCallback(async () => {
@@ -62,6 +67,52 @@ function ReviewsPage({ handleOwnerLogout }) {
     fetchReviews();
     fetchLatestQRCode();
   }, [fetchReviews, fetchLatestQRCode]);
+
+  useEffect(() => {
+    filterReviews();
+  }, [dateRange, reviews]);
+
+  const filterReviews = () => {
+    let filtered = [...reviews];
+
+    if (dateRange.startDate || dateRange.endDate) {
+      filtered = filtered.filter(review => {
+        const reviewDate = new Date(review.created_at);
+        reviewDate.setHours(0, 0, 0, 0);
+
+        const start = dateRange.startDate ? new Date(dateRange.startDate) : null;
+        const end = dateRange.endDate ? new Date(dateRange.endDate) : null;
+        end?.setHours(23, 59, 59, 999);
+
+        if (start && end) {
+          return reviewDate >= start && reviewDate <= end;
+        } else if (start) {
+          return reviewDate >= start;
+        } else if (end) {
+          return reviewDate <= end;
+        }
+        return true;
+      });
+    }
+
+    setFilteredReviews(filtered);
+  };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+    setDateRange(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setDateRange({
+      startDate: '',
+      endDate: ''
+    });
+    setFilteredReviews(reviews);
+  };
 
   useEffect(() => {
     let timer;
@@ -235,10 +286,41 @@ function ReviewsPage({ handleOwnerLogout }) {
               </div>
             </div>
           )}
+          <div className="filters-section mb-6">
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Calendar size={20} className="text-gray-500" />
+                <input
+                  type="date"
+                  name="startDate"
+                  value={dateRange.startDate}
+                  onChange={handleDateChange}
+                  className="px-3 py-2 border rounded-md"
+                />
+                <span className="text-gray-500">to</span>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={dateRange.endDate}
+                  onChange={handleDateChange}
+                  className="px-3 py-2 border rounded-md"
+                />
+              </div>
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Clear Filters
+              </button>
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              Showing {filteredReviews.length} of {reviews.length} reviews
+            </div>
+          </div>
 
           <div className="reviews-container">
             <ul className="review-list">
-              {reviews.map(review => (
+              {filteredReviews.map(review => (
                 <li key={review.id} className="review-item">
                   <div className="review-header">
                     <span className="review-author">{review.user.username}</span>
@@ -250,6 +332,11 @@ function ReviewsPage({ handleOwnerLogout }) {
                   </p>
                 </li>
               ))}
+              {filteredReviews.length === 0 && (
+                <li className="p-4 text-center text-gray-500">
+                  No reviews found for the selected date range
+                </li>
+              )}
             </ul>
           </div>
         </div>
