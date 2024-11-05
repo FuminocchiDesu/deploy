@@ -62,6 +62,15 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
                   onChange={(e) => handleTimeChange(index, 'opening_time', e.target.value)}
                   disabled={!isEditMode}
                   className="border p-1"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '10px solid #DEB887',
+                    borderRadius: '0.375rem',
+                    backgroundColor: '#ffffff',
+                    color: 'var(--color-text)',
+                    transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                  }}
                 />
               </td>
               <td>
@@ -71,6 +80,15 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
                   onChange={(e) => handleTimeChange(index, 'closing_time', e.target.value)}
                   disabled={!isEditMode}
                   className="border p-1"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #DEB887',
+                    borderRadius: '0.375rem',
+                    backgroundColor: '#ffffff',
+                    color: 'var(--color-text)',
+                    transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+                  }}
                 />
               </td>
             </tr>

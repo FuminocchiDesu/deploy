@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertTriangle, Save } from 'lucide-react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
@@ -590,6 +590,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   </button>
                   {basicInfoEditMode && (
                     <button type="submit" className="button primary" id="mg-left" style={{ backgroundColor: '#a0522d' }}>
+                      <Save className="mr-4" size={18} />
                       Save Changes
                     </button>
                   )}
