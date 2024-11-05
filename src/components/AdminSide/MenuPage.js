@@ -32,6 +32,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [itemPageSize, setItemPageSize] = useState(5);
   const [promoPage, setPromoPage] = useState(1);
   const [promoPageSize, setPromoPageSize] = useState(5);
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [sortedInfo, setSortedInfo] = useState({});
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
@@ -100,6 +102,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
     handleOwnerLogout();
     navigate('/admin-login');
   };
+
+  const handleChange = (pagination, filters, sorter, extra) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
+  };
+
 
   const showModal = (type, record = null) => {
     setModalType(type);
@@ -487,7 +495,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
       dataIndex: 'name', 
       key: 'name',
       width: '80%',
-      ellipsis: true 
+      ellipsis: true,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
     },
     {
       title: 'Actions',
@@ -510,14 +520,16 @@ const MenuPage = ({ handleOwnerLogout }) => {
       dataIndex: 'name', 
       key: 'name',
       width: '20%',
-      ellipsis: true 
+      ellipsis: true,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
     },
     { 
       title: 'Description', 
       dataIndex: 'description', 
       key: 'description',
       width: '30%',
-      ellipsis: true 
+      ellipsis: true,
     },
     {
       title: 'Category',
@@ -525,6 +537,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
       key: 'category',
       width: '15%',
       ellipsis: true,
+      filteredValue: filteredInfo.category || null,
+      filters: categories.map(category => ({
+        text: category.name,
+        value: category.id,
+      })),
+      onFilter: (value, record) => record.category === value,
       render: (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         return category ? category.name : 'Unknown Category';
@@ -535,6 +553,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
       dataIndex: 'is_available',
       key: 'is_available',
       width: '15%',
+      filters: [
+        { text: 'Available', value: true },
+        { text: 'Unavailable', value: false },
+      ],
+      filteredValue: filteredInfo.is_available || null,
+      onFilter: (value, record) => record.is_available === value,
       render: (isAvailable, record) => (
         <Button
           style={{ 
@@ -574,26 +598,42 @@ const MenuPage = ({ handleOwnerLogout }) => {
       dataIndex: 'name', 
       key: 'name',
       width: '20%',
-      ellipsis: true 
+      ellipsis: true,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
     },
     { 
       title: 'Description', 
       dataIndex: 'description', 
       key: 'description',
       width: '30%',
-      ellipsis: true 
+      ellipsis: true,
     },
     { 
       title: 'Start Date', 
       dataIndex: 'start_date', 
       key: 'start_date',
-      width: '15%' 
+      width: '15%',
+      filteredValue: filteredInfo.start_date || null,
+      filters: Array.from(new Set(promos.map(promo => promo.start_date)))
+        .map(date => ({
+          text: date,
+          value: date,
+        })),
+      onFilter: (value, record) => record.start_date === value
     },
     { 
       title: 'End Date', 
       dataIndex: 'end_date', 
       key: 'end_date',
-      width: '15%' 
+      width: '15%',
+      filteredValue: filteredInfo.end_date || null,
+      filters: Array.from(new Set(promos.map(promo => promo.end_date)))
+        .map(date => ({
+          text: date,
+          value: date,
+        })),
+      onFilter: (value, record) => record.end_date === value
     },
     {
       title: 'Actions',
@@ -610,9 +650,14 @@ const MenuPage = ({ handleOwnerLogout }) => {
     },
   ];
 
+  const clearFilters = () => {
+    setFilteredInfo({});
+  };
+
   const tableProps = {
     loading: loading,
-    scroll: { x: 800 }, 
+    scroll: { x: 800 },
+    onChange: handleChange, // Add onChange handler to manage filters
   };
 
   const paginationTheme = {
