@@ -270,7 +270,10 @@ const MenuManagementForms = ({
             <Button 
               type="dashed" 
               onClick={addSize} 
-              style={formStyles.addButton}
+              style={{
+                ...formStyles.addButton,
+                backgroundColor: '#a0522d' // Changed from '#1890ff' to '#a0522d'
+              }}
             >
               <PlusOutlined /> Add Size
             </Button>
