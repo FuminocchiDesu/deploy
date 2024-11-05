@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
-import { Calendar, ChevronDown, X } from 'lucide-react';
+import { Calendar, ChevronDown, X, Pencil } from 'lucide-react';
 import DatePicker from './DatePicker';
 
 const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal }) => {
@@ -131,6 +131,7 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
+                id='buttons-design'
               >
                 {preset.label}
               </button>
@@ -145,7 +146,9 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
+              id='buttons-design'
             >
+              <Pencil size={15} />
               Custom Range
             </button>
             
