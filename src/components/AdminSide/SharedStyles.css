@@ -38,7 +38,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 1.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1113,7 +1116,7 @@ body {
 .tab-list {
   display: flex;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 1.52rem 0;
 }
 
 /* Tab Buttons */

@@ -105,9 +105,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
   const handleChange = (pagination, filters, sorter, extra) => {
     setFilteredInfo(filters);
-    setSortedInfo(sorter);
+    setSortedInfo({
+      columnKey: sorter.columnKey === 'name' ? (
+        sorter.field === 'name' ? 'item_name' : (
+          sorter.field === 'name' ? 'promo_name' : 'category_name'
+        )
+      ) : sorter.columnKey,
+      order: sorter.order,
+    });
   };
-
 
   const showModal = (type, record = null) => {
     setModalType(type);
@@ -497,7 +503,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       width: '80%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+      sortOrder: sortedInfo.columnKey === 'category_name' && sortedInfo.order,
     },
     {
       title: 'Actions',
@@ -522,7 +528,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       width: '20%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+      sortOrder: sortedInfo.columnKey === 'item_name' && sortedInfo.order,
     },
     { 
       title: 'Description', 
@@ -600,7 +606,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       width: '20%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+      sortOrder: sortedInfo.columnKey === 'promo_name' && sortedInfo.order,
     },
     { 
       title: 'Description', 
