@@ -298,7 +298,6 @@ function ReviewsPage({ handleOwnerLogout }) {
           <div className="reviews-container">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-gray-500" />
                 <h3 className="font-medium text-gray-700">Filter by Date Range</h3>
               </div>
               <div className="flex items-center">

@@ -1,0 +1,255 @@
+/* Main container */
+.date-filter-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+  
+/* Trigger button */
+.date-trigger-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #374151;
+    transition: all 0.2s ease-in-out;
+}
+  
+.date-trigger-button:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+  
+.date-trigger-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+    border-color: transparent;
+}
+  
+.date-trigger-icon {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+}
+  
+.date-trigger-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+  
+/* Clear button */
+.clear-date-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    color: #6b7280;
+    transition: all 0.2s ease-in-out;
+}
+  
+.clear-date-button:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+  
+.clear-date-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+  
+/* Modal customization */
+.date-filter-modal .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+  
+.date-filter-modal .ant-modal-header {
+    border-bottom: none;
+    padding: 0;
+}
+  
+.date-filter-modal .ant-modal-body {
+    padding: 0;
+}
+  
+.date-filter-modal .ant-modal-close {
+    top: 14px;
+    right: 14px;
+}
+  
+.date-filter-modal .ant-modal-close:hover {
+    background-color: #f3f4f6;
+    border-radius: 8px;
+}
+  
+/* Modal header */
+.modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+  
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+  
+/* Modal content */
+.modal-content {
+    padding: 16px;
+}
+  
+/* Preset buttons grid */
+.preset-buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+  
+.preset-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+  
+.preset-button.active {
+    background-color: #3b82f6;
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+  
+.preset-button.active:hover {
+    background-color: #2563eb;
+}
+  
+.preset-button.inactive {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+  
+.preset-button.inactive:hover {
+    background-color: #e5e7eb;
+}
+  
+/* Divider */
+.divider-container {
+    position: relative;
+    margin: 24px 0;
+}
+  
+.divider-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #e5e7eb;
+}
+  
+.divider-text {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+  
+.divider-text span {
+    background-color: white;
+    padding: 0 8px;
+    color: #6b7280;
+    font-size: 14px;
+}
+  
+/* Custom range section */
+.custom-range-button {
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease-in-out;
+}
+  
+.date-input-container {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+  
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+  
+.date-input-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+  
+/* Footer */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+  
+.footer-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+  
+.footer-button.secondary {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+  
+.footer-button.secondary:hover {
+    background-color: #f9fafb;
+}
+  
+.footer-button.primary {
+    background-color: #3b82f6;
+    color: white;
+}
+  
+.footer-button.primary:hover {
+    background-color: #2563eb;
+}
+  
+/* DatePicker customization */
+.custom-datepicker {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}
+  
+.custom-datepicker:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+    border-color: transparent;
+}
