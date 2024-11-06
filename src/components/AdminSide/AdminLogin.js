@@ -1,4 +1,3 @@
-// frontend/src/components/AdminSide/AdminLogin.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -18,49 +17,32 @@ export default function AdminLogin({ onLogin }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const rememberMe = localStorage.getItem('rememberMe') === 'true';
-        const savedUsername = localStorage.getItem('rememberedUsername');
-        const token = localStorage.getItem('ownerToken');
-        
-        if (token && rememberMe) {
-          // Validate token before auto-login
-          try {
-            const response = await axios.get('https://khlcle.pythonanywhere.com/api/validate-token/', {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data.valid) {
-              onLogin();
-              navigate('/dashboard');
-            } else {
-              clearAuthData();
-            }
-          } catch (error) {
-            clearAuthData();
-          }
-        } else if (savedUsername && rememberMe) {
-          setCredentials(prev => ({
-            ...prev,
-            username: savedUsername,
-            rememberMe: true
-          }));
-        } else {
-          clearAuthData();
-        }
-      } catch (error) {
-        console.error('Error checking login status:', error);
-        clearAuthData();
-      }
-    };
+    // Check for remembered credentials on component mount
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const token = localStorage.getItem('ownerToken');
 
-    checkLoginStatus();
+    if (rememberMe && savedUsername) {
+      setCredentials(prev => ({
+        ...prev,
+        username: savedUsername,
+        rememberMe: true
+      }));
+    }
+
+    // If there's a valid token, proceed to dashboard
+    if (token) {
+      onLogin();
+      navigate('/dashboard');
+    }
   }, [navigate, onLogin]);
 
   const clearAuthData = () => {
     localStorage.removeItem('ownerToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('coffeeShopId');
+    
+    // Only clear username and rememberMe if remember me is disabled
     if (localStorage.getItem('rememberMe') !== 'true') {
       localStorage.removeItem('rememberedUsername');
       localStorage.removeItem('rememberMe');
@@ -73,6 +55,12 @@ export default function AdminLogin({ onLogin }) {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // If remember me is unchecked, clear remembered credentials
+    if (name === 'rememberMe' && !checked) {
+      localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('rememberMe');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -87,18 +75,17 @@ export default function AdminLogin({ onLogin }) {
       });
 
       if (response?.data?.access) {
-        // Handle authentication data storage
+        // Always store the tokens
+        localStorage.setItem('ownerToken', response.data.access);
+        localStorage.setItem('refreshToken', response.data.refresh);
+        
+        // Handle remember me functionality
         if (credentials.rememberMe) {
           localStorage.setItem('rememberedUsername', credentials.username);
           localStorage.setItem('rememberMe', 'true');
-          localStorage.setItem('ownerToken', response.data.access);
-          localStorage.setItem('refreshToken', response.data.refresh);
         } else {
-          // Store only the essential data for the session
-          localStorage.setItem('ownerToken', response.data.access);
-          localStorage.setItem('refreshToken', response.data.refresh);
-          localStorage.setItem('rememberMe', 'false');
           localStorage.removeItem('rememberedUsername');
+          localStorage.setItem('rememberMe', 'false');
         }
 
         if (response.data.coffee_shop_id) {

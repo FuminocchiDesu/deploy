@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { App as AntApp, ConfigProvider } from 'antd'; // Import Ant Design components
+import { App as AntApp, ConfigProvider } from 'antd';
 import AdminLogin from './components/AdminSide/AdminLogin';
 import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
@@ -15,15 +15,41 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const ownerToken = localStorage.getItem('ownerToken');
+    const checkAuthStatus = () => {
+      const ownerToken = localStorage.getItem('ownerToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      // If no tokens exist, user is definitely not authenticated
+      if (!ownerToken && !refreshToken) {
+        setIsOwnerAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
 
-    if (ownerToken) {
-      setIsOwnerAuthenticated(true);
-    } else {
-      setIsOwnerAuthenticated(false);
-    }
+      try {
+        // Simple JWT expiry check
+        if (ownerToken) {
+          const tokenData = JSON.parse(atob(ownerToken.split('.')[1]));
+          const expirationTime = tokenData.exp * 1000; // Convert to milliseconds
+          
+          if (Date.now() >= expirationTime) {
+            // Token has expired
+            handleOwnerLogout();
+          } else {
+            setIsOwnerAuthenticated(true);
+          }
+        } else {
+          setIsOwnerAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        handleOwnerLogout();
+      }
+      
+      setIsLoading(false);
+    };
 
-    setIsLoading(false);
+    checkAuthStatus();
   }, []);
 
   const handleOwnerLogin = () => {
@@ -31,8 +57,18 @@ const App = () => {
   };
 
   const handleOwnerLogout = () => {
+    // Clear all auth-related data
     localStorage.removeItem('ownerToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('coffeeShopId');
+    
+    // Don't clear rememberMe related items
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    if (!rememberMe) {
+      localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('rememberMe');
+    }
+    
     setIsOwnerAuthenticated(false);
   };
 
