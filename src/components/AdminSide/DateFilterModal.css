@@ -66,9 +66,12 @@
 /* Modal customization */
 .date-filter-modal .ant-modal-content {
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
                 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    min-height: 380px;  /* Add minimum height to create more space */
+    display: flex;
+    flex-direction: column;
 }
   
 .date-filter-modal .ant-modal-header {
@@ -124,22 +127,23 @@
 }
   
 .preset-button.active {
-    background-color: #3b82f6;
+    background-color: #A0522D;
     color: white;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
   
 .preset-button.active:hover {
-    background-color: #2563eb;
+    background-color: #A0522D;
 }
   
 .preset-button.inactive {
-    background-color: #f3f4f6;
+    background-color: #F5DEB3;
     color: #374151;
 }
   
 .preset-button.inactive:hover {
-    background-color: #e5e7eb;
+    background-color: #A0522D;
+    color: white;
 }
   
 /* Divider */
@@ -182,6 +186,21 @@
     gap: 8px;
     transition: all 0.2s ease-in-out;
 }
+
+.custom-range-button.inactive {
+    background-color: #F5DEB3;
+    color: #374151;
+}
+
+.custom-range-button.inactive:hover {
+    background-color: #A0522D;
+    color: white;
+}
+
+.custom-range-button.active {
+    background-color: #A0522D;
+    color: white;
+}
   
 .date-input-container {
     margin-top: 16px;
@@ -205,10 +224,11 @@
 /* Footer */
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 8px;
     padding-top: 16px;
-    margin-top: 16px;
+    margin-top: 30px;
+    margin-bottom: -60px;
     border-top: 1px solid #e5e7eb;
 }
   
@@ -227,16 +247,18 @@
 }
   
 .footer-button.secondary:hover {
-    background-color: #f9fafb;
-}
-  
-.footer-button.primary {
-    background-color: #3b82f6;
+    background-color: #df3030;
     color: white;
 }
   
+.footer-button.primary {
+    background-color: #F5DEB3;
+    color: black;
+}
+  
 .footer-button.primary:hover {
-    background-color: #2563eb;
+    background-color: #A0522D;
+    color: white;
 }
   
 /* DatePicker customization */

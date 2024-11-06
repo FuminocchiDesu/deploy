@@ -324,6 +324,7 @@ const MenuManagementForms = ({
             value={form.getFieldValue('start_date')}
             onChange={(date) => form.setFieldsValue({ start_date: date })}
             style={formStyles.input}
+            position="bottom"
           />
         </Form.Item>
 
@@ -348,6 +349,7 @@ const MenuManagementForms = ({
             value={form.getFieldValue('end_date')}
             onChange={(date) => form.setFieldsValue({ end_date: date })}
             style={formStyles.input}
+            position="bottom"
           />
         </Form.Item>
       </div>

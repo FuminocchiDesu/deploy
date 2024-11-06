@@ -52,11 +52,9 @@
   .calendar-icon.hovered {
     color: #0066ff;
   }
-  
-  .calendar-container {
+
+.calendar-container {
     position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
     width: 280px;
     background-color: white;
     border: 1px solid #ddd;
@@ -64,7 +62,17 @@
     padding: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-  }
+}
+
+.calendar-container.position-bottom {
+    top: calc(100% + 4px);
+    left: 0;
+}
+
+.calendar-container.position-top {
+    left: 0;
+    bottom: calc(100% + 8px);
+}
   
   .calendar-header {
     display: flex;

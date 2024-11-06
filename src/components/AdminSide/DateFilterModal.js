@@ -171,6 +171,7 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
                   value={tempDates.startDate}
                   onChange={(value) => handleCustomDateChange('startDate', value)}
                   className="custom-datepicker"
+                  position="top"
                 />
               </div>
               <div className="date-input-group">
@@ -179,6 +180,7 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
                   value={tempDates.endDate}
                   onChange={(value) => handleCustomDateChange('endDate', value)}
                   className="custom-datepicker"
+                  position="top"
                 />
               </div>
             </div>

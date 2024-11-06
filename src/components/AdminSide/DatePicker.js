@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import './DatePicker.css';
 
-const DatePicker = ({ value, onChange }) => {
+const DatePicker = ({ value, onChange, position = 'bottom' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -126,7 +126,7 @@ const DatePicker = ({ value, onChange }) => {
       </div>
 
       {isOpen && (
-        <div className="calendar-container">
+        <div className={`calendar-container position-${position}`}>
           <div className="calendar-header">
             <button onClick={handlePrevMonth} className="month-button">←</button>
             <div className="current-month">
