@@ -212,12 +212,24 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'image' && files && files[0]) {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
       setCoffeeShop(prev => ({ ...prev, [name]: files[0] }));
       setImagePreview(URL.createObjectURL(files[0]));
     } else {
       setCoffeeShop(prev => ({ ...prev, [name]: value }));
     }
   };
+
+  useEffect(() => {
+    return () => {
+      // Clean up any blob URLs when component unmounts
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, []);
 
   const handleAddressChange = (address) => {
     setCoffeeShop(prev => ({ ...prev, address }));
