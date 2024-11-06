@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
 import { Calendar, ChevronDown, X, Pencil } from 'lucide-react';
 import DatePicker from './DatePicker';
+import './DateFilterModal.css';
 
 const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal }) => {
   const [selectedPreset, setSelectedPreset] = useState('7d');
   const [customDates, setCustomDates] = useState({
+    startDate: dateRange.startDate || '',
+    endDate: dateRange.endDate || ''
+  });
+  const [tempDates, setTempDates] = useState({
     startDate: dateRange.startDate || '',
     endDate: dateRange.endDate || ''
   });
@@ -23,14 +28,16 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
       startDate: dateRange.startDate || '',
       endDate: dateRange.endDate || ''
     });
+    setTempDates({
+      startDate: dateRange.startDate || '',
+      endDate: dateRange.endDate || ''
+    });
   }, [dateRange]);
 
   const handlePresetClick = (preset) => {
     setSelectedPreset(preset);
     
-    if (preset === 'custom') {
-      return;
-    }
+    if (preset === 'custom') return;
 
     const today = new Date();
     let startDate = new Date();
@@ -52,32 +59,37 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
         return;
     }
 
-    const newDateRange = {
+    setTempDates({
       startDate: startDate.toISOString().split('T')[0],
       endDate: today.toISOString().split('T')[0]
-    };
-
-    setCustomDates(newDateRange);
-    onDateChange(newDateRange);
+    });
   };
 
   const handleCustomDateChange = (field, value) => {
-    const newCustomDates = {
-      ...customDates,
+    setTempDates(prev => ({
+      ...prev,
       [field]: value
-    };
-    setCustomDates(newCustomDates);
-    
-    if (newCustomDates.startDate && newCustomDates.endDate) {
-      onDateChange(newCustomDates);
-    }
+    }));
   };
 
   const clearDates = () => {
     const emptyDates = { startDate: '', endDate: '' };
     setCustomDates(emptyDates);
+    setTempDates(emptyDates);
     onDateChange(emptyDates);
     setSelectedPreset('7d');
+    onClose();
+  };
+
+  const applyFilter = () => {
+    setCustomDates(tempDates);
+    onDateChange(tempDates);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    setTempDates(customDates);
+    setSelectedPreset(selectedPreset);
     onClose();
   };
 
@@ -94,86 +106,95 @@ const DateFilterModal = ({ isOpen, onClose, dateRange, onDateChange, onOpenModal
   };
 
   return (
-    <>
-      <button 
-        onClick={onOpenModal}  // Changed from onClose(false) to onOpenModal
-        className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-      >
-        <Calendar className="w-4 h-4 text-gray-500" />
-        <span className="text-sm font-medium">{getDisplayText()}</span>
-        <ChevronDown className="w-4 h-4 text-gray-500 ml-2" />
+    <div className="date-filter-container">
+      <button className="date-trigger-button" onClick={onOpenModal}>
+        <Calendar className="date-trigger-icon" />
+        <span className="date-trigger-text">{getDisplayText()}</span>
+        <ChevronDown className="date-trigger-icon" />
       </button>
 
       {(dateRange.startDate || dateRange.endDate) && (
-        <button
-          onClick={clearDates}
-          className="ml-2 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-        >
-          <X className="w-4 h-4" />
+        <button className="clear-date-button" onClick={clearDates} aria-label="Clear dates">
+          <X className="date-trigger-icon" />
         </button>
       )}
 
       <Modal
-        title="Select Date Range"
+        title={
+          <div className="modal-header">
+            <h3 className="modal-title">Select Date Range</h3>
+          </div>
+        }
         open={isOpen}
-        onCancel={onClose}
+        onCancel={handleCancel}
         footer={null}
         width={400}
+        className="date-filter-modal"
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="modal-content">
+          <div className="preset-buttons-grid">
             {presets.slice(0, -1).map((preset) => (
               <button
                 key={preset.value}
                 onClick={() => handlePresetClick(preset.value)}
-                className={`px-3 py-2 text-sm rounded-md transition-colors ${
-                  selectedPreset === preset.value
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`preset-button ${
+                  selectedPreset === preset.value ? 'active' : 'inactive'
                 }`}
-                id='buttons-design'
               >
                 {preset.label}
               </button>
             ))}
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <button
-              onClick={() => handlePresetClick('custom')}
-              className={`w-full px-3 py-2 text-sm rounded-md mb-2 transition-colors ${
-                selectedPreset === 'custom'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              id='buttons-design'
-            >
-              <Pencil size={15} />
-              Custom Range
-            </button>
-            
-            {selectedPreset === 'custom' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Start Date</label>
-                  <DatePicker
-                    value={customDates.startDate}
-                    onChange={(value) => handleCustomDateChange('startDate', value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">End Date</label>
-                  <DatePicker
-                    value={customDates.endDate}
-                    onChange={(value) => handleCustomDateChange('endDate', value)}
-                  />
-                </div>
+          <div className="divider-container">
+            <div className="divider-line" />
+            <div className="divider-text">
+              <span>or</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => handlePresetClick('custom')}
+            className={`custom-range-button ${
+              selectedPreset === 'custom' ? 'active' : 'inactive'
+            }`}
+          >
+            <Pencil className="date-trigger-icon" />
+            Custom Range
+          </button>
+          
+          {selectedPreset === 'custom' && (
+            <div className="date-input-container">
+              <div className="date-input-group">
+                <label className="date-input-label">Start Date</label>
+                <DatePicker
+                  value={tempDates.startDate}
+                  onChange={(value) => handleCustomDateChange('startDate', value)}
+                  className="custom-datepicker"
+                />
               </div>
-            )}
+              <div className="date-input-group">
+                <label className="date-input-label">End Date</label>
+                <DatePicker
+                  value={tempDates.endDate}
+                  onChange={(value) => handleCustomDateChange('endDate', value)}
+                  className="custom-datepicker"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="modal-footer">
+            <button className="footer-button secondary" onClick={handleCancel}>
+              Cancel
+            </button>
+            <button className="footer-button primary" onClick={applyFilter}>
+              Apply Filter
+            </button>
           </div>
         </div>
       </Modal>
-    </>
+    </div>
   );
 };
 

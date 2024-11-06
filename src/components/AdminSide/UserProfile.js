@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit, Save, X } from 'lucide-react'
+import { Edit, Save } from 'lucide-react'
 import SidebarMenu from './SideBarMenu'
 import './SharedStyles.css'
 import AccountSettings from './AccountSettings'
@@ -11,7 +11,6 @@ const UserProfile = ({ handleOwnerLogout }) => {
   const [error, setError] = useState(null)
   const [editedProfile, setEditedProfile] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedImage, setSelectedImage] = useState(null)
   const [activeMenuItem, setActiveMenuItem] = useState('Profile')
   const navigate = useNavigate()
 
@@ -50,11 +49,6 @@ const UserProfile = ({ handleOwnerLogout }) => {
         }
       })
 
-      // Add the new image if one was selected
-      if (selectedImage) {
-        formData.append('profile_picture', selectedImage)
-      }
-
       const response = await fetch('https://khlcle.pythonanywhere.com/api/profile/', {
         method: 'PUT',
         headers: {
@@ -68,29 +62,9 @@ const UserProfile = ({ handleOwnerLogout }) => {
       const updatedProfile = await response.json()
       setProfile(updatedProfile)
       setIsEditing(false)
-      setSelectedImage(null)
       setError(null)
     } catch (err) {
       setError(err.message)
-    }
-  }
-
-  const handleCancel = () => {
-    setEditedProfile(profile)
-    setSelectedImage(null)
-    setIsEditing(false)
-    setError(null)
-  }
-
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0])
-      // Create a preview URL for the selected image
-      const previewUrl = URL.createObjectURL(e.target.files[0])
-      setEditedProfile({
-        ...editedProfile,
-        profile_picture_url: previewUrl
-      })
     }
   }
 
@@ -111,6 +85,14 @@ const UserProfile = ({ handleOwnerLogout }) => {
     )
   }
 
+  const buttonStyle = {
+    backgroundColor: '#a0522d',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '3px', // This adds 2px space between the icon and the text
+  };
+
   return (
     <div className="admin-layout">
       <SidebarMenu
@@ -122,60 +104,34 @@ const UserProfile = ({ handleOwnerLogout }) => {
         <div className="card-dom">
           <div className="card-header">
             <h2 className="card-title">Profile Information</h2>
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className="button primary"
-                    style={{ backgroundColor: '#a0522d' }}
-                  >
-                    <Save className="mr-2 h-4 w-4" size={18} />
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="button secondary"
-                    style={{ backgroundColor: 'red' }}
-                  >
-                    <X className="mr-2 h-4 w-4" size={18} />
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="button primary"
-                  style={{ backgroundColor: '#a0522d' }}
-                >
-                  <Edit className="mr-2 h-4 w-4" size={18}/>
-                  Edit
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+              className="button primary"
+              style={buttonStyle}
+            >
+              {isEditing ? <Save className="mr-2 h-4 w-4" size={15}/> : <Edit className="mr-2 h-4 w-4" size={15}/>}
+              {isEditing ? 'Save' : 'Edit'}
+            </button>
           </div>
           <div className="card-content">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col items-center space-y-4">
                 <img
-                  src={editedProfile.profile_picture_url || '/placeholder.svg?height=128&width=128'}
+                  src={profile.profile_picture_url || '/placeholder.svg?height=128&width=128'}
                   alt="Profile"
                   className="w-32 h-32 rounded-full object-cover bg-gray-100"
                 />
                 {isEditing && (
-                  <div className="flex flex-col items-center gap-2">
-                    <input
-                      type="file"
-                      onChange={handleImageChange}
-                      className="form-input text-sm"
-                      accept="image/*"
-                    />
-                    {selectedImage && (
-                      <p className="text-sm text-gray-500">
-                        Selected: {selectedImage.name}
-                      </p>
-                    )}
-                  </div>
+                  <input
+                    type="file"
+                    name="profile_picture"
+                    onChange={(e) => setEditedProfile({
+                      ...editedProfile,
+                      profile_picture: e.target.files[0]
+                    })}
+                    className="form-input text-sm"
+                    accept="image/*"
+                  />
                 )}
               </div>
               <div className="md:col-span-2 space-y-4">
@@ -229,11 +185,12 @@ const UserProfile = ({ handleOwnerLogout }) => {
                     rows={4}
                   />
                 </div>
+                
               </div>
             </div>
-          </div>
-          <AccountSettings/>
+          </div><AccountSettings/>
         </div>
+        
       </main>
     </div>
   )
