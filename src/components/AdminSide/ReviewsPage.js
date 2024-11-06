@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, QrCode, Timer, Calendar, X, Pencil } from 'lucide-react';
 import SidebarMenu from './SideBarMenu';
 import DateFilterModal from './DateFilterModal';
+import { CoffeeLoader } from '../ui/CoffeeLoader';
 import './SharedStyles.css';
 
 function ReviewsPage({ handleOwnerLogout }) {
@@ -21,6 +22,7 @@ function ReviewsPage({ handleOwnerLogout }) {
     endDate: ''
   });
   const [isDateFilterModalOpen, setIsDateFilterModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const openDateFilterModal = () => {
     setIsDateFilterModalOpen(true);
@@ -34,6 +36,7 @@ function ReviewsPage({ handleOwnerLogout }) {
   const navigate = useNavigate();
 
   const fetchReviews = useCallback(async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
@@ -45,6 +48,8 @@ function ReviewsPage({ handleOwnerLogout }) {
       setError('Failed to fetch reviews. Please try again.');
       handleOwnerLogout();
       navigate('/admin-login');
+    } finally {
+      setIsLoading(false);
     }
   }, [handleOwnerLogout, navigate]);
 
@@ -222,6 +227,12 @@ function ReviewsPage({ handleOwnerLogout }) {
       />
 
       <main className="main-content">
+      {isLoading ? (
+            <div className="loader-container">
+              <CoffeeLoader size={80} color="#8B4513" />
+            </div>
+          ) : (
+            <div>
         <header className="page-header">
           <h1 className='page-title'>Customer Reviews</h1>
         </header>
@@ -331,7 +342,9 @@ function ReviewsPage({ handleOwnerLogout }) {
               )}
             </ul>
           </div>
-        </div>
+          </div>
+          </div>
+        )}
       </main>
     </div>
   );

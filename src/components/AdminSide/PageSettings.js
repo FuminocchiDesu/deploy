@@ -9,6 +9,7 @@ import SidebarMenu from './SideBarMenu';
 import Switch from './CustomSwitch';
 import OpeningHoursTable from './OpeningHoursTable';
 import ContactDetailsTab from './ContactDetailsTab';
+import { CoffeeLoader } from '../ui/CoffeeLoader';
 
 const libraries = ['places'];
 
@@ -36,6 +37,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
   const [openingHours, setOpeningHours] = useState([]);
   const [showWarning, setShowWarning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const apiKey = 'AIzaSyBDU3QWyXnmPdcmphWACu71LSnJJlsImKU'; // Replace with your API key
 
@@ -53,6 +55,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   }, []);
 
   const fetchCoffeeShop = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/owner/coffee-shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
@@ -75,6 +78,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
       setError('Failed to fetch coffee shop details. Please try again.');
       handleOwnerLogout();
       navigate('/admin-login');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -343,6 +348,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
       />
 
       <main className="main-content">
+      {isLoading ? (
+          <div className="loader-container">
+            <CoffeeLoader size={80} color="#8B4513" />
+          </div>
+        ) : (
+          <div>
         <div className="tab-navigation">
           <nav className="tab-list">
             <button
@@ -557,7 +568,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
           />
           </>
         )}
-      </main>
+        </div>
+              )}     
+         </main>
     </div>
   );
 };

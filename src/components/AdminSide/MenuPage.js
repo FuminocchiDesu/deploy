@@ -5,7 +5,7 @@ import { Button, Table, Modal, Form, Space, Pagination, ConfigProvider, App } fr
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
-import { TableLoader } from '../ui/CoffeeLoader';
+import {CoffeeLoader} from '../ui/CoffeeLoader';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
@@ -694,6 +694,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
         onLogout={onLogout}
       />
       <div className="main-content">
+      {loading ? (
+          <div className="loader-container">
+            <CoffeeLoader size={80} color="#8B4513" />
+          </div>
+        ) : (
+          <div>
         <h1 className="page-title">Menu Management</h1>
         <ConfigProvider theme={buttonTheme}>
           <Button 
@@ -713,7 +719,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Category
               </Button>
             )}
-            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={categories} 
@@ -729,7 +734,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
-            </TableLoader>
           </section>
 
           <section className="menu-section mb-8">
@@ -739,7 +743,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Item
               </Button>
             )}
-            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={items} 
@@ -755,7 +758,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
-            </TableLoader>
           </section>
 
           <section className="menu-section">
@@ -765,7 +767,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Promo
               </Button>
             )}
-            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={promos} 
@@ -781,7 +782,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
-            </TableLoader>
           </section>
         </ConfigProvider>
 
@@ -824,6 +824,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
         </Form>
       </Modal>
       </div>
+       )}
+      </div>
+      
     </div>
   );
 };
