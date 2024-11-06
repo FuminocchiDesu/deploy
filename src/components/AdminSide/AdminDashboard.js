@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import SidebarMenu from './SideBarMenu';
-import CoffeeLoader from '../ui/CoffeeLoader';
+import { FullScreenLoader } from '../ui/CoffeeLoader'; // Updated import statement
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
@@ -98,26 +98,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
   );
 
   if (!visitsData || !reviewsData || !dashboardData) {
-    return (
-      <div className="admin-layout">
-        <SidebarMenu 
-          activeMenuItem={activeMenuItem}
-          handleMenuItemClick={(item) => {
-            setActiveMenuItem(item.name);
-            navigate(item.path);
-          }}
-          onLogout={() => {
-            handleOwnerLogout();
-            navigate('/admin-login');
-          }}
-        />
-        <main className="main-content flex items-center justify-center">
-          <div className="flex items-center justify-center min-h-screen w-full">
-            <CoffeeLoader size={80} color="#8B4513" />
-          </div>
-        </main>
-      </div>
-    );
+    return <FullScreenLoader size={80} color="#8B4513" />;
   }
 
   return (
