@@ -4,6 +4,7 @@ import { Edit, Save } from 'lucide-react'
 import SidebarMenu from './SideBarMenu'
 import './SharedStyles.css'
 import AccountSettings from './AccountSettings'
+import { CoffeeLoader } from '../ui/CoffeeLoader'
 
 const UserProfile = ({ handleOwnerLogout }) => {
   const [profile, setProfile] = useState(null)
@@ -101,6 +102,12 @@ const UserProfile = ({ handleOwnerLogout }) => {
         onLogout={handleOwnerLogout}
       />
       <main className="main-content">
+      {isLoading ? (
+            <div className="loader-container">
+              <CoffeeLoader size={80} color="#8B4513" />
+            </div>
+          ) : (
+            <div>
         <div className="card-dom">
           <div className="card-header">
             <h2 className="card-title">Profile Information</h2>
@@ -185,12 +192,13 @@ const UserProfile = ({ handleOwnerLogout }) => {
                     rows={4}
                   />
                 </div>
+                </div>
                 
               </div>
             </div>
           </div><AccountSettings/>
         </div>
-        
+        )}
       </main>
     </div>
   )
