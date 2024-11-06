@@ -5,6 +5,7 @@ import { Button, Table, Modal, Form, Space, Pagination, ConfigProvider, App } fr
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
+import CoffeeLoader from '../ui/CoffeeLoader';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
