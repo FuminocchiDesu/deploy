@@ -56,6 +56,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   const fetchCoffeeShop = async () => {
     setIsLoading(true);
+    const startTime = Date.now();
+
     try {
       const response = await axios.get('https://khlcle.pythonanywhere.com/api/owner/coffee-shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
@@ -73,6 +75,10 @@ const PageSettings = ({ handleOwnerLogout }) => {
           setMapCenter({ lat: parseFloat(fetchedCoffeeShop.latitude), lng: parseFloat(fetchedCoffeeShop.longitude) });
         }
       }
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(2000 - elapsedTime, 0);
+        // Keep showing loader for remaining time
+      await new Promise(resolve => setTimeout(resolve, remainingTime));
     } catch (error) {
       console.error('Error fetching coffee shop:', error);
       setError('Failed to fetch coffee shop details. Please try again.');

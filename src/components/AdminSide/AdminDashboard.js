@@ -50,7 +50,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
 
         // Calculate remaining time to show loader
         const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(3000 - elapsedTime, 0);
+        const remainingTime = Math.max(2000 - elapsedTime, 0);
         
         // Keep showing loader for remaining time
         await new Promise(resolve => setTimeout(resolve, remainingTime));

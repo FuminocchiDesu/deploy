@@ -49,6 +49,8 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      const startTime = Date.now();
+
       setError(null);
       const config = {
         headers: { Authorization: `Bearer ${ownerToken}` }
@@ -75,6 +77,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
       setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       setItems(Array.isArray(itemsData) ? itemsData : []);
       setPromos(Array.isArray(promosData) ? promosData : []);
+
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(2000 - elapsedTime, 0);
+        // Keep showing loader for remaining time
+      await new Promise(resolve => setTimeout(resolve, remainingTime));
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch menu data');

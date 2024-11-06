@@ -37,6 +37,8 @@ function ReviewsPage({ handleOwnerLogout }) {
 
   const fetchReviews = useCallback(async () => {
     setIsLoading(true);
+    const startTime = Date.now();
+
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
@@ -44,6 +46,10 @@ function ReviewsPage({ handleOwnerLogout }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setReviews(response.data);
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(2000 - elapsedTime, 0);
+        // Keep showing loader for remaining time
+      await new Promise(resolve => setTimeout(resolve, remainingTime));
     } catch (err) {
       setError('Failed to fetch reviews. Please try again.');
       handleOwnerLogout();
