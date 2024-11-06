@@ -85,6 +85,14 @@ const UserProfile = ({ handleOwnerLogout }) => {
     )
   }
 
+  const buttonStyle = {
+    backgroundColor: '#a0522d',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '3px', // This adds 2px space between the icon and the text
+  };
+
   return (
     <div className="admin-layout">
       <SidebarMenu
@@ -99,9 +107,9 @@ const UserProfile = ({ handleOwnerLogout }) => {
             <button
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               className="button primary"
-              style={{ backgroundColor: '#a0522d' }}
+              style={buttonStyle}
             >
-              {isEditing ? <Save className="mr-2 h-4 w-4" size={18} /> : <Edit className="mr-2 h-4 w-4" size={18}/>}
+              {isEditing ? <Save className="mr-2 h-4 w-4" size={15}/> : <Edit className="mr-2 h-4 w-4" size={15}/>}
               {isEditing ? 'Save' : 'Edit'}
             </button>
           </div>
