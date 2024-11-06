@@ -13,65 +13,57 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [visitsFilter, setVisitsFilter] = useState('month');
   const [reviewsFilter, setReviewsFilter] = useState('month');
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchVisitsData();
-  }, [visitsFilter]);
+    const fetchAllData = async () => {
+      setIsLoading(true);
+      const startTime = Date.now();
+      
+      try {
+        // Fetch all data concurrently
+        const [visitsResponse, reviewsResponse, dashboardResponse] = await Promise.all([
+          axios.get(
+            `https://khlcle.pythonanywhere.com/api/dashboard/visits/?filter=${visitsFilter}`,
+            {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+            }
+          ),
+          axios.get(
+            `https://khlcle.pythonanywhere.com/api/dashboard/reviews/?filter=${reviewsFilter}`,
+            {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+            }
+          ),
+          axios.get(
+            'https://khlcle.pythonanywhere.com/api/dashboard/',
+            {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
+            }
+          )
+        ]);
 
-  useEffect(() => {
-    fetchReviewsData();
-  }, [reviewsFilter]);
+        setVisitsData(visitsResponse.data);
+        setReviewsData(reviewsResponse.data);
+        setDashboardData(dashboardResponse.data);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+        // Calculate remaining time to show loader
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(3000 - elapsedTime, 0);
+        
+        // Keep showing loader for remaining time
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
+        
+      } catch (error) {
+        handleError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const fetchDashboardData = async () => {
-    try {
-      const response = await axios.get(
-        'https://khlcle.pythonanywhere.com/api/dashboard/',
-        {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        }
-      );
-      setDashboardData(response.data);
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const fetchVisitsData = async () => {
-    try {
-      const response = await axios.get(
-        `https://khlcle.pythonanywhere.com/api/dashboard/visits/?filter=${visitsFilter}`,
-        {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        }
-      );
-      setVisitsData(response.data);
-    } catch (error) {
-      handleError(error);
-      handleOwnerLogout();
-      navigate('/admin-login');
-    }
-  };
-
-  const fetchReviewsData = async () => {
-    try {
-      const response = await axios.get(
-        `https://khlcle.pythonanywhere.com/api/dashboard/reviews/?filter=${reviewsFilter}`,
-        {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
-        }
-      );
-      setReviewsData(response.data);
-    } catch (error) {
-      handleError(error);
-      handleOwnerLogout();
-      navigate('/admin-login');
-    }
-  };
+    fetchAllData();
+  }, [visitsFilter, reviewsFilter]);
 
   const handleError = (error) => {
     if (error.response?.status === 401) {
@@ -97,7 +89,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
     </div>
   );
 
-  if (!visitsData || !reviewsData || !dashboardData) {
+  if (isLoading) {
     return <FullScreenLoader size={80} color="#8B4513" />;
   }
 

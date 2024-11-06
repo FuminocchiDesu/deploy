@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Spin } from 'antd';
 
 const CoffeeLoader = ({ size = 40, color = '#8B4513' }) => {
   const steamVariants1 = {
@@ -8,7 +9,7 @@ const CoffeeLoader = ({ size = 40, color = '#8B4513' }) => {
       opacity: [0, 1, 0],
       y: [0, -5, 0],
       transition: {
-        duration: 2,
+        duration: 3,
         repeat: Infinity,
         ease: "easeInOut"
       }
@@ -21,7 +22,7 @@ const CoffeeLoader = ({ size = 40, color = '#8B4513' }) => {
       opacity: [0, 1, 0],
       y: [0, -5, 0],
       transition: {
-        duration: 2,
+        duration: 3,
         delay: 0.5,
         repeat: Infinity,
         ease: "easeInOut"
@@ -34,7 +35,7 @@ const CoffeeLoader = ({ size = 40, color = '#8B4513' }) => {
     animate: {
       y: [-2, 0],
       transition: {
-        duration: 1,
+        duration: 1.5,
         repeat: Infinity,
         repeatType: "reverse",
         ease: "easeInOut"
@@ -121,4 +122,17 @@ const FullScreenLoader = ({ size = 80, color = '#8B4513' }) => {
   );
 };
 
-export { CoffeeLoader, FullScreenLoader };
+const TableLoader = ({ loading, children }) => {
+    return (
+      <div className="relative min-h-[200px]">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+            <Spin indicator={<CoffeeLoader size={40} />} />
+          </div>
+        )}
+        {children}
+      </div>
+    );
+  };
+
+export { CoffeeLoader, FullScreenLoader, TableLoader  };

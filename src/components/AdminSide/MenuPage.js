@@ -5,7 +5,7 @@ import { Button, Table, Modal, Form, Space, Pagination, ConfigProvider, App } fr
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
-import CoffeeLoader from '../ui/CoffeeLoader';
+import { TableLoader } from '../ui/CoffeeLoader';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
@@ -713,6 +713,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Category
               </Button>
             )}
+            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={categories} 
@@ -728,6 +729,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
+            </TableLoader>
           </section>
 
           <section className="menu-section mb-8">
@@ -737,6 +739,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Item
               </Button>
             )}
+            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={items} 
@@ -752,6 +755,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
+            </TableLoader>
           </section>
 
           <section className="menu-section">
@@ -761,6 +765,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 Add Promo
               </Button>
             )}
+            <TableLoader loading={loading}>
             <Table 
               {...tableProps}
               dataSource={promos} 
@@ -776,6 +781,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
                 }
               }}
             />
+            </TableLoader>
           </section>
         </ConfigProvider>
 
