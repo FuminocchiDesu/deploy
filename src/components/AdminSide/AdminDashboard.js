@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import SidebarMenu from './SideBarMenu';
-import { CoffeeLoader, FullScreenLoader } from '../ui/CoffeeLoader'; // Updated import statement
+import { CoffeeLoader } from '../ui/CoffeeLoader';
+import DashboardReport from './DashboardReport';
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
@@ -114,6 +115,15 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
           <div>
         <div className="dashboard-header">
           <h1>Dashboard</h1>
+          {!isLoading && (
+          <DashboardReport
+            visitsData={visitsData}
+            reviewsData={reviewsData}
+            dashboardData={dashboardData}
+            visitsFilter={visitsFilter}
+            reviewsFilter={reviewsFilter}
+          />
+        )}
         </div>
 
         <div className="dashboard-content">
