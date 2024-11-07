@@ -1,81 +1,81 @@
 import React from 'react';
 
 const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter, reviewsFilter }) => {
-  const createStaticSVGChart = (data, type) => {
-    const width = 600;
-    const height = 300;
-    const padding = 60;
-    const chartWidth = width - 2 * padding;
-    const chartHeight = height - 2 * padding;
-
-    let maxValue, minValue;
-    if (type === 'visits') {
-      maxValue = Math.max(...data.map(d => d.visits));
-      minValue = Math.min(...data.map(d => d.visits));
-    } else {
-      maxValue = Math.max(...data.map(d => Math.max(d.average_rating, d.review_count)));
-      minValue = Math.min(...data.map(d => Math.min(d.average_rating, d.review_count)));
-    }
-
-    const xScale = chartWidth / (data.length - 1);
-    const yScale = chartHeight / (maxValue - minValue);
-
-    let path = '';
-    let ratingPath = '';
-    let reviewCountPath = '';
-    let labels = '';
-
-    data.forEach((d, i) => {
-      const x = i * xScale + padding;
-      if (type === 'visits') {
-        const y = chartHeight - (d.visits - minValue) * yScale + padding;
-        if (i === 0) path += `M${x},${y}`;
-        else path += ` L${x},${y}`;
-        labels += `
-          <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10">${d.date}</text>
-          <text x="${x}" y="${y - 10}" text-anchor="middle" font-size="10">${d.visits}</text>
-        `;
-      } else {
-        const yRating = chartHeight - (d.average_rating - minValue) * yScale + padding;
-        const yReviewCount = chartHeight - (d.review_count - minValue) * yScale + padding;
-        if (i === 0) {
-          ratingPath += `M${x},${yRating}`;
-          reviewCountPath += `M${x},${yReviewCount}`;
+    const createStaticSVGChart = (data, type) => {
+        const width = 900;
+        const height = 600;
+        const padding = 60;
+        const chartWidth = width - 2 * padding;
+        const chartHeight = height - 2 * padding;
+      
+        let maxValue, minValue;
+        if (type === 'visits') {
+          maxValue = Math.max(...data.map(d => d.visits));
+          minValue = Math.min(...data.map(d => d.visits));
         } else {
-          ratingPath += ` L${x},${yRating}`;
-          reviewCountPath += ` L${x},${yReviewCount}`;
+          maxValue = Math.max(...data.map(d => Math.max(d.average_rating, d.review_count)));
+          minValue = Math.min(...data.map(d => Math.min(d.average_rating, d.review_count)));
         }
-        labels += `
-          <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10">${d.date}</text>
-          <text x="${x}" y="${yRating - 10}" text-anchor="middle" font-size="10" fill="green">${d.average_rating.toFixed(1)}</text>
-          <text x="${x}" y="${yReviewCount - 10}" text-anchor="middle" font-size="10" fill="orange">${d.review_count}</text>
+      
+        const xScale = chartWidth / (data.length - 1);
+        const yScale = chartHeight / (maxValue - minValue);
+      
+        let path = '';
+        let ratingPath = '';
+        let reviewCountPath = '';
+        let labels = '';
+      
+        data.forEach((d, i) => {
+          const x = i * xScale + padding;
+          if (type === 'visits') {
+            const y = chartHeight - (d.visits - minValue) * yScale + padding;
+            if (i === 0) path += `M${x},${y}`;
+            else path += ` L${x},${y}`;
+            labels += `
+              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${d.date}</text>
+              <text x="${x}" y="${y - 10}" text-anchor="middle" font-size="10">${d.visits}</text>
+            `;
+          } else {
+            const yRating = chartHeight - (d.average_rating - minValue) * yScale + padding;
+            const yReviewCount = chartHeight - (d.review_count - minValue) * yScale + padding;
+            if (i === 0) {
+              ratingPath += `M${x},${yRating}`;
+              reviewCountPath += `M${x},${yReviewCount}`;
+            } else {
+              ratingPath += ` L${x},${yRating}`;
+              reviewCountPath += ` L${x},${yReviewCount}`;
+            }
+            labels += `
+              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${d.date}</text>
+              <text x="${x}" y="${yRating - 10}" text-anchor="middle" font-size="10" fill="green">${d.average_rating.toFixed(1)}</text>
+              <text x="${x}" y="${yReviewCount - 10}" text-anchor="middle" font-size="10" fill="orange">${d.review_count}</text>
+            `;
+          }
+        });
+      
+        // Y-axis labels
+        const yAxisLabels = Array.from({ length: 6 }, (_, i) => {
+          const value = minValue + (maxValue - minValue) * (i / 5);
+          const y = chartHeight - (value - minValue) * yScale + padding;
+          return `<text x="${padding - 5}" y="${y}" text-anchor="end" font-size="10">${value.toFixed(1)}</text>`;
+        }).join('');
+      
+        return `
+          <svg width="${width}" height="${height}">
+            <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="black" />
+            <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="black" />
+            ${type === 'visits' 
+              ? `<path d="${path}" fill="none" stroke="blue" stroke-width="2" />`
+              : `<path d="${ratingPath}" fill="none" stroke="green" stroke-width="2" />
+                 <path d="${reviewCountPath}" fill="none" stroke="orange" stroke-width="2" />`
+            }
+            ${labels}
+            ${yAxisLabels}
+            <text x="${width / 2}" y="${height - padding / 400}" text-anchor="middle" font-size="12">Date</text>
+            <text x="${padding / 2}" y="${height / 2}" text-anchor="middle" font-size="12" transform="rotate(-90 ${padding / 2} ${height / 2})">${type === 'visits' ? 'Visits' : 'Rating / Review Count'}</text>
+          </svg>
         `;
-      }
-    });
-
-    // Y-axis labels
-    const yAxisLabels = Array.from({ length: 6 }, (_, i) => {
-      const value = minValue + (maxValue - minValue) * (i / 5);
-      const y = chartHeight - (value - minValue) * yScale + padding;
-      return `<text x="${padding - 5}" y="${y}" text-anchor="end" font-size="10">${value.toFixed(1)}</text>`;
-    }).join('');
-
-    return `
-      <svg width="${width}" height="${height}">
-        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="black" />
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="black" />
-        ${type === 'visits' 
-          ? `<path d="${path}" fill="none" stroke="blue" stroke-width="2" />`
-          : `<path d="${ratingPath}" fill="none" stroke="green" stroke-width="2" />
-             <path d="${reviewCountPath}" fill="none" stroke="orange" stroke-width="2" />`
-        }
-        ${labels}
-        ${yAxisLabels}
-        <text x="${width / 2}" y="${height - 5}" text-anchor="middle" font-size="12">Date</text>
-        <text x="${padding / 2}" y="${height / 2}" text-anchor="middle" font-size="12" transform="rotate(-90 ${padding / 2} ${height / 2})">${type === 'visits' ? 'Visits' : 'Rating / Review Count'}</text>
-      </svg>
-    `;
-  };
+      };
 
   const generateReport = () => {
     const reportWindow = window.open('', '_blank');
