@@ -13,11 +13,16 @@ const UserProfile = ({ handleOwnerLogout }) => {
   const [editedProfile, setEditedProfile] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeMenuItem, setActiveMenuItem] = useState('Profile')
+  const [activeTab, setActiveTab] = useState('profile')
   const navigate = useNavigate()
 
   useEffect(() => {
     fetchProfile()
   }, [])
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab)
+  }
 
   const fetchProfile = async () => {
     try {
@@ -102,6 +107,23 @@ const UserProfile = ({ handleOwnerLogout }) => {
         onLogout={handleOwnerLogout}
       />
       <main className="main-content">
+      <div className="tabs">
+          <button
+            className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => handleTabChange('profile')}
+          >
+            Profile
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'account-settings' ? 'active' : ''}`}
+            onClick={() => handleTabChange('account-settings')}
+          >
+            Account Settings
+          </button>
+        </div>
+        <div className="tab-content">
+          {activeTab === 'profile' && (
+            <div className="card-dom">
       {isLoading ? (
             <div className="loader-container">
               <CoffeeLoader size={80} color="#8B4513" />
@@ -196,9 +218,17 @@ const UserProfile = ({ handleOwnerLogout }) => {
                 
               </div>
             </div>
-          </div><AccountSettings/>
+          </div>
         </div>
         )}
+       </div>
+          )}
+          {activeTab === 'account-settings' && (
+            <div className="card-dom">
+            <AccountSettings />
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

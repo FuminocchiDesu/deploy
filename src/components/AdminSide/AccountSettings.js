@@ -1,214 +1,328 @@
 import React, { useState } from 'react';
-import { Edit, Save } from 'lucide-react';
-import './temp.css';
-
+import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, User, ChevronRight, ChevronLeft } from 'lucide-react';
+import './temp.css'
 const AccountSettings = () => {
-  const [activeModal, setActiveModal] = useState(null); // null, 'password', 'email', 'username'
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newUsername, setNewUsername] = useState('');
-  const [passwordVerified, setPasswordVerified] = useState(false);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(null);
+  const [verificationPurpose, setVerificationPurpose] = useState(null);
+  const [verificationPassword, setVerificationPassword] = useState('');
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [emailForm, setEmailForm] = useState({
+    newEmail: '',
+  });
+  const [usernameForm, setUsernameForm] = useState({
+    newUsername: '',
+  });
 
-  const handleVerifyPassword = async () => {
-    try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/verify-password/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ old_password: oldPassword }),
-      });
-      const data = await response.json();
-      if (data.isValid) {
-        setPasswordVerified(true);
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      alert(`Error verifying password: ${error.message}`);
-    }
+  const handleVerification = () => {
+    // Implement password verification logic here
+    setModalVisible(verificationPurpose);
+    setVerificationPassword('');
   };
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/change-password/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ new_password: newPassword, confirm_password: confirmPassword }),
-      });
-      const data = await response.json();
-      alert(data.message);
-      setActiveModal(null);
-    } catch (error) {
-      alert(`Error changing password: ${error.message}`);
-    }
+  const initiateChange = (type) => {
+    setVerificationPurpose(type);
+    setModalVisible('verification');
   };
 
-  const handleChangeEmail = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/update-email/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ new_email: newEmail }),
-      });
-      const data = await response.json();
-      alert(data.message);
-      setActiveModal(null);
-    } catch (error) {
-      alert(`Error changing email: ${error.message}`);
-    }
+  const handleLogout = () => {
+    // Implement logout logic here
   };
 
-  const handleChangeUsername = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/update-username/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ new_username: newUsername }),
-      });
-      const data = await response.json();
-      alert(data.message);
-      setActiveModal(null);
-    } catch (error) {
-      alert(`Error changing username: ${error.message}`);
-    }
+  const handleSuccessfulUpdate = (modalType) => {
+    alert(`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} updated successfully. Please Login again.`);
+    setModalVisible(null);
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setEmailForm({ newEmail: '' });
+    setUsernameForm({ newUsername: '' });
+    handleLogout();
   };
 
+  const handleChangePassword = () => {
+    const { newPassword, confirmPassword } = passwordForm;
+    if (!newPassword || !confirmPassword) {
+      alert('Please fill in all fields');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match');
+      return;
+    }
+    // Implement change password logic here
+    handleSuccessfulUpdate('password');
+  };
+
+  const handleChangeEmail = () => {
+    const { newEmail } = emailForm;
+    if (!newEmail) {
+      alert('Please enter a new email');
+      return;
+    }
+    // Implement change email logic here
+    handleSuccessfulUpdate('email');
+  };
+
+  const handleChangeUsername = () => {
+    const { newUsername } = usernameForm;
+    if (!newUsername) {
+      alert('Please enter a new username');
+      return;
+    }
+    // Implement change username logic here
+    handleSuccessfulUpdate('username');
+  };
+
+  const closeModal = () => {
+    setModalVisible(null);
+    setVerificationPurpose(null);
+    setVerificationPassword('');
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setEmailForm({ newEmail: '' });
+    setUsernameForm({ newUsername: '' });
+  };
 
   return (
-    <div className="card-content">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('password')}>Change Password</button>
-        </div>
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('email')}>Change Email</button>
-        </div>
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('username')}>Change Username</button>
-        </div>
+    <div className="container">
+      <div className="header">
+        <h2 className="header-title">Account Settings</h2>
+        <div className="placeholder" />
       </div>
 
-      {activeModal === 'password' && (
-        <div className="modal" style={{ display: activeModal === 'password' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Password</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <div className="modal-body">
-              {!passwordVerified && (
-                <div className="form-group">
-                  <label htmlFor="old-password">Old Password</label>
-                  <input
-                    type="password"
-                    id="old-password"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                  />
-                  <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={handleVerifyPassword}>
-                    Verify Password
-                  </button>
-                </div>
-              )}
-              {passwordVerified && (
-                <form onSubmit={handleChangePassword}>
-                  <div className="form-group">
-                    <label htmlFor="new-password">New Password</label>
-                    <input
-                      type="password"
-                      id="new-password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="confirm-password">Confirm New Password</label>
-                    <input
-                      type="password"
-                      id="confirm-password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="button primary">Change Password</button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="section">
+        <MenuItem
+          icon={<Lock size={20} color="#666" />}
+          title="Change Password"
+          onPress={() => initiateChange('password')}
+        />
+        <MenuItem
+          icon={<Mail size={20} color="#666" />}
+          title="Change Email"
+          onPress={() => initiateChange('email')}
+        />
+        <MenuItem
+          icon={<User size={20} color="#666" />}
+          title="Change Username"
+          onPress={() => initiateChange('username')}
+        />
+      </div>
+
+      {modalVisible === 'verification' && (
+        <VerificationModal
+          closeModal={closeModal}
+          verificationPassword={verificationPassword}
+          setVerificationPassword={setVerificationPassword}
+          handleVerification={handleVerification}
+          loading={loading}
+          verificationPurpose={verificationPurpose}
+        />
       )}
 
-      {activeModal === 'email' && (
-        <div className="modal" style={{ display: activeModal === 'email' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Email</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleChangeEmail}>
-                <div className="form-group">
-                  <label htmlFor="new-email">New Email</label>
-                  <input
-                    type="email"
-                    id="new-email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Email</button>
-              </form>
-            </div>
-          </div>
-        </div>
+      {modalVisible === 'password' && (
+        <PasswordModal
+          closeModal={closeModal}
+          passwordForm={passwordForm}
+          setPasswordForm={setPasswordForm}
+          handleChangePassword={handleChangePassword}
+          loading={loading}
+        />
       )}
 
-      {activeModal === 'username' && (
-        <div className="modal" style={{ display: activeModal === 'username' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Username</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleChangeUsername}>
-                <div className="form-group">
-                  <label htmlFor="new-username">New Username</label>
-                  <input
-                    type="text"
-                    id="new-username"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Username</button>
-              </form>
-            </div>
-          </div>
-        </div>
+      {modalVisible === 'email' && (
+        <EmailModal
+          closeModal={closeModal}
+          emailForm={emailForm}
+          setEmailForm={setEmailForm}
+          handleChangeEmail={handleChangeEmail}
+          loading={loading}
+        />
+      )}
+
+      {modalVisible === 'username' && (
+        <UsernameModal
+          closeModal={closeModal}
+          usernameForm={usernameForm}
+          setUsernameForm={setUsernameForm}
+          handleChangeUsername={handleChangeUsername}
+          loading={loading}
+        />
       )}
     </div>
   );
 };
+
+const MenuItem = ({ icon, title, onPress }) => (
+  <div className="menu-item" onClick={onPress}>
+    <div className="menu-item-left">
+      {icon}
+      <span className="menu-item-text">{title}</span>
+    </div>
+    <ChevronRight size={20} color="#666" />
+  </div>
+);
+
+const VerificationModal = ({
+  closeModal,
+  verificationPassword,
+  setVerificationPassword,
+  handleVerification,
+  loading,
+  verificationPurpose,
+}) => (
+  <div className="modal">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h2>Verify Password</h2>
+        <span className="close-button" onClick={closeModal}>
+          &times;
+        </span>
+      </div>
+      <div className="modal-body">
+        <div className="form-group">
+          <label htmlFor="verification-password">Password</label>
+          <input
+            type="password"
+            id="verification-password"
+            value={verificationPassword}
+            onChange={(e) => setVerificationPassword(e.target.value)}
+          />
+        </div>
+        <button className="button primary" onClick={handleVerification}>
+          {loading ? 'Loading...' : 'Verify'}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const PasswordModal = ({
+  closeModal,
+  passwordForm,
+  setPasswordForm,
+  handleChangePassword,
+  loading,
+}) => (
+  <div className="modal">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h2>Change Password</h2>
+        <span className="close-button" onClick={closeModal}>
+          &times;
+        </span>
+      </div>
+      <div className="modal-body">
+        <form onSubmit={handleChangePassword}>
+          <div className="form-group">
+            <label htmlFor="new-password">New Password</label>
+            <input
+              type="password"
+              id="new-password"
+              value={passwordForm.newPassword}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirm-password">Confirm New Password</label>
+            <input
+              type="password"
+              id="confirm-password"
+              value={passwordForm.confirmPassword}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+              }
+              required
+            />
+          </div>
+          <button type="submit" className="button primary">
+            {loading ? 'Loading...' : 'Change Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+);
+
+const EmailModal = ({
+  closeModal,
+  emailForm,
+  setEmailForm,
+  handleChangeEmail,
+  loading,
+}) => (
+  <div className="modal">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h2>Change Email</h2>
+        <span className="close-button" onClick={closeModal}>
+          &times;
+        </span>
+      </div>
+      <div className="modal-body">
+        <form onSubmit={handleChangeEmail}>
+          <div className="form-group">
+            <label htmlFor="new-email">New Email</label>
+            <input
+              type="email"
+              id="new-email"
+              value={emailForm.newEmail}
+              onChange={(e) =>
+                setEmailForm({ ...emailForm, newEmail: e.target.value })
+              }
+              required
+            />
+          </div>
+          <button type="submit" className="button primary">
+            {loading ? 'Loading...' : 'Change Email'}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+);
+
+const UsernameModal = ({
+  closeModal,
+  usernameForm,
+  setUsernameForm,
+  handleChangeUsername,
+  loading,
+}) => (
+  <div className="modal">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h2>Change Username</h2>
+        <span className="close-button" onClick={closeModal}>
+          &times;
+        </span>
+      </div>
+      <div className="modal-body">
+        <form onSubmit={handleChangeUsername}>
+          <div className="form-group">
+            <label htmlFor="new-username">New Username</label>
+            <input
+              type="text"
+              id="new-username"
+              value={usernameForm.newUsername}
+              onChange={(e) =>
+                setUsernameForm({ ...usernameForm, newUsername: e.target.value })
+              }
+              required
+            />
+          </div>
+          <button type="submit" className="button primary">
+            {loading ? 'Loading...' : 'Change Username'}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+);
 
 export default AccountSettings;

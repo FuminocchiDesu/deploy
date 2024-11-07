@@ -1279,3 +1279,25 @@ body {
   height: 100vh;
 }
 
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.tab-button {
+  background-color: #f1f1f1;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.tab-button.active {
+  background-color: #ccc;
+}
+
+.tab-content {
+  padding: 1rem;
+}
