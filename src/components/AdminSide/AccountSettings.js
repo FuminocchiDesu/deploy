@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, User, ChevronRight, ChevronLeft } from 'lucide-react';
-import './temp.css'
+import { Lock, Mail, User, ChevronRight } from 'lucide-react';
+
 const AccountSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -23,11 +23,6 @@ const AccountSettings = () => {
     // Implement password verification logic here
     setModalVisible(verificationPurpose);
     setVerificationPassword('');
-  };
-
-  const initiateChange = (type) => {
-    setVerificationPurpose(type);
-    setModalVisible('verification');
   };
 
   const handleLogout = () => {
@@ -95,19 +90,21 @@ const AccountSettings = () => {
 
       <div className="section">
         <MenuItem
-          icon={<Lock size={20} color="#666" />}
+          icon={<Lock size={20} color="#a0522d" />}
           title="Change Password"
-          onPress={() => initiateChange('password')}
+          onPress={() => setModalVisible('password')}
         />
+        <hr className="separator" />
         <MenuItem
-          icon={<Mail size={20} color="#666" />}
+          icon={<Mail size={20} color="#a0522d" />}
           title="Change Email"
-          onPress={() => initiateChange('email')}
+          onPress={() => setModalVisible('email')}
         />
+        <hr className="separator" />
         <MenuItem
-          icon={<User size={20} color="#666" />}
+          icon={<User size={20} color="#a0522d" />}
           title="Change Username"
-          onPress={() => initiateChange('username')}
+          onPress={() => setModalVisible('username')}
         />
       </div>
 
@@ -155,15 +152,36 @@ const AccountSettings = () => {
   );
 };
 
-const MenuItem = ({ icon, title, onPress }) => (
-  <div className="menu-item" onClick={onPress}>
-    <div className="menu-item-left">
-      {icon}
-      <span className="menu-item-text">{title}</span>
+const MenuItem = ({ icon, title, onPress }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div 
+      className="menu-item" 
+      onClick={onPress}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        width: '100%'
+      }}
+    >
+      <div className="menu-item-left" style={{ display: 'flex', alignItems: 'center' }}>
+        <span className="menu-item-icon" style={{ marginRight: '3px' }}>
+          {React.cloneElement(icon, { color: isHovered ? "white" : "#a0522d" })}
+        </span>
+        <span className="menu-item-text">{title}</span>
+      </div>
+      <ChevronRight 
+        size={20} 
+        color={isHovered ? "white" : "#a0522d"}
+        style={{ marginLeft: 'auto' }}
+      />
     </div>
-    <ChevronRight size={20} color="#666" />
-  </div>
-);
+  );
+};
 
 const VerificationModal = ({
   closeModal,
