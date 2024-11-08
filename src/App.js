@@ -8,6 +8,7 @@ import MenuPage from './components/AdminSide/MenuPage';
 import ReviewsPage from './components/AdminSide/ReviewsPage';
 import UserProfile from './components/AdminSide/UserProfile';
 import ForgotPassword from './components/AdminSide/ForgotPassword';
+import axios from 'axios';
 import './App.css';
 
 const App = () => {
@@ -15,26 +16,35 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const checkAuthStatus = async () => {
       const ownerToken = localStorage.getItem('ownerToken');
       const refreshToken = localStorage.getItem('refreshToken');
-      
-      // If no tokens exist, user is definitely not authenticated
-      if (!ownerToken && !refreshToken) {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true';
+  
+      if (!ownerToken && !refreshToken && !rememberMe) {
         setIsOwnerAuthenticated(false);
         setIsLoading(false);
         return;
       }
-
+  
       try {
-        // Simple JWT expiry check
         if (ownerToken) {
           const tokenData = JSON.parse(atob(ownerToken.split('.')[1]));
-          const expirationTime = tokenData.exp * 1000; // Convert to milliseconds
-          
+          const expirationTime = tokenData.exp * 1000;
+  
           if (Date.now() >= expirationTime) {
-            // Token has expired
-            handleOwnerLogout();
+            // Access token has expired
+            if (rememberMe) {
+              // Refresh the access token using the refresh token
+              const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/refresh/', {
+                refresh: refreshToken,
+              });
+              localStorage.setItem('ownerToken', response.data.access);
+              setIsOwnerAuthenticated(true);
+            } else {
+              // Clear all auth-related data and log out the user
+              handleOwnerLogout();
+            }
           } else {
             setIsOwnerAuthenticated(true);
           }
@@ -45,10 +55,10 @@ const App = () => {
         console.error('Error checking token:', error);
         handleOwnerLogout();
       }
-      
+  
       setIsLoading(false);
     };
-
+  
     checkAuthStatus();
   }, []);
 
