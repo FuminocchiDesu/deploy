@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Edit, Save } from 'lucide-react';
+import { Lock, Mail, User, X } from 'lucide-react';
 import './temp.css';
 
 const AccountSettings = () => {
-  const [activeModal, setActiveModal] = useState(null); // null, 'password', 'email', 'username'
+  const [activeModal, setActiveModal] = useState(null);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,7 +45,7 @@ const AccountSettings = () => {
       });
       const data = await response.json();
       alert(data.message);
-      setActiveModal(null);
+      handleCloseModal();
     } catch (error) {
       alert(`Error changing password: ${error.message}`);
     }
@@ -64,7 +64,7 @@ const AccountSettings = () => {
       });
       const data = await response.json();
       alert(data.message);
-      setActiveModal(null);
+      handleCloseModal();
     } catch (error) {
       alert(`Error changing email: ${error.message}`);
     }
@@ -83,130 +83,160 @@ const AccountSettings = () => {
       });
       const data = await response.json();
       alert(data.message);
-      setActiveModal(null);
+      handleCloseModal();
     } catch (error) {
       alert(`Error changing username: ${error.message}`);
     }
   };
 
+  const handleCloseModal = () => {
+    setActiveModal(null);
+    setOldPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setNewEmail('');
+    setNewUsername('');
+    setPasswordVerified(false);
+  };
 
   return (
-    <div className="card-content">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('password')}>Change Password</button>
+    <div className="settings-container">
+      <div className="settings-grid">
+        <div className="settings-card" onClick={() => setActiveModal('password')}>
+          <div className="icon-wrapper">
+            <Lock size={24} />
+          </div>
+          <span>Change Password</span>
         </div>
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('email')}>Change Email</button>
+
+        <div className="settings-card" onClick={() => setActiveModal('email')}>
+          <div className="icon-wrapper">
+            <Mail size={24} />
+          </div>
+          <span>Change Email</span>
         </div>
-        <div className="form-group">
-          <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={() => setActiveModal('username')}>Change Username</button>
+
+        <div className="settings-card" onClick={() => setActiveModal('username')}>
+          <div className="icon-wrapper">
+            <User size={24} />
+          </div>
+          <span>Change Username</span>
         </div>
       </div>
 
-      {activeModal === 'password' && (
-        <div className="modal" style={{ display: activeModal === 'password' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Password</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <div className="modal-body">
-              {!passwordVerified && (
-                <div className="form-group">
-                  <label htmlFor="old-password">Old Password</label>
-                  <input
-                    type="password"
-                    id="old-password"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                  />
-                  <button className="button primary" style={{ backgroundColor: '#a0522d' }} onClick={handleVerifyPassword}>
-                    Verify Password
-                  </button>
-                </div>
-              )}
-              {passwordVerified && (
-                <form onSubmit={handleChangePassword}>
-                  <div className="form-group">
-                    <label htmlFor="new-password">New Password</label>
-                    <input
-                      type="password"
-                      id="new-password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="confirm-password">Confirm New Password</label>
-                    <input
-                      type="password"
-                      id="confirm-password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="button primary">Change Password</button>
-                </form>
-              )}
-            </div>
+      {/* Password Modal */}
+      <div className={`modal ${activeModal === 'password' ? 'show' : ''}`}>
+        <div className="modal-content">
+          <button className="close-button" onClick={handleCloseModal}>
+            <X size={24} />
+          </button>
+          
+          <div className="modal-header">
+            <h2 className="modal-title">Change Password</h2>
           </div>
-        </div>
-      )}
 
-      {activeModal === 'email' && (
-        <div className="modal" style={{ display: activeModal === 'email' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Email</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
+          {!passwordVerified ? (
+            <div className="form-container">
+              <div className="form-group">
+                <label className="form-label">Current Password</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+              <button className="button" onClick={handleVerifyPassword}>
+                Verify Password
+              </button>
             </div>
-            <div className="modal-body">
-              <form onSubmit={handleChangeEmail}>
-                <div className="form-group">
-                  <label htmlFor="new-email">New Email</label>
-                  <input
-                    type="email"
-                    id="new-email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Email</button>
-              </form>
-            </div>
-          </div>
+          ) : (
+            <form onSubmit={handleChangePassword} className="form-container">
+              <div className="form-group">
+                <label className="form-label">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+              <button type="submit" className="button">
+                Change Password
+              </button>
+            </form>
+          )}
         </div>
-      )}
+      </div>
 
-      {activeModal === 'username' && (
-        <div className="modal" style={{ display: activeModal === 'username' ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Change Username</h2>
-              <span className="close-button" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleChangeUsername}>
-                <div className="form-group">
-                  <label htmlFor="new-username">New Username</label>
-                  <input
-                    type="text"
-                    id="new-username"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" className="button primary" style={{ backgroundColor: '#a0522d' }}>Change Username</button>
-              </form>
-            </div>
+      {/* Email Modal */}
+      <div className={`modal ${activeModal === 'email' ? 'show' : ''}`}>
+        <div className="modal-content">
+          <button className="close-button" onClick={handleCloseModal}>
+            <X size={24} />
+          </button>
+          
+          <div className="modal-header">
+            <h2 className="modal-title">Change Email</h2>
           </div>
+
+          <form onSubmit={handleChangeEmail} className="form-container">
+            <div className="form-group">
+              <label className="form-label">New Email</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+            <button type="submit" className="button">
+              Change Email
+            </button>
+          </form>
         </div>
-      )}
+      </div>
+
+      {/* Username Modal */}
+      <div className={`modal ${activeModal === 'username' ? 'show' : ''}`}>
+        <div className="modal-content">
+          <button className="close-button" onClick={handleCloseModal}>
+            <X size={24} />
+          </button>
+          
+          <div className="modal-header">
+            <h2 className="modal-title">Change Username</h2>
+          </div>
+
+          <form onSubmit={handleChangeUsername} className="form-container">
+            <div className="form-group">
+              <label className="form-label">New Username</label>
+              <input
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+            <button type="submit" className="button">
+              Change Username
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
