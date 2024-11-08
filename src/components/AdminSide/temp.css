@@ -95,3 +95,33 @@
   background-color: #0069d9;
   border-color: #0062cc;
 }
+
+.profile-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.profile-image-wrapper {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f3f3f3;
+  position: absolute;
+  inset: 0;
+}
+
+.profile-image-input {
+  margin-top: 1rem;
+  text-align: center;
+}

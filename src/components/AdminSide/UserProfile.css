@@ -1,0 +1,246 @@
+/* Layout */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  .profile-container {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto; /* Enable vertical scrolling */
+    position: relative;
+  }
+  
+  /* Tabs */
+  .tabs-container {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 24px;
+    padding: 8px 0;
+    z-index: 10;
+  }
+  
+  .tab-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    margin-right: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-button:hover {
+    color: #007bff;
+  }
+  
+  .tab-button.active {
+    border-bottom: 3px solid #007bff;
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  /* Profile Card */
+.profile-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 24px; /* Add space at bottom */
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  
+  .card-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Buttons */
+  .button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .button:hover {
+    opacity: 0.9;
+  }
+  
+  .button-edit {
+    background: #007bff;
+    color: #ffffff;
+  }
+  
+  .button-save {
+    background: #28a745;
+    color: #ffffff;
+    margin-right: 8px;
+  }
+  
+  .button-cancel {
+    background: #6c757d;
+    color: #ffffff;
+  }
+  
+  /* Profile Image */
+.profile-image-container {
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative;
+    width: 150px;
+    margin: 0 auto 32px;
+  }
+  
+  .profile-image-wrapper {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  
+  .profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .profile-image-wrapper:hover .profile-image-overlay {
+    opacity: 1;
+  }
+  
+  .edit-icon {
+    color: white;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .image-input {
+    display: none;
+  }
+  
+  /* User Info */
+  .user-info {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .user-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 0 4px;
+  }
+  
+  .user-email {
+    color: #666;
+    margin: 0;
+  }
+  
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+  
+  .form-textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    min-height: 100px;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+  }
+  
+  .form-textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+  
+  /* Error State */
+  .error-container {
+    padding: 16px;
+    background: #fee2e2;
+    color: #dc2626;
+    border-radius: 8px;
+    margin: 16px;
+  }
+  
+  /* Loading State */
+  .loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
