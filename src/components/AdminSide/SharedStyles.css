@@ -38,7 +38,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   padding-right: 1.5rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -56,7 +56,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  width: 60px;
   height: 40px;
   background-color: var(--color-primary-light);
   border-radius: 50%;
@@ -1260,6 +1260,7 @@ body {
   background-color: #ef4444;
   color: white;
   border-width: 0px;
+  left: 500;
 }
 
 .button.secondary {

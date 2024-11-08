@@ -19,7 +19,7 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
         >
           <User className="menu-icon" />
         </Link>
-        <span className="admin-title">Admin Dashboard</span>
+        <span className="admin-title">Coffee Shop Admin Dashboard</span>
       </div>
       <nav className="sidebar-menu">
         {menuItems.map((item) => (

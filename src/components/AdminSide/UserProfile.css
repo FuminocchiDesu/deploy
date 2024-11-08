@@ -37,16 +37,6 @@
     transition: all 0.3s ease;
   }
   
-  .tab-button:hover {
-    color: #007bff;
-  }
-  
-  .tab-button.active {
-    border-bottom: 3px solid #007bff;
-    color: #007bff;
-    font-weight: bold;
-  }
-  
   /* Profile Card */
 .profile-card {
     background: #ffffff;
