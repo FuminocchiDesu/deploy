@@ -43,7 +43,7 @@ const ProfileTab = ({ profile, editedProfile, isEditing, setIsEditing, handleSav
             className="button button-edit"
           >
             <Edit size={16} />
-            Edit Profile
+            Edit
           </button>
         ) : (
           <div>
@@ -162,7 +162,6 @@ const UserProfile = ({ handleOwnerLogout }) => {
 
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(2000 - elapsedTime, 0);
-        // Keep showing loader for remaining time
       await new Promise(resolve => setTimeout(resolve, remainingTime));
     } catch (err) {
       setError(err.message);
@@ -177,7 +176,6 @@ const UserProfile = ({ handleOwnerLogout }) => {
     try {
       const formData = new FormData();
       
-      // Only append changed fields
       Object.keys(editedProfile).forEach(key => {
         if (editedProfile[key] !== profile[key]) {
           formData.append(key, editedProfile[key]);
@@ -253,38 +251,38 @@ const UserProfile = ({ handleOwnerLogout }) => {
           </div>
         ) : (
           <div>
-        <div className="tabs-container">
-          <button
-            className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            Profile
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'account-settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('account-settings')}
-          >
-            Account Settings
-          </button>
-        </div>
+            <div className="tabs-container">
+              <button
+                className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                Profile
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'account-settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('account-settings')}
+              >
+                Account Settings
+              </button>
+            </div>
 
-        {activeTab === 'profile' ? (
-          <ProfileTab
-            profile={profile}
-            editedProfile={editedProfile}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            handleSave={handleSave}
-            handleCancel={handleCancel}
-            handleImageChange={handleImageChange}
-            setEditedProfile={setEditedProfile}
-          />
-        ) : (
-          <div className="profile-card">
-            <AccountSettings />
+            {activeTab === 'profile' ? (
+              <ProfileTab
+                profile={profile}
+                editedProfile={editedProfile}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                handleSave={handleSave}
+                handleCancel={handleCancel}
+                handleImageChange={handleImageChange}
+                setEditedProfile={setEditedProfile}
+              />
+            ) : (
+              <div className="profile-card">
+                <AccountSettings />
+              </div>
+            )}
           </div>
-        )}
-        </div>
         )}
       </main>
     </div>

@@ -79,7 +79,7 @@
   }
   
   .button-edit {
-    background: #007bff;
+    background: #a0522d;
     color: #ffffff;
   }
   
@@ -234,3 +234,53 @@
     align-items: center;
     height: 100vh;
   }
+
+  /* UserProfile.css */
+/* ... (keep all existing styles) ... */
+
+/* Update button styles */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button-edit {
+  background: #a0522d;
+  color: #ffffff;
+  width: 100%;
+}
+
+.button-edit:hover {
+  background: #b26b3d;
+}
+
+.button-save {
+  background: #61a02d;
+  color: #ffffff;
+  margin-right: 8px;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.button-save:hover {
+  background: #8fb23d;
+}
+
+.button-cancel {
+  background: #ef4444;
+  color: #ffffff;
+  width: 100%;
+}
+
+.button-cancel:hover {
+  background: #f87171;
+}
+
+/* ... (keep all other existing styles) ... */
