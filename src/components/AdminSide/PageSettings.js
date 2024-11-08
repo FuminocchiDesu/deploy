@@ -545,15 +545,31 @@ const PageSettings = ({ handleOwnerLogout }) => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
-            <div className="flex justify-end space-x-4">
+            <div style={{ width: '100%', display: 'flex'}}>
               <button 
                 onClick={handleTerminateClick} 
-                className={`button ${coffeeShop.is_terminated ? 'secondary' : 'danger'}`}
+                className="button danger"
+                style={{ 
+                  backgroundColor: '#ef4444',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f87171'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
               >
                 {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
               </button>
               {basicInfoEditMode && (
-                <button type="submit" className="button primary" id="mg-left" style={{ backgroundColor: '#a0522d' }}>
+                <button 
+                  type="submit" 
+                  className="button primary" 
+                  style={{ 
+                    backgroundColor: '#61a02d',
+                    transition: 'background-color 0.3s',
+                    marginLeft: '10px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#7bc043'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#61a02d'}
+                >
                   Save Changes
                 </button>
               )}
