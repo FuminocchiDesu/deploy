@@ -161,7 +161,7 @@ const MenuManagementForms = ({
           <Input style={formStyles.input} />
         </Form.Item>
         
-        <Form.Item name="description" label="Description">
+        <Form.Item name="description" label="Description" initialValue="">
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
 
