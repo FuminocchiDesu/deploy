@@ -171,7 +171,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
   const handleFormSubmit = async () => {
     try {
-      setLoading(true);
       setError(null);
       const values = await form.validateFields();
       const formData = new FormData();
@@ -444,7 +443,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
   const handleAvailabilityToggle = async (id, currentAvailability) => {
     try {
-      setLoading(true);
       setError(null);
       const formData = new FormData();
       formData.append('is_available', !currentAvailability);
