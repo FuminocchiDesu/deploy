@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { App } from 'antd';
+import { AlertTriangle } from 'lucide-react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import './SharedStyles.css';
@@ -14,6 +15,7 @@ import { CoffeeLoader } from '../ui/CoffeeLoader';
 const libraries = ['places'];
 
 const PageSettings = ({ handleOwnerLogout }) => {
+  const { message: messageApi } = App.useApp();
   const [coffeeShop, setCoffeeShop] = useState({
     id: '',
     name: '',
@@ -27,7 +29,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   });
   const [activeTab, setActiveTab] = useState('basic');
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
@@ -112,7 +113,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         is_terminated: !prev.is_terminated
       }));
   
-      setSuccess(!coffeeShop.is_terminated ? 'Coffee shop marked as permanently closed' : 'Coffee shop marked as open');
+      messageApi.success(!coffeeShop.is_terminated ? 'Coffee shop marked as permanently closed' : 'Coffee shop marked as open');
     } catch (error) {
       console.error('Error updating termination status:', error);
       setError('Failed to update shop status. Please try again.');
@@ -143,10 +144,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
         is_under_maintenance: checked
       }));
       
-      setSuccess('Maintenance mode updated successfully');
-      setTimeout(() => {
-        setSuccess(null);
-      }, 3000);
+      messageApi.success('Maintenance mode updated successfully');
     } catch (error) {
       console.error('Error updating maintenance mode:', error);
       setError('Failed to update maintenance mode. Please try again.');
@@ -162,7 +160,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const handleShopUpdate = async (e) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
     const formData = new FormData();
     Object.entries(coffeeShop).forEach(([key, value]) => {
       // Skip null/undefined values except for boolean fields
@@ -226,10 +223,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
       }
   
       await fetchCoffeeShop();
-      setSuccess('Coffee shop details updated successfully');
-      setTimeout(() => {
-        setSuccess(null);
-      }, 3000);
+      messageApi.success('Coffee shop details updated successfully');
       setBasicInfoEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
@@ -564,7 +558,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
             </div>
 
             {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between'}}>
             {basicInfoEditMode && (
                 <button 

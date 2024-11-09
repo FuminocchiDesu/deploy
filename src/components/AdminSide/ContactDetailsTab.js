@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { App } from 'antd';
 import './SharedStyles.css';
 
 const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
+  const { message: messageApi } = App.useApp();
   const [contactInfo, setContactInfo] = useState({
     contact_name: '',
     primary_phone: '',
@@ -14,7 +16,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
     twitter: ''
   });
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [isExisting, setIsExisting] = useState(false);
   useEffect(() => {
     fetchContactInfo();
@@ -51,7 +52,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
     try {
       const method = isExisting ? 'put' : 'post';
@@ -67,14 +67,10 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
 
       setContactInfo(response.data);
       setIsExisting(true);
-      setSuccess('Contact information updated successfully');
+      messageApi.success('Contact information updated successfully');
       if (onSave) {
         onSave();
       }
-      // Clear the success message after 3 seconds
-      setTimeout(() => {
-        setSuccess(null);
-      }, 3000);
     } catch (error) {
       console.error('Error updating contact information:', error);
       setError(
@@ -203,7 +199,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
         </div>
 
         {error && <div className="error-message mt-4">{error}</div>}
-        {success && <div className="success-message mt-4">{success}</div>}
 
         {isEditMode && (
           <div className="flex justify-end mt-4">

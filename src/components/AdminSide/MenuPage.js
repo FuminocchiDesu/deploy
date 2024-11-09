@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, Space, Pagination, ConfigProvider, App } from 'antd';
+import { Button, Table, Modal, Form, Space, ConfigProvider, App } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
