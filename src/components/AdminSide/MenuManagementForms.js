@@ -183,21 +183,18 @@ const MenuManagementForms = ({
           getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList}
         >
           <Upload 
-            beforeUpload={() => false}
-            listType="picture-card"
-            maxCount={1}
-            accept="image/*"
-            onRemove={handlePrimaryImageRemove}
-            style={formStyles.uploadSection}
-          >
-            {form.getFieldValue('image')?.length < 1 && (
-              <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Primary Image</div>
-              </div>
-            )}
-          </Upload>
-        </Form.Item>
+          beforeUpload={() => false}
+          listType="picture-card"
+          maxCount={1}
+          accept="image/*"
+          onRemove={handlePrimaryImageRemove}
+        >
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        </Upload>
+      </Form.Item>
 
         <Form.Item 
           name="additional_images" 
