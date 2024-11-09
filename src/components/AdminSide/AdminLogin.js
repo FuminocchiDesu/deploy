@@ -5,7 +5,7 @@ import { AlertCircle, Coffee, Loader2 } from 'lucide-react';
 import './SharedStyles.css';
 import PasswordInput from './PasswordInput';
 
-export default function AdminLogin({ onLogin }) {
+export default function Component({ onLogin }) {
   const [credentials, setCredentials] = useState({ 
     username: '', 
     password: '',
@@ -17,7 +17,6 @@ export default function AdminLogin({ onLogin }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for remembered credentials on component mount
     const rememberMe = localStorage.getItem('rememberMe') === 'true';
     const savedUsername = localStorage.getItem('rememberedUsername');
     const token = localStorage.getItem('ownerToken');
@@ -30,7 +29,6 @@ export default function AdminLogin({ onLogin }) {
       }));
     }
 
-    // If there's a valid token, proceed to dashboard
     if (token) {
       onLogin();
       navigate('/dashboard');
@@ -42,7 +40,6 @@ export default function AdminLogin({ onLogin }) {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('coffeeShopId');
     
-    // Only clear username and rememberMe if remember me is disabled
     if (localStorage.getItem('rememberMe') !== 'true') {
       localStorage.removeItem('rememberedUsername');
       localStorage.removeItem('rememberMe');
@@ -56,7 +53,6 @@ export default function AdminLogin({ onLogin }) {
       [name]: type === 'checkbox' ? checked : value
     }));
     
-    // If remember me is unchecked, clear remembered credentials
     if (name === 'rememberMe' && !checked) {
       localStorage.removeItem('rememberedUsername');
       localStorage.removeItem('rememberMe');
@@ -75,11 +71,9 @@ export default function AdminLogin({ onLogin }) {
       });
 
       if (response?.data?.access) {
-        // Always store the tokens
         localStorage.setItem('ownerToken', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
         
-        // Handle remember me functionality
         if (credentials.rememberMe) {
           localStorage.setItem('rememberedUsername', credentials.username);
           localStorage.setItem('rememberMe', 'true');
@@ -184,49 +178,50 @@ export default function AdminLogin({ onLogin }) {
                 />
               </div>
               
-              <div className="form-group" style={{ 
-                marginTop: '1rem', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center' 
-              }}>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={credentials.rememberMe}
-                    onChange={handleChange}
-                    className="form-checkbox"
-                  />
-                  <span className="remember-me-txt">Remember me</span>
-                </label>
-                <div className="forgot-password-link">
-                  <a
-                    href="#"
-                    onClick={handleForgotPassword}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    style={{
-                      color: 'var(--color-text)',
-                      textDecoration: 'none',
-                      fontSize: '0.875rem',
-                      position: 'relative',
-                      display: 'inline-block'
-                    }}
-                  >
-                    Forgot Password?
-                    <span style={{
-                      position: 'absolute',
-                      left: 0,
-                      bottom: '-2px',
-                      width: '100%',
-                      height: '1px',
-                      backgroundColor: 'var(--color-primary)',
-                      transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
-                      transition: 'transform 0.3s ease-in-out',
-                      transformOrigin: 'left'
-                    }} />
-                  </a>
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center'
+                }}>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={credentials.rememberMe}
+                      onChange={handleChange}
+                      className="form-checkbox"
+                    />
+                    <span className="remember-me-txt">Remember me</span>
+                  </label>
+                  <div className="forgot-password-link">
+                    <a
+                      href="#"
+                      onClick={handleForgotPassword}
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                      style={{
+                        color: 'var(--color-text)',
+                        textDecoration: 'none',
+                        fontSize: '0.875rem',
+                        position: 'relative',
+                        display: 'inline-block'
+                      }}
+                    >
+                      Forgot Password?
+                      <span style={{
+                        position: 'absolute',
+                        left: 0,
+                        bottom: '-2px',
+                        width: '100%',
+                        height: '1px',
+                        backgroundColor: 'var(--color-primary)',
+                        transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+                        transition: 'transform 0.3s ease-in-out',
+                        transformOrigin: 'left'
+                      }} />
+                    </a>
+                  </div>
                 </div>
               </div>
               
