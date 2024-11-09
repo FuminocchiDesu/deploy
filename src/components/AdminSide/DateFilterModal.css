@@ -49,18 +49,18 @@
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    color: #6b7280;
+    background-color: #F5DEB3;
     transition: all 0.2s ease-in-out;
 }
   
 .clear-date-button:hover {
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: #5f3f04;
+    color: #FFFF;
 }
   
 .clear-date-button:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6;
+    box-shadow: 0 0 0 2px #F5DEB3;
 }
   
 /* Modal customization */
@@ -69,7 +69,7 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
                 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     padding: 16px;
-    min-height: 380px;  /* Add minimum height to create more space */
+    min-height:fit-content;
     display: flex;
     flex-direction: column;
 }
@@ -228,7 +228,6 @@
     gap: 8px;
     padding-top: 16px;
     margin-top: 30px;
-    margin-bottom: -60px;
     border-top: 1px solid #e5e7eb;
 }
   
