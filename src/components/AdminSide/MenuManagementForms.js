@@ -161,7 +161,7 @@ const MenuManagementForms = ({
           <Input style={formStyles.input} />
         </Form.Item>
         
-        <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+        <Form.Item name="description" label="Description">
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
 
