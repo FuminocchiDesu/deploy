@@ -89,7 +89,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
     }
   };
 
-  const handleTerminateClick = () => {
+  const handleTerminateClick = (e) => {
+    e.preventDefault(); // Prevent any form submission
     setShowWarning(true);
   };
 
@@ -164,48 +165,68 @@ const PageSettings = ({ handleOwnerLogout }) => {
     setSuccess(null);
     const formData = new FormData();
     Object.entries(coffeeShop).forEach(([key, value]) => {
+      // Skip null/undefined values except for boolean fields
+      if (value === null || value === undefined) {
+        if (key === 'is_under_maintenance' || key === 'is_terminated') {
+          formData.append(key, String(value));
+        }
+        return;
+      }
+  
+      // Handle image separately
       if (key === 'image') {
         if (value instanceof File) {
           formData.append(key, value);
-        } else if (typeof value === 'string' && value.startsWith('http')) {
-          // Do not append the image if it's a URL (existing image)
-        } else {
-          console.log('Invalid image value:', value);
         }
-      } else if (key !== 'opening_hours') {
-        formData.append(key, value.toString());
+        // Skip if it's a URL string (existing image)
+        return;
+      }
+  
+      // Skip opening_hours as it's handled separately
+      if (key !== 'opening_hours') {
+        formData.append(key, String(value));
       }
     });
-
+  
     try {
       // Update coffee shop details
-      await axios.put(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, formData, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      // Update opening hours
-      const formattedHours = openingHours.map(hour => ({
-        day: hour.day,
-        opening_time: hour.opening_time || null,
-        closing_time: hour.closing_time || null,
-      })).filter(hour => hour.opening_time !== null && hour.closing_time !== null);
-
-      await axios.post(
-        'https://khlcle.pythonanywhere.com/api/opening-hours/',
-        formattedHours,
+      await axios.put(
+        `https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, 
+        formData, 
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'multipart/form-data'
           }
         }
       );
-
+  
+      // Only update opening hours if they exist
+      if (openingHours && openingHours.length > 0) {
+        const formattedHours = openingHours
+          .filter(hour => hour.opening_time && hour.closing_time)
+          .map(hour => ({
+            day: hour.day,
+            opening_time: hour.opening_time,
+            closing_time: hour.closing_time,
+          }));
+  
+        if (formattedHours.length > 0) {
+          await axios.post(
+            'https://khlcle.pythonanywhere.com/api/opening-hours/',
+            formattedHours,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        }
+      }
+  
       await fetchCoffeeShop();
-      setSuccess('Coffee shop details and opening hours updated successfully');
+      setSuccess('Coffee shop details updated successfully');
       setTimeout(() => {
         setSuccess(null);
       }, 3000);
@@ -544,21 +565,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
-
-            <div style={{ width: '100%', display: 'flex'}}>
-              <button 
-                onClick={handleTerminateClick} 
-                className="button danger"
-                style={{ 
-                  backgroundColor: '#ef4444',
-                  transition: 'background-color 0.3s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#f87171'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
-              >
-                {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
-              </button>
-              {basicInfoEditMode && (
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between'}}>
+            {basicInfoEditMode && (
                 <button 
                   type="submit" 
                   className="button primary" 
@@ -573,6 +581,18 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   Save Changes
                 </button>
               )}
+              <button 
+                onClick={handleTerminateClick} 
+                className="button danger"
+                style={{ 
+                  backgroundColor: '#ef4444',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f87171'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
+              >
+                {coffeeShop.is_terminated ? 'Reopen Shop' : 'Mark as Permanently Closed'}
+              </button>
             </div>
             </form>
           </>
