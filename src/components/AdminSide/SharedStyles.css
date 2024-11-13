@@ -1299,9 +1299,7 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.tab-button.active {
-  background-color: #ccc;
-}
+
 
 .tab-content {
   padding: 1rem;
