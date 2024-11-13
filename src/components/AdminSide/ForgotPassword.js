@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { AlertCircle, Mail, Loader2, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react'
@@ -12,7 +12,18 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [codeExpiration, setCodeExpiration] = useState(null)
+  const [codeExpirationTimer, setCodeExpirationTimer] = useState(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Clear any existing expiration timer when component unmounts
+    return () => {
+      if (codeExpirationTimer) {
+        clearTimeout(codeExpirationTimer)
+      }
+    }
+  }, [codeExpirationTimer])
 
   const handleRequestCode = async () => {
     setLoading(true)
@@ -20,7 +31,43 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername })
       if (response.data.success) {
+        const expirationTime = new Date().getTime() + 900000 // 15 minutes from now
+        setCodeExpiration(expirationTime)
+        startCodeExpirationTimer(expirationTime)
         setStep(2)
+      } else {
+        setError(response.data.error)
+      }
+    } catch (err) {
+      if (err.response) {
+        setError(err.response.data.error)
+      } else {
+        setError('An unexpected error occurred. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const startCodeExpirationTimer = (expirationTime) => {
+    const timer = setTimeout(() => {
+      setCodeExpiration(null)
+      setStep(1)
+      setError('Reset code has expired. Please request a new code.')
+    }, expirationTime - new Date().getTime())
+    setCodeExpirationTimer(timer)
+  }
+
+  const handleResendCode = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername })
+      if (response.data.success) {
+        const expirationTime = new Date().getTime() + 900000 // 15 minutes from now
+        setCodeExpiration(expirationTime)
+        startCodeExpirationTimer(expirationTime)
+        setError('')
       } else {
         setError(response.data.error)
       }
@@ -178,6 +225,14 @@ const ForgotPassword = () => {
                 <ArrowLeft className="mr-2" />
                 Back
               </button>
+              {codeExpiration && (
+                <div className="mt-4 text-center">
+                  <p>Reset code expires in {Math.floor((codeExpiration - new Date().getTime()) / 60000)} minutes.</p>
+                  <button className="button outline" onClick={handleResendCode}>
+                    Resend Code
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {step === 3 && (
