@@ -46,7 +46,7 @@ body {
 }
 
 .admin-title {
-  font-size: 1.25rem;
+  font-size: 1.11rem;
   font-weight: 600;
   color: var(--color-primary);
   margin-left: 1rem;
@@ -57,7 +57,9 @@ body {
   align-items: center;
   justify-content: center;
   width: 60px;
+  max-width: 60px;
   height: 40px;
+  max-height: 40px;
   background-color: var(--color-primary-light);
   border-radius: 50%;
 }
@@ -1125,16 +1127,18 @@ body {
   top: 0;
   z-index: 10;
   background-color: white;
-  border-bottom: 1px solid var(--color-border);
-  margin: -2rem -2rem 2rem -2rem;
   padding: 0 2rem;
+  width: fit-content;
+  margin-bottom: 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
 }
 
 /* Tab List */
 .tab-list {
   display: flex;
   gap: 1rem;
-  padding: 1.52rem 0;
+  padding: .70rem 0;
 }
 
 /* Tab Buttons */
