@@ -219,6 +219,10 @@ body {
   border: 1px solid var(--color-border);
   color: var(--color-primary);
 }
+.button.outline:hover {
+  background-color: #D2B48C;
+  color: white;
+}
 
 .button.primary {
   background-color: var(--color-primary);
@@ -1017,11 +1021,11 @@ body {
 }
 
 .submit-button {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 #back-btn-dom {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 /* Admin Login Page Styles */
@@ -1061,6 +1065,7 @@ body {
   font-size: 0.875rem;
   color: #6b7280;
   text-align: center;
+  margin-bottom: -1px;
 }
 
 .login-form {
