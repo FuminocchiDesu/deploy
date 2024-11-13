@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { AlertCircle, Mail, Loader2, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { AlertCircle, Mail, Loader2, Check, ArrowLeft } from 'lucide-react'
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1)
@@ -11,7 +11,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [showResetCode, setShowResetCode] = useState(false)
   const [codeExpiration, setCodeExpiration] = useState(null)
   const [codeExpirationTimer, setCodeExpirationTimer] = useState(null)
   const navigate = useNavigate()
@@ -52,34 +52,9 @@ const ForgotPassword = () => {
   const startCodeExpirationTimer = (expirationTime) => {
     const timer = setTimeout(() => {
       setCodeExpiration(null)
-      setStep(1)
-      setError('Reset code has expired. Please request a new code.')
+      setShowResetCode(true)
     }, expirationTime - new Date().getTime())
     setCodeExpirationTimer(timer)
-  }
-
-  const handleResendCode = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const response = await axios.post('https://khlcle.pythonanywhere.com/password-reset/', { email_or_username: emailOrUsername })
-      if (response.data.success) {
-        const expirationTime = new Date().getTime() + 900000 // 15 minutes from now
-        setCodeExpiration(expirationTime)
-        startCodeExpirationTimer(expirationTime)
-        setError('')
-      } else {
-        setError(response.data.error)
-      }
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.error)
-      } else {
-        setError('An unexpected error occurred. Please try again.')
-      }
-    } finally {
-      setLoading(false)
-    }
   }
 
   const handleVerifyCode = async () => {
@@ -141,7 +116,7 @@ const ForgotPassword = () => {
           <h2 className="login-title">Forgot Password</h2>
           <p className="login-description">
             {step === 1 && "Enter your email or username to get a reset code"}
-            {step === 2 && "Enter the reset code sent to your email"}
+            {step === 2 && "Reset code will be available in a few minutes"}
             {step === 3 && "Enter your new password"}
           </p>
         </div>
@@ -189,35 +164,46 @@ const ForgotPassword = () => {
           )}
           {step === 2 && (
             <div className="form-group">
-              <label htmlFor="reset-code" className="form-label">
-                Reset Code
-              </label>
-              <input
-                id="reset-code"
-                type="text"
-                className="form-input"
-                placeholder="Enter the reset code"
-                value={resetCode}
-                onChange={(e) => setResetCode(e.target.value)}
-                required
-              />
-              <button
-                className="submit-button"
-                onClick={handleVerifyCode}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="submit-button-icon animate-spin" />
-                    Verifying Code...
-                  </>
-                ) : (
-                  <>
-                    <Check className="submit-button-icon" />
-                    Verify Code
-                  </>
-                )}
-              </button>
+              {showResetCode ? (
+                <>
+                  <label htmlFor="reset-code" className="form-label">
+                    Reset Code
+                  </label>
+                  <input
+                    id="reset-code"
+                    type="text"
+                    className="form-input"
+                    placeholder="Enter the reset code"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                    required
+                  />
+                  <button
+                    className="submit-button"
+                    onClick={handleVerifyCode}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="submit-button-icon animate-spin" />
+                        Verifying Code...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="submit-button-icon" />
+                        Verify Code
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <div className="text-center">
+                  <p>
+                    Reset code will be available in{' '}
+                    {Math.floor((codeExpiration - new Date().getTime()) / 60000)} minutes.
+                  </p>
+                </div>
+              )}
               <button
                 className="button outline full-width"
                 onClick={() => setStep(1)}
@@ -225,14 +211,6 @@ const ForgotPassword = () => {
                 <ArrowLeft className="mr-2" />
                 Back
               </button>
-              {codeExpiration && (
-                <div className="mt-4 text-center">
-                  <p>Reset code expires in {Math.floor((codeExpiration - new Date().getTime()) / 60000)} minutes.</p>
-                  <button className="button outline" onClick={handleResendCode}>
-                    Resend Code
-                  </button>
-                </div>
-              )}
             </div>
           )}
           {step === 3 && (
@@ -240,28 +218,15 @@ const ForgotPassword = () => {
               <label htmlFor="new-password" className="form-label">
                 New Password
               </label>
-              <div className="password-input-container">
-                <input
-                  id="new-password"
-                  type={showPassword ? "text" : "password"}
-                  className="form-input password-input"
-                  placeholder="Enter your new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className={`password-toggle-button ${showPassword ? 'visible' : ''}`}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="password-toggle-icon" />
-                  ) : (
-                    <Eye className="password-toggle-icon" />
-                  )}
-                </button>
-              </div>
+              <input
+                id="new-password"
+                type="password"
+                className="form-input"
+                placeholder="Enter your new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
               <button
                 className="submit-button"
                 onClick={handleResetPassword}
