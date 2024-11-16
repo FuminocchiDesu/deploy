@@ -128,16 +128,14 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setSelectedItem(record);
     setIsModalVisible(true);
     if (record) {
-      // Transform the additional_images array into the format expected by Ant Design Upload
       const transformedAdditionalImages = record.additional_images?.map((img, index) => ({
-        uid: `existing-${img.id}`, // Add 'existing-' prefix to identify existing images
+        uid: `existing-${img.id}`,
         name: `image-${index}.jpg`,
         status: 'done',
         url: img.image || img,
         thumbUrl: img.image || img
       })) || [];
   
-      // Transform the main image into the format expected by Ant Design Upload
       const mainImage = record.image ? [{
         uid: 'existing-main',
         name: 'main-image.jpg',
@@ -146,14 +144,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
         thumbUrl: record.image
       }] : [];
   
+      // Set useMainPrice based on whether there are sizes or a main price
+      const hasMainPrice = record.price && record.price > 0;
+      const hasSizes = record.sizes && record.sizes.length > 0;
+      setUseMainPrice(hasMainPrice && !hasSizes);
+      setSizes(record.sizes || []);
+  
       form.setFieldsValue({
         ...record,
         image: mainImage,
         additional_images: transformedAdditionalImages,
-        useMainPrice: record.price != null
+        useMainPrice: hasMainPrice && !hasSizes
       });
-      setSizes(record.sizes || []);
-      setUseMainPrice(record.price != null);
     } else {
       form.resetFields();
       setSizes([]);
@@ -177,11 +179,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
   
       for (let key in values) {
         if ((key === 'start_date' || key === 'end_date') && values[key]) {
-          // Check if it's a Moment object or already an ISO date string
           const dateValue = values[key];
           const formattedDate = dateValue.toISOString 
-            ? dateValue.toISOString().split('T')[0]  // Moment object
-            : dateValue;  // Assume it's already a string
+            ? dateValue.toISOString().split('T')[0]
+            : dateValue;
           formData.append(key, formattedDate);
         } else if (key === 'sizes') {
           formData.append(key, JSON.stringify(sizes));
@@ -190,7 +191,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
             formData.append(key, values[key][0].originFileObj);
           }
         } else if (key !== 'additional_images' && key !== 'useMainPrice') {
-          formData.append(key, values[key]);
+          // Don't append price if using sizes
+          if (key === 'price' && !useMainPrice) {
+            formData.append('price', '0'); // Set price to 0 when using sizes
+          } else {
+            formData.append(key, values[key]);
+          }
         }
       }
   
@@ -206,7 +212,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
       if (modalType === 'item') {
         if (useMainPrice) {
           formData.append('price', values.price);
+          formData.append('sizes', JSON.stringify([])); // Clear sizes when using main price
         } else {
+          formData.append('price', '0'); // Explicitly set price to 0 when using sizes
           formData.append('sizes', JSON.stringify(sizes));
         }
       }
@@ -256,14 +264,14 @@ const MenuPage = ({ handleOwnerLogout }) => {
         throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
       }
   
-      await response.json();
+      const responseData = await response.json();
       messageApi.success(`${selectedItem ? 'Update' : 'Create'} successful`);
       handleModalClose();
       fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError(`An error occurred while submitting the form: ${error.messageApi}`);
-      messageApi.error('Operation failed: ' + error.messageApi);
+      setError(`An error occurred while submitting the form: ${error.message}`);
+      messageApi.error('Operation failed: ' + error.message);
     } finally {
       setLoading(false);
     }
