@@ -47,7 +47,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     googleMapsApiKey: apiKey,
     libraries
   });
-
+  const [marker, setMarker] = useState(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
 
@@ -253,13 +253,17 @@ const PageSettings = ({ handleOwnerLogout }) => {
     try {
       const results = await geocodeByAddress(address);
       const latLng = await getLatLng(results[0]);
+      
       setCoffeeShop(prev => ({
         ...prev,
         address,
         latitude: latLng.lat,
         longitude: latLng.lng
       }));
-      setMapCenter(latLng);
+
+      if (mapRef.current && isLoaded) {
+        createMarker(latLng);
+      }
     } catch (error) {
       console.error('Error selecting address:', error);
     }
@@ -312,52 +316,46 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
   const onMapLoad = (map) => {
     mapRef.current = map;
+    // Create initial marker if coordinates exist
+    if (coffeeShop.latitude && coffeeShop.longitude) {
+      const position = {
+        lat: parseFloat(coffeeShop.latitude),
+        lng: parseFloat(coffeeShop.longitude)
+      };
+      createMarker(position);
+    }
   };
 
   const handleMapClick = (event) => {
-    if (basicInfoEditMode && window.google) {
+    if (basicInfoEditMode) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
       
-      setCoffeeShop((prev) => ({
+      setCoffeeShop(prev => ({
         ...prev,
         latitude: lat,
         longitude: lng,
       }));
       
-      setMapCenter({ lat, lng });
-      
-      if (markerRef.current) {
-        markerRef.current.setPosition({ lat, lng });
-      } else {
-        createMarker(lat, lng);
-      }
+      createMarker({ lat, lng });
     }
   };
   
-  const createMarker = (lat, lng) => {
-    if (window.google) {
-      const { AdvancedMarkerElement, PinElement } = window.google.maps.marker;
-      
-      if (AdvancedMarkerElement && PinElement) {
-        const pin = new PinElement({
-          glyph: coffeeShop.name.charAt(0).toUpperCase(),
-          background: 'green',
-        });
-        
-        markerRef.current = new AdvancedMarkerElement({
-          map: mapRef.current,
-          position: { lat, lng },
-          content: pin,
-        });
-      } else {
-        markerRef.current = new window.google.maps.Marker({
-          map: mapRef.current,
-          position: { lat, lng },
-          title: coffeeShop.name,
-        });
-      }
+  const createMarker = (position) => {
+    // Remove existing marker if it exists
+    if (marker) {
+      marker.setMap(null);
     }
+
+    const newMarker = new window.google.maps.Marker({
+      position,
+      map: mapRef.current,
+      title: coffeeShop.name,
+      animation: window.google.maps.Animation.DROP
+    });
+
+    setMarker(newMarker);
+    mapRef.current.panTo(position);
   };
 
   return (
@@ -544,6 +542,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   zoom={15}
                   onClick={handleMapClick}
                   onLoad={onMapLoad}
+                  options={{
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    fullscreenControl: true,
+                    zoomControl: true,
+                  }}
                 />
               </div>
             )}
