@@ -543,8 +543,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   onClick={handleMapClick}
                   onLoad={onMapLoad}
                   options={{
-                    streetViewControl: false,
-                    mapTypeControl: false,
+                    streetViewControl: true,
+                    mapTypeControl: true,
                     fullscreenControl: true,
                     zoomControl: true,
                   }}
