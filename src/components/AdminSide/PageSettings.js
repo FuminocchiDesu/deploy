@@ -60,7 +60,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     const startTime = Date.now();
 
     try {
-      const response = await axios.get('https://khlcle.pythonanywhere.com/api/owner/coffee-shop/', {
+      const response = await axios.get('http://192.168.232.1:8000/api/owner/coffee-shop/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
       });
       if (response.data.length > 0) {
@@ -98,7 +98,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const handleTerminateConfirm = async () => {
     try {
       const response = await axios.patch(
-        `https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`,
+        `http://192.168.232.1:8000/api/owner/coffee-shop/${coffeeShop.id}/`,
         { is_terminated: !coffeeShop.is_terminated },
         {
           headers: {
@@ -129,7 +129,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const handleMaintenanceToggle = async (checked) => {
     setIsUpdatingMaintenance(true);
     try {
-      const response = await axios.patch(`https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, 
+      const response = await axios.patch(`http://192.168.232.1:8000/api/owner/coffee-shop/${coffeeShop.id}/`, 
         { is_under_maintenance: checked },
         {
           headers: {
@@ -188,7 +188,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
     try {
       // Update coffee shop details
       await axios.put(
-        `https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShop.id}/`, 
+        `http://192.168.232.1:8000/api/owner/coffee-shop/${coffeeShop.id}/`, 
         formData, 
         {
           headers: {
@@ -210,7 +210,7 @@ const PageSettings = ({ handleOwnerLogout }) => {
   
         if (formattedHours.length > 0) {
           await axios.post(
-            'https://khlcle.pythonanywhere.com/api/opening-hours/',
+            'http://192.168.232.1:8000/api/opening-hours/',
             formattedHours,
             {
               headers: {

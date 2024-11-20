@@ -14,7 +14,7 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
 
   const fetchOpeningHours = async () => {
     try {
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/opening-hours/`, {
+      const response = await axios.get(`http://192.168.232.1:8000/api/opening-hours/`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` },
         params: { coffee_shop: coffeeShopId }
       });

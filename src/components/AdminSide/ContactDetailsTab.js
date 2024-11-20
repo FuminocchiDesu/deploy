@@ -24,7 +24,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
   const fetchContactInfo = async () => {
     try {
       const response = await axios.get(
-        `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/`,
+        `http://192.168.232.1:8000/api/coffee-shops/${coffeeShopId}/contact/`,
         {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
         }
@@ -57,7 +57,7 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
       const method = isExisting ? 'put' : 'post';
       const response = await axios({
         method,
-        url: `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/contact/`,
+        url: `http://192.168.232.1:8000/api/coffee-shops/${coffeeShopId}/contact/`,
         data: contactInfo,
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,

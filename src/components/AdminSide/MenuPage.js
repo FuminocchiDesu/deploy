@@ -7,7 +7,7 @@ import MenuManagementForms from './MenuManagementForms';
 import './SharedStyles.css';
 import {CoffeeLoader} from '../ui/CoffeeLoader';
 
-const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
+const API_BASE_URL = 'http://192.168.232.1:8000';
 
 const MenuPage = ({ handleOwnerLogout }) => {
   const [categories, setCategories] = useState([]);

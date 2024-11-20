@@ -42,7 +42,7 @@ function ReviewsPage({ handleOwnerLogout }) {
     try {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/ratings/`, {
+      const response = await axios.get(`http://192.168.232.1:8000/api/coffee-shops/${shopId}/ratings/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setReviews(response.data);
@@ -64,14 +64,14 @@ function ReviewsPage({ handleOwnerLogout }) {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
       
-      const metadataResponse = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/qr-metadata/`, {
+      const metadataResponse = await axios.get(`http://192.168.232.1:8000/api/coffee-shops/${shopId}/qr-metadata/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
       if (metadataResponse.data.expires_at) {
         setQrExpiryTime(metadataResponse.data.expires_at);
         
-        const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/latest-qr-code/`, {
+        const response = await axios.get(`http://192.168.232.1:8000/api/coffee-shops/${shopId}/latest-qr-code/`, {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Accept': '*/*',
@@ -167,7 +167,7 @@ function ReviewsPage({ handleOwnerLogout }) {
       const token = localStorage.getItem('ownerToken');
       const shopId = localStorage.getItem('coffeeShopId');
       
-      const response = await axios.get(`https://khlcle.pythonanywhere.com/api/coffee-shops/${shopId}/generate-qr/`, {
+      const response = await axios.get(`http://192.168.232.1:8000/api/coffee-shops/${shopId}/generate-qr/`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Accept': '*/*',

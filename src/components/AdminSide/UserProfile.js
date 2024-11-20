@@ -145,7 +145,7 @@ const UserProfile = ({ handleOwnerLogout }) => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile/', {
+      const response = await fetch('http://192.168.232.1:8000/api/profile/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -182,7 +182,7 @@ const UserProfile = ({ handleOwnerLogout }) => {
         }
       });
 
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/profile/', {
+      const response = await fetch('http://192.168.232.1:8000/api/profile/', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`

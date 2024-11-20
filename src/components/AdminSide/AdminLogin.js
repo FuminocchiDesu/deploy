@@ -65,7 +65,7 @@ export default function Component({ onLogin }) {
     setError('');
 
     try {
-      const response = await axios.post('https://khlcle.pythonanywhere.com/api/owner/', {
+      const response = await axios.post('http://192.168.232.1:8000/api/owner/', {
         username: credentials.username,
         password: credentials.password
       });

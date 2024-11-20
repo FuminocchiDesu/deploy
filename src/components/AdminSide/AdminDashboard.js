@@ -26,19 +26,19 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
         // Fetch all data concurrently
         const [visitsResponse, reviewsResponse, dashboardResponse] = await Promise.all([
           axios.get(
-            `https://khlcle.pythonanywhere.com/api/dashboard/visits/?filter=${visitsFilter}`,
+            `http://192.168.232.1:8000/api/dashboard/visits/?filter=${visitsFilter}`,
             {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
             }
           ),
           axios.get(
-            `https://khlcle.pythonanywhere.com/api/dashboard/reviews/?filter=${reviewsFilter}`,
+            `http://192.168.232.1:8000/api/dashboard/reviews/?filter=${reviewsFilter}`,
             {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
             }
           ),
           axios.get(
-            'https://khlcle.pythonanywhere.com/api/dashboard/',
+            'http://192.168.232.1:8000/api/dashboard/',
             {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('ownerToken')}` }
             }

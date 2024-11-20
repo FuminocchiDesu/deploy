@@ -13,7 +13,7 @@ const AccountSettings = () => {
 
   const handleVerifyPassword = async () => {
     try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/verify-password/', {
+      const response = await fetch('http://192.168.232.1:8000/api/verify-password/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
@@ -35,7 +35,7 @@ const AccountSettings = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/change-password/', {
+      const response = await fetch('http://192.168.232.1:8000/api/change-password/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
@@ -54,7 +54,7 @@ const AccountSettings = () => {
   const handleChangeEmail = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/update-email/', {
+      const response = await fetch('http://192.168.232.1:8000/api/update-email/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
@@ -73,7 +73,7 @@ const AccountSettings = () => {
   const handleChangeUsername = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://khlcle.pythonanywhere.com/api/update-username/', {
+      const response = await fetch('http://192.168.232.1:8000/api/update-username/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
