@@ -277,48 +277,66 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
-  const handleDelete = async (type, id) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      try {
-        setLoading(true);
-        setError(null);
-        const config = {
-          headers: { Authorization: `Bearer ${ownerToken}` }
-        };
+  const handleDelete = (type, id) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this ' + type + '?',
+      content: 'This action cannot be undone. If you are deleting a category it will also delete the items from that category.',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const config = {
+            headers: { Authorization: `Bearer ${ownerToken}` },
+          };
   
-      let endpoint;
-      switch (type) {
-        case 'category':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`;
-          break;
-        case 'item':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
-          break;
-        case 'promo':
-          endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`;
-          break;
-        default:
-          throw new Error('Invalid type');
-      }
+          let endpoint;
+          switch (type) {
+            case 'category':
+              endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-categories/${id}/`;
+              break;
+            case 'item':
+              endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${id}/`;
+              break;
+            case 'promo':
+              endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/${id}/`;
+              break;
+            default:
+              throw new Error('Invalid type');
+          }
   
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: config.headers
-      });
+          const response = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: config.headers,
+          });
   
-      if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
-      }
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          }
   
-      messageApi.success('Deleted successfully');
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting:', error);
-      messageApi.error('Delete operation failed: ' + error.messageApi);
-    }
-  }
-  };
+          messageApi.success('Deleted successfully');
+          fetchData();
+        } catch (error) {
+          console.error('Error deleting:', error);
+          setError(`An error occurred while deleting: ${error.message}`);
+          if (error.response && error.response.status === 401) {
+            messageApi.error('Owner authentication failed. Please log in again.');
+            handleOwnerLogout();
+          } else {
+            messageApi.error(`Delete operation failed: ${error.message}`);
+          }
+        } finally {
+          setLoading(false);
+        }
+      },
+      onCancel() {
+        messageApi.info('Delete action was canceled');
+      },
+    });
+  };  
 
   const handleItemDeletion = async ({ 
     itemId, 
