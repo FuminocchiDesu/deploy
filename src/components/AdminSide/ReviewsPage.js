@@ -28,7 +28,6 @@ function ReviewsPage({ handleOwnerLogout }) {
     setIsDateFilterModalOpen(true);
   };
 
-  // Add close handler for the modal
   const closeDateFilterModal = () => {
     setIsDateFilterModalOpen(false);
   };
@@ -46,9 +45,9 @@ function ReviewsPage({ handleOwnerLogout }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setReviews(response.data);
+      console.log(response.data);
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(2000 - elapsedTime, 0);
-        // Keep showing loader for remaining time
       await new Promise(resolve => setTimeout(resolve, remainingTime));
     } catch (err) {
       setError('Failed to fetch reviews. Please try again.');
@@ -121,16 +120,20 @@ function ReviewsPage({ handleOwnerLogout }) {
     setFilteredReviews(filtered);
   };
 
-  const handleDateRangeChange = (newDateRange) => {
-    setDateRange(newDateRange);
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).format(date);
   };
 
-  const clearFilters = () => {
-    setDateRange({
-      startDate: '',
-      endDate: ''
-    });
-    setFilteredReviews(reviews);
+  const handleDateRangeChange = (newDateRange) => {
+    setDateRange(newDateRange);
   };
 
   useEffect(() => {
@@ -182,7 +185,6 @@ function ReviewsPage({ handleOwnerLogout }) {
       await fetchLatestQRCode();
       setShowConfirmDialog(false);
     } catch (err) {
-      
       setError('Failed to generate QR code. Please try again.');
     }
   };
@@ -337,7 +339,7 @@ function ReviewsPage({ handleOwnerLogout }) {
                   </div>
                   <p className="review-content">{review.description}</p>
                   <p className="review-date">
-                    {new Date(review.created_at).toLocaleDateString()}
+                    {formatDateTime(review.created_at)}
                   </p>
                 </li>
               ))}

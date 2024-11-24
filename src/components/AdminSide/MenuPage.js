@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Table, Modal, Form, Space, ConfigProvider, App, Typography, Descriptions, Image, Card, List } from 'antd';
+import { Modal, Form, App } from 'antd';
 import SidebarMenu from './SideBarMenu';
 import MenuManagementForms from './MenuManagementForms';
+import MenuTables from './MenuTables';
 import './SharedStyles.css';
 import {CoffeeLoader} from '../ui/CoffeeLoader';
+import FormPreviewModal from './FormPreviewModal';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
@@ -34,8 +35,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [promoPageSize, setPromoPageSize] = useState(5);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
-  const [isPreviewModalVisible, setIsPreviewModalVisible] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
@@ -172,7 +172,18 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setUseMainPrice(false);
   };
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = () => {
+    form.validateFields().then(values => {
+      setIsPreviewVisible(true);
+    });
+  };
+  
+  // Add new handlers for the preview
+  const handlePreviewCancel = () => {
+    setIsPreviewVisible(false);
+  };
+
+  const handlePreviewConfirm  = async () => {
     try {
       setError(null);
       const values = await form.validateFields();
@@ -268,7 +279,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
       const responseData = await response.json();
       messageApi.success(`${selectedItem ? 'Update' : 'Create'} successful`);
       handleModalClose();
-      setIsPreviewModalVisible(false);
+      setIsPreviewVisible(false);
       fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -529,308 +540,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
     }
   };
 
-  const categoryColumns = [
-    { 
-      title: 'Name', 
-      dataIndex: 'name', 
-      key: 'category_name',
-      width: '80%',
-      ellipsis: true,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'category_name' && sortedInfo.order,
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: '20%',
-      render: (_, record) => (  
-          <Space>
-            <Button icon={<EditOutlined />} onClick={() => showModal('category', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('category', record.id)} danger />
-          </Space>
-      ),
-    },
-  ];
-
-  const itemColumns = [
-    { 
-      title: 'Name', 
-      dataIndex: 'name', 
-      key: 'item_name',
-      width: '20%',
-      ellipsis: true,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'item_name' && sortedInfo.order,
-    },
-    { 
-      title: 'Description', 
-      dataIndex: 'description', 
-      key: 'description',
-      width: '30%',
-      ellipsis: true,
-    },
-    {
-      title: 'Category',
-      dataIndex: 'category',
-      key: 'category',
-      width: '15%',
-      ellipsis: true,
-      filteredValue: filteredInfo.category || null,
-      filters: categories.map(category => ({
-        text: category.name,
-        value: category.id,
-      })),
-      onFilter: (value, record) => record.category === value,
-      render: (categoryId) => {
-        const category = categories.find(cat => cat.id === categoryId);
-        return category ? category.name : 'Unknown Category';
-      }
-    },
-    {
-      title: 'Availability',
-      dataIndex: 'is_available',
-      key: 'is_available',
-      width: '15%',
-      filters: [
-        { text: 'Available', value: true },
-        { text: 'Unavailable', value: false },
-      ],
-      filteredValue: filteredInfo.is_available || null,
-      onFilter: (value, record) => record.is_available === value,
-      render: (isAvailable, record) => (
-        <Button
-          style={{ 
-            backgroundColor: isAvailable ? '#717a50' : '#ff4d4f', 
-            borderColor: isAvailable ? '#717a50' : '#ff4d4f', 
-            color: 'white' 
-          }}
-          onClick={() => handleAvailabilityToggle(record.id, isAvailable)}
-        >
-          {isAvailable ? 'Available' : 'Unavailable'}
-        </Button>
-      )
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: '20%',
-      render: (_, record) => (
-          <Space>
-            <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => menuPageDeletionMethods.handleDeleteMenuItem.call({
-              coffeeShopId,
-              ownerToken,
-              messageApi,
-              fetchData
-            }, record.id)} danger />
-          </Space>
-      ),
-    }
-  ];
-
-  const promoColumns = [
-    { 
-      title: 'Name', 
-      dataIndex: 'name', 
-      key: 'promo_name',
-      width: '20%',
-      ellipsis: true,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      sortOrder: sortedInfo.columnKey === 'promo_name' && sortedInfo.order,
-    },
-    { 
-      title: 'Description', 
-      dataIndex: 'description', 
-      key: 'description',
-      width: '30%',
-      ellipsis: true,
-    },
-    { 
-      title: 'Start Date', 
-      dataIndex: 'start_date', 
-      key: 'start_date',
-      width: '15%',
-      filteredValue: filteredInfo.start_date || null,
-      filters: Array.from(new Set(promos.map(promo => promo.start_date)))
-        .map(date => ({
-          text: date,
-          value: date,
-        })),
-      onFilter: (value, record) => record.start_date === value
-    },
-    { 
-      title: 'End Date', 
-      dataIndex: 'end_date', 
-      key: 'end_date',
-      width: '15%',
-      filteredValue: filteredInfo.end_date || null,
-      filters: Array.from(new Set(promos.map(promo => promo.end_date)))
-        .map(date => ({
-          text: date,
-          value: date,
-        })),
-      onFilter: (value, record) => record.end_date === value
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: '20%',
-      render: (_, record) => (
-          <Space>
-            <Button icon={<EditOutlined />} onClick={() => showModal('promo', record)} />
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete('promo', record.id)} danger />
-          </Space>
-      ),
-    },
-  ];
-
-  const tableProps = {
-    loading: loading,
-    scroll: { x: 800 },
-    onChange: handleChange, // Add onChange handler to manage filters
-  };
-
-  const paginationTheme = {
-    token: {
-      colorPrimary: '#a0522d',
-    },
-  };
-
-  const handlePreview = async () => {
-    try {
-      const values = await form.validateFields();
-      const previewDataObj = {
-        ...values,
-        // Format the data for preview
-        category: modalType === 'item' ? categories.find(cat => cat.id === values.category)?.name : undefined,
-        image: values.image?.[0]?.url || values.image?.[0]?.preview,
-        additional_images: values.additional_images?.map(img => img.url || img.preview) || [],
-        sizes: modalType === 'item' && !useMainPrice ? sizes : [],
-        price: useMainPrice ? values.price : undefined,
-      };
-      
-      setPreviewData(previewDataObj);
-      setIsPreviewModalVisible(true);
-    } catch (error) {
-      console.error('Validation failed:', error);
-      messageApi.error('Please fill in all required fields');
-    }
-  };
-
-  const renderPreviewContent = () => {
-    if (!previewData) return null;
-    const { Title, Text } = Typography;
-  
-    const commonImageProps = {
-      style: { maxHeight: '200px', objectFit: 'cover' },
-      fallback: "data:image/png;base64,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"
-    };
-  
-    switch (modalType) {
-      case 'category':
-        return (
-          <Card>
-            <Title level={4}>Category Preview</Title>
-            <Descriptions column={1}>
-              <Descriptions.Item label="Name">{previewData.name}</Descriptions.Item>
-            </Descriptions>
-          </Card>
-        );
-  
-      case 'item':
-        return (
-          <Card>
-            <Title level={4}>Item Preview</Title>
-            <div style={{ display: 'flex', gap: '24px' }}>
-              <div style={{ flex: 1 }}>
-                <Descriptions column={1}>
-                  <Descriptions.Item label="Name">{previewData.name}</Descriptions.Item>
-                  <Descriptions.Item label="Category">{previewData.category}</Descriptions.Item>
-                  <Descriptions.Item label="Description">{previewData.description}</Descriptions.Item>
-                  {useMainPrice ? (
-                    <Descriptions.Item label="Price">₱{previewData.price}</Descriptions.Item>
-                  ) : (
-                    <Descriptions.Item label="Sizes">
-                      <List
-                        size="small"
-                        dataSource={previewData.sizes}
-                        renderItem={(size) => (
-                          <List.Item>
-                            <Text>{size.size}: ₱{size.price}</Text>
-                          </List.Item>
-                        )}
-                      />
-                    </Descriptions.Item>
-                  )}
-                </Descriptions>
-              </div>
-              <div style={{ flex: 1 }}>
-                {previewData.image && (
-                  <div style={{ marginBottom: '16px' }}>
-                    <Text strong>Main Image</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Image
-                        src={previewData.image}
-                        alt="Main"
-                        {...commonImageProps}
-                      />
-                    </div>
-                  </div>
-                )}
-                {previewData.additional_images?.length > 0 && (
-                  <div>
-                    <Text strong>Additional Images</Text>
-                    <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      {previewData.additional_images.map((img, index) => (
-                        <Image
-                          key={index}
-                          src={img}
-                          alt={`Additional ${index + 1}`}
-                          {...commonImageProps}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        );
-  
-      case 'promo':
-        return (
-          <Card>
-            <Title level={4}>Promo Preview</Title>
-            <Descriptions column={1}>
-              <Descriptions.Item label="Name">{previewData.name}</Descriptions.Item>
-              <Descriptions.Item label="Description">{previewData.description}</Descriptions.Item>
-              <Descriptions.Item label="Start Date">
-                {previewData.start_date?.toString()}
-              </Descriptions.Item>
-              <Descriptions.Item label="End Date">
-                {previewData.end_date?.toString()}
-              </Descriptions.Item>
-            </Descriptions>
-            {previewData.image && (
-              <div style={{ marginTop: '16px' }}>
-                <Text strong>Image</Text>
-                <div style={{ marginTop: '8px' }}>
-                  <Image
-                    src={previewData.image}
-                    alt="Promo"
-                    {...commonImageProps}
-                  />
-                </div>
-              </div>
-            )}
-          </Card>
-        );
-  
-      default:
-        return null;
-    }
-  };
-
   return (
     <div  className="admin-layout">
       <SidebarMenu
@@ -846,131 +555,80 @@ const MenuPage = ({ handleOwnerLogout }) => {
         ) : (
           <div>
         <h1 className="page-title">Menu Management</h1>  
-        <ConfigProvider theme={paginationTheme}>
-          <section className="menu-section mb-8">
-            <h2 className="text-xl font-semibold  mb-2">Categories</h2>
-            {
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
-                Add Category
-              </Button>
-            }
-            <Table 
-              {...tableProps}
-              dataSource={categories} 
-              columns={categoryColumns} 
-              rowKey="id"
+        <MenuTables
+              loading={loading}
+              categories={categories}
+              items={items}
+              promos={promos}
+              handleChange={handleChange}
+              showModal={showModal}
+              handleDelete={handleDelete}
+              handleAvailabilityToggle={handleAvailabilityToggle}
+              menuPageDeletionMethods={menuPageDeletionMethods}
+              filteredInfo={filteredInfo}
+              sortedInfo={sortedInfo}
               pagination={{
-                current: categoryPage,
-                pageSize: categoryPageSize,
-                total: categories.length,
-                onChange: (page, pageSize) => {
-                  setCategoryPage(page);
-                  setCategoryPageSize(pageSize);
-                }
+                categoryPage,
+                categoryPageSize,
+                setCategoryPage,
+                setCategoryPageSize,
+                itemPage,
+                itemPageSize,
+                setItemPage,
+                setItemPageSize,
+                promoPage,
+                promoPageSize,
+                setPromoPage,
+                setPromoPageSize,
               }}
             />
-          </section>
 
-          <section className="menu-section mb-8">
-            <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
-            {
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('item')} className="mb-2">
-                Add Item
-              </Button>
-            }
-            <Table 
-              {...tableProps}
-              dataSource={items} 
-              columns={itemColumns} 
-              rowKey="id"
-              pagination={{
-                current: itemPage,
-                pageSize: itemPageSize,
-                total: items.length,
-                onChange: (page, pageSize) => {
-                  setItemPage(page);
-                  setItemPageSize(pageSize);
-                }
-              }}
-            />
-          </section>
+<Modal
+      title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
+      open={isModalVisible}
+      onOk={handleFormSubmit}
+      onCancel={handleModalClose}
+    >
+      <Form form={form} layout="vertical">
+        <MenuManagementForms
+          modalType={modalType}
+          categories={categories}
+          useMainPrice={useMainPrice}
+          setUseMainPrice={setUseMainPrice}
+          sizes={sizes}
+          handleSizeChange={handleSizeChange}
+          addSize={addSize}
+          removeSize={removeSize}
+          handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+          handleRemoveAdditionalImage={(itemId, imageId) => 
+            menuPageDeletionMethods.handleRemoveAdditionalImage.call({
+              coffeeShopId,
+              ownerToken,
+              messageApi,
+              fetchData
+            }, itemId, imageId)
+          }
+          handleRemoveSize={(itemId, sizeId) => 
+            menuPageDeletionMethods.handleRemoveSize.call({
+              coffeeShopId,
+              ownerToken,
+              messageApi,
+              fetchData
+            }, itemId, sizeId)
+          }
+          selectedItem={selectedItem}
+          form={form}
+        />
+      </Form>
+    </Modal>
 
-          <section className="menu-section">
-            <h2 className="text-xl font-semibold mb-2">Promos</h2>
-            {
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('promo')} className="mb-2">
-                Add Promo
-              </Button>
-            }
-            <Table 
-              {...tableProps}
-              dataSource={promos} 
-              columns={promoColumns} 
-              rowKey="id"
-              pagination={{
-                current: promoPage,
-                pageSize: promoPageSize,
-                total: promos.length,
-                onChange: (page, pageSize) => {
-                  setPromoPage(page);
-                  setPromoPageSize(pageSize);
-                }
-              }}
-            />
-          </section>
-        </ConfigProvider>
-
-        <Modal
-        title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
-        open={isModalVisible}
-        onOk={handlePreview}
-        onCancel={handleModalClose}
-        okText="Preview"
-      >
-        <Form form={form} layout="vertical">
-          <MenuManagementForms
-            modalType={modalType}
-            categories={categories}
-            useMainPrice={useMainPrice}
-            setUseMainPrice={setUseMainPrice}
-            sizes={sizes}
-            handleSizeChange={handleSizeChange}
-            addSize={addSize}
-            removeSize={removeSize}
-            handleAdditionalImagesPreview={handleAdditionalImagesPreview}
-            handleRemoveAdditionalImage={(itemId, imageId) => 
-              menuPageDeletionMethods.handleRemoveAdditionalImage.call({
-                coffeeShopId,
-                ownerToken,
-                messageApi,
-                fetchData
-              }, itemId, imageId)
-            }
-            handleRemoveSize={(itemId, sizeId) => 
-              menuPageDeletionMethods.handleRemoveSize.call({
-                coffeeShopId,
-                ownerToken,
-                messageApi,
-                fetchData
-              }, itemId, sizeId)
-            }
-            selectedItem={selectedItem}
-            form={form}
-          />
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Preview"
-        open={isPreviewModalVisible}
-        onOk={handleFormSubmit}
-        onCancel={() => setIsPreviewModalVisible(false)}
-        width={800}
-        okText="Submit"
-        cancelText="Back to Edit"
-      >
-        {renderPreviewContent()}
-      </Modal>
+    <FormPreviewModal
+      visible={isPreviewVisible}
+      onCancel={handlePreviewCancel}
+      onConfirm={handlePreviewConfirm}
+      modalType={modalType}
+      formData={form.getFieldsValue()}
+    />
       </div>
        )}
       </div>

@@ -167,7 +167,6 @@ const MenuManagementForms = ({
         <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
           <Input style={formStyles.input} />
         </Form.Item>
-        
         <Form.Item name="description" label="Description" initialValue="">
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
@@ -286,7 +285,12 @@ const MenuManagementForms = ({
         <p style={formStyles.description}>Add or edit category information</p>
       </div>
       
-      <Form.Item name="name" label="Category Name" rules={[{ required: true }]}>
+      <Form.Item 
+        name="name" 
+        label={<span>Category Name {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+        rules={[{ required: true }]}
+        required={false}
+      >
         <Input style={formStyles.input} />
       </Form.Item>
     </div>
@@ -300,11 +304,19 @@ const MenuManagementForms = ({
       </div>
 
       <div style={formStyles.section}>
-        <Form.Item name="name" label="Promo Name" rules={[{ required: true }]}>
+        <Form.Item 
+        name="name" 
+        label={<span>Promo Name {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+        rules={[{ required: true }]}
+        required={false}
+        >
           <Input style={formStyles.input} />
         </Form.Item>
         
-        <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+        <Form.Item 
+        name="description" 
+        label={<span>Description {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+        rules={[{ required: true }]}>
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
       </div>
@@ -313,7 +325,7 @@ const MenuManagementForms = ({
         <h3 style={formStyles.sectionTitle}>Promotion Period</h3>
         <Form.Item 
           name="start_date" 
-          label="Start Date" 
+          label={<span>Start Date {<span style={{ color: '#ff4d4f' }}>*</span>}</span>} 
           rules={[{ required: true }]}
         >
           <DatePicker 
@@ -326,7 +338,7 @@ const MenuManagementForms = ({
 
         <Form.Item 
           name="end_date" 
-          label="End Date" 
+          label={<span>End Date {<span style={{ color: '#ff4d4f' }}>*</span>}</span>} 
           rules={[
             { required: true },
             ({ getFieldValue }) => ({
