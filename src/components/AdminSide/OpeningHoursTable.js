@@ -4,7 +4,7 @@ import axios from 'axios';
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_CODES = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
-const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
+const OpeningHoursTable = ({ coffeeShopId, onUpdate }) => {
   const [openingHours, setOpeningHours] = useState([]);
   const [error, setError] = useState(null);
 
@@ -60,7 +60,6 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
                   type="time"
                   value={hour.opening_time || ''}
                   onChange={(e) => handleTimeChange(index, 'opening_time', e.target.value)}
-                  disabled={!isEditMode}
                   className="border p-1"
                   style={{
                     width: '100%',
@@ -78,7 +77,6 @@ const OpeningHoursTable = ({ coffeeShopId, isEditMode, onUpdate }) => {
                   type="time"
                   value={hour.closing_time || ''}
                   onChange={(e) => handleTimeChange(index, 'closing_time', e.target.value)}
-                  disabled={!isEditMode}
                   className="border p-1"
                   style={{
                     width: '100%',

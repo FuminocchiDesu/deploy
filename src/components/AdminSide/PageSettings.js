@@ -32,8 +32,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Edit Page');
   const [imagePreview, setImagePreview] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
-  const [basicInfoEditMode, setBasicInfoEditMode] = useState(false);
-  const [contactEditMode, setContactEditMode] = useState(false);
   const navigate = useNavigate();
   const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
   const [openingHours, setOpeningHours] = useState([]);
@@ -224,7 +222,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   
       await fetchCoffeeShop();
       messageApi.success('Coffee shop details updated successfully');
-      setBasicInfoEditMode(false);
     } catch (error) {
       console.error('Error updating coffee shop:', error);
       if (error.response) {
@@ -279,22 +276,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
     navigate('/admin-login');
   };
 
-  const toggleBasicInfoEditMode = () => {
-    setBasicInfoEditMode(!basicInfoEditMode);
-  };
-
-  const toggleContactEditMode = () => {
-    setContactEditMode(!contactEditMode);
-  };
-
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    // Reset edit modes when switching tabs
-    if (tab === 'basic') {
-      setContactEditMode(false);
-    } else {
-      setBasicInfoEditMode(false);
-    }
   };
 
   useEffect(() => {
@@ -327,7 +310,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
   };
 
   const handleMapClick = (event) => {
-    if (basicInfoEditMode) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
       
@@ -338,7 +320,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
       }));
       
       createMarker({ lat, lng });
-    }
   };
   
   const createMarker = (position) => {
@@ -429,9 +410,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 </div>
               </div>
             </header>
-            <button onClick={toggleBasicInfoEditMode} className="button primary" id="color-btn-dom" style={{ backgroundColor: '#a0522d' }}>
-              {basicInfoEditMode ? 'Cancel Edit' : 'Edit Basic Info'}
-            </button>
           </div>
           <form onSubmit={handleShopUpdate} className="settings-form">
           <div className="settings-section">
@@ -444,7 +422,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 ) : (
                   <p>No image uploaded</p>
                 )}
-                {basicInfoEditMode && (
                   <input
                     type="file"
                     name="image"
@@ -453,7 +430,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                     onChange={handleInputChange}
                     className="form-input mt-1 block w-full"
                   />
-                )}
               </div>
 
             <div className="settings-section">
@@ -471,7 +447,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   id="name"
                   value={coffeeShop.name}
                   onChange={handleInputChange}
-                  disabled={!basicInfoEditMode }
                   className="form-input"
                   required
                 />
@@ -479,7 +454,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
 
               <div className="mb-4">
                 <label htmlFor="address">Address</label>
-                {basicInfoEditMode  ? (
                   <PlacesAutocomplete
                     value={coffeeShop.address}
                     onChange={handleAddressChange}
@@ -507,16 +481,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                       </div>
                     )}
                   </PlacesAutocomplete>
-                ) : (
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    value={coffeeShop.address}
-                    className="form-input"
-                    disabled
-                  />
-                )}
               </div>
 
               <div className="mb-4">
@@ -528,7 +492,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                   onChange={handleInputChange}
                   className="form-textarea"
                   rows="4"
-                  disabled={!basicInfoEditMode }
                 ></textarea>
               </div>
             </div>
@@ -556,14 +519,12 @@ const PageSettings = ({ handleOwnerLogout }) => {
               <h2>Opening Hours</h2>
               <OpeningHoursTable 
                 coffeeShopId={coffeeShop.id} 
-                isEditMode={basicInfoEditMode }
                 onUpdate={handleOpeningHoursUpdate}
               />
             </div>
 
             {error && <div className="error-message">{error}</div>}
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between'}}>
-            {basicInfoEditMode && (
                 <button 
                   type="submit" 
                   className="button primary" 
@@ -577,7 +538,6 @@ const PageSettings = ({ handleOwnerLogout }) => {
                 >
                   Save Changes
                 </button>
-              )}
               <button 
                 onClick={handleTerminateClick} 
                 className="button danger"
@@ -595,15 +555,8 @@ const PageSettings = ({ handleOwnerLogout }) => {
           </>
         ) : (
           <>
-            <div className="flex justify-end mb-4">
-              <button onClick={toggleContactEditMode} className="button primary">
-                {contactEditMode ? 'Cancel Edit' : 'Edit Contact Info'}
-              </button>
-            </div>
             <ContactDetailsTab 
             coffeeShopId={coffeeShop.id}
-            isEditMode={contactEditMode}
-            onSave={() => setContactEditMode(false)}
           />
           </>
         )}

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { App } from 'antd';
 import './SharedStyles.css';
 
-const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
+const ContactDetailsTab = ({ coffeeShopId, onSave }) => {
   const { message: messageApi } = App.useApp();
   const [contactInfo, setContactInfo] = useState({
     contact_name: '',
@@ -93,7 +93,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="contact_name"
               value={contactInfo.contact_name || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="Contact Person's Name"
             />
@@ -107,7 +106,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="primary_phone"
               value={contactInfo.primary_phone || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="+1234567890"
             />
@@ -121,7 +119,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="secondary_phone"
               value={contactInfo.secondary_phone || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="+1234567890"
             />
@@ -135,7 +132,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="email"
               value={contactInfo.email || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="contact@example.com"
             />
@@ -149,7 +145,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="website"
               value={contactInfo.website || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="https://example.com"
             />
@@ -163,7 +158,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="facebook"
               value={contactInfo.facebook || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="https://facebook.com/your-page"
             />
@@ -177,7 +171,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="instagram"
               value={contactInfo.instagram || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="https://instagram.com/your-handle"
             />
@@ -191,7 +184,6 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
               id="twitter"
               value={contactInfo.twitter || ''}
               onChange={handleContactInfoChange}
-              disabled={!isEditMode}
               className="form-input"
               placeholder="https://twitter.com/your-handle"
             />
@@ -199,14 +191,11 @@ const ContactDetailsTab = ({ coffeeShopId, isEditMode, onSave }) => {
         </div>
 
         {error && <div className="error-message mt-4">{error}</div>}
-
-        {isEditMode && (
           <div className="flex justify-end mt-4">
             <button type="submit" className="button primary">
               Save Contact Information
             </button>
           </div>
-        )}
       </form>
     </div>
   );

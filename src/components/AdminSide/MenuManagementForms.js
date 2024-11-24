@@ -157,20 +157,19 @@ const MenuManagementForms = ({
       </div>
 
       <div style={formStyles.section}>
-        <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
-          <Input style={formStyles.input} />
-        </Form.Item>
-        
-        <Form.Item name="description" label="Description" initialValue="">
-          <Input.TextArea style={formStyles.textarea} />
-        </Form.Item>
-
         <Form.Item name="category" label="Category" rules={[{ required: true }]}>
           <Select style={formStyles.select}>
             {categories.map(category => (
               <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
             ))}
           </Select>
+        </Form.Item>
+        <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
+          <Input style={formStyles.input} />
+        </Form.Item>
+        
+        <Form.Item name="description" label="Description" initialValue="">
+          <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
       </div>
 

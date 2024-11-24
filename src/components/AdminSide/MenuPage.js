@@ -13,7 +13,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [promos, setPromos] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -541,13 +540,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
       title: 'Actions',
       key: 'actions',
       width: '20%',
-      render: (_, record) => (
-        isEditMode && (
+      render: (_, record) => (  
           <Space>
             <Button icon={<EditOutlined />} onClick={() => showModal('category', record)} />
             <Button icon={<DeleteOutlined />} onClick={() => handleDelete('category', record.id)} danger />
           </Space>
-        )
       ),
     },
   ];
@@ -615,7 +612,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
       key: 'actions',
       width: '20%',
       render: (_, record) => (
-        isEditMode && (
           <Space>
             <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
             <Button icon={<DeleteOutlined />} onClick={() => menuPageDeletionMethods.handleDeleteMenuItem.call({
@@ -625,7 +621,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
               fetchData
             }, record.id)} danger />
           </Space>
-        )
       ),
     }
   ];
@@ -678,12 +673,10 @@ const MenuPage = ({ handleOwnerLogout }) => {
       key: 'actions',
       width: '20%',
       render: (_, record) => (
-        isEditMode && (
           <Space>
             <Button icon={<EditOutlined />} onClick={() => showModal('promo', record)} />
             <Button icon={<DeleteOutlined />} onClick={() => handleDelete('promo', record.id)} danger />
           </Space>
-        )
       ),
     },
   ];
@@ -731,25 +724,15 @@ const MenuPage = ({ handleOwnerLogout }) => {
           </div>
         ) : (
           <div>
-        <h1 className="page-title">Menu Management</h1>
-        <ConfigProvider theme={buttonTheme}>
-          <Button 
-            type={isEditMode ? "primary" : "default"}
-            onClick={() => setIsEditMode(!isEditMode)}
-            className="mb-4"
-          >
-            {isEditMode ? 'View Mode' : 'Edit Mode'}
-          </Button>
-        </ConfigProvider>
-        
+        <h1 className="page-title">Menu Management</h1>  
         <ConfigProvider theme={paginationTheme}>
           <section className="menu-section mb-8">
             <h2 className="text-xl font-semibold  mb-2">Categories</h2>
-            {isEditMode && (
+            {
               <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('category')} className="mb-2">
                 Add Category
               </Button>
-            )}
+            }
             <Table 
               {...tableProps}
               dataSource={categories} 
@@ -769,11 +752,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
           <section className="menu-section mb-8">
             <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
-            {isEditMode && (
+            {
               <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('item')} className="mb-2">
                 Add Item
               </Button>
-            )}
+            }
             <Table 
               {...tableProps}
               dataSource={items} 
@@ -793,11 +776,11 @@ const MenuPage = ({ handleOwnerLogout }) => {
 
           <section className="menu-section">
             <h2 className="text-xl font-semibold mb-2">Promos</h2>
-            {isEditMode && (
+            {
               <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('promo')} className="mb-2">
                 Add Promo
               </Button>
-            )}
+            }
             <Table 
               {...tableProps}
               dataSource={promos} 
