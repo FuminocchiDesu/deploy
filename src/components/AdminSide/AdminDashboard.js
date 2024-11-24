@@ -5,6 +5,7 @@ import axios from 'axios';
 import SidebarMenu from './SideBarMenu';
 import { CoffeeLoader } from '../ui/CoffeeLoader';
 import DashboardReport from './DashboardReport';
+import FavoritesCard from './FavoritesCard';
 import './SharedStyles.css';
 
 const AdminDashboard = ({ handleOwnerLogout }) => {
@@ -57,7 +58,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
         setVisitsData(visitsResponse.data);
         setReviewsData(reviewsResponse.data);
         setDashboardData(dashboardResponse.data);
-
+        console.log(dashboardResponse.data);
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(2000 - elapsedTime, 0);
         
@@ -227,13 +228,7 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
               <div className="dashboard-grid">
                 {/* Favorites Card */}
                 <div className="settings-form">
-                  <div className="card-header">
-                    <h2 className="card-title">Favorites</h2>
-                  </div>
-                  <div className="card-content">
-                    <p className="stat-value">{dashboardData.favorite_count}</p>
-                    <p className="stat-label">Users have favorited your coffee shop</p>
-                  </div>
+                <FavoritesCard dashboardData={dashboardData} />
                 </div>
 
                 {/* Recent Reviews Card */}
