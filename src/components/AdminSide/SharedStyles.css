@@ -1344,3 +1344,14 @@ body {
 .favorite-user-name {
   font-size: 14px;
 }
+
+.menu-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.menu-section-header h2 {
+  margin-bottom: 0;
+}

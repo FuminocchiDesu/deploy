@@ -194,15 +194,17 @@ const MenuTables = ({
   return (
     <ConfigProvider theme={paginationTheme}>
       <section className="menu-section mb-8">
-        <h2 className="text-xl font-semibold mb-2">Categories</h2>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={() => showModal('category')} 
-          className="mb-2"
-        >
-          Add Category
-        </Button>
+        <div className="menu-section-header">
+          <h2 className="text-xl font-semibold">Categories</h2>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => showModal('category')} 
+            id="buttons-design"
+          >
+            Add Category
+          </Button>
+        </div>
         <Table 
           {...tableProps}
           dataSource={categories} 
@@ -221,15 +223,17 @@ const MenuTables = ({
       </section>
 
       <section className="menu-section mb-8">
-        <h2 className="text-xl font-semibold mb-2">Menu Items</h2>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={() => showModal('item')} 
-          className="mb-2"
-        >
-          Add Item
-        </Button>
+        <div className="menu-section-header">
+          <h2 className="text-xl font-semibold">Menu Items</h2>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => showModal('item')} 
+            id="buttons-design"
+          >
+            Add Item
+          </Button>
+        </div>
         <Table 
           {...tableProps}
           dataSource={items} 
@@ -248,15 +252,17 @@ const MenuTables = ({
       </section>
 
       <section className="menu-section">
-        <h2 className="text-xl font-semibold mb-2">Promos</h2>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={() => showModal('promo')} 
-          className="mb-2"
-        >
-          Add Promo
-        </Button>
+        <div className="menu-section-header">
+          <h2 className="text-xl font-semibold">Promos</h2>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => showModal('promo')} 
+            id="buttons-design"
+          >
+            Add Promo
+          </Button>
+        </div>
         <Table 
           {...tableProps}
           dataSource={promos} 
