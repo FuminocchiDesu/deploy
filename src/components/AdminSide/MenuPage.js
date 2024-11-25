@@ -36,6 +36,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
 
   useEffect(() => {
     if (coffeeShopId && ownerToken) {
@@ -172,20 +173,43 @@ const MenuPage = ({ handleOwnerLogout }) => {
     setUseMainPrice(false);
   };
 
-  const handleFormSubmit = () => {
-    form.validateFields().then(values => {
+  const handleFormSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      
+      // Prepare preview data
+      const formattedData = {
+        ...values,
+        sizes: !values.useMainPrice ? sizes : [],
+        useMainPrice: Boolean(values.useMainPrice),
+        // Handle image previews
+        image: values.image?.map(file => ({
+          url: file.originFileObj ? URL.createObjectURL(file.originFileObj) : file.url,
+          ...file
+        })),
+        additional_images: values.additional_images?.map(file => ({
+          url: file.originFileObj ? URL.createObjectURL(file.originFileObj) : file.url,
+          ...file
+        }))
+      };
+
+      // Set preview data and show modal
+      setPreviewData(formattedData);
       setIsPreviewVisible(true);
-    });
-  };
-  
-  // Add new handlers for the preview
-  const handlePreviewCancel = () => {
-    setIsPreviewVisible(false);
+    } catch (error) {
+      console.error('Form validation failed:', error);
+      messageApi.error('Please fill in all required fields');
+    }
   };
 
-  const handlePreviewConfirm  = async () => {
+  const handlePreviewCancel = () => {
+    setIsPreviewVisible(false);
+    setPreviewData(null);
+  };
+
+  const handlePreviewConfirm = async () => {
     try {
-      setError(null);
+      setLoading(true);
       const values = await form.validateFields();
       const formData = new FormData();
   
@@ -278,12 +302,12 @@ const MenuPage = ({ handleOwnerLogout }) => {
   
       const responseData = await response.json();
       messageApi.success(`${selectedItem ? 'Update' : 'Create'} successful`);
-      handleModalClose();
       setIsPreviewVisible(false);
+      setPreviewData(null);
+      handleModalClose();
       fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError(`An error occurred while submitting the form: ${error.message}`);
       messageApi.error('Operation failed: ' + error.message);
     } finally {
       setLoading(false);
@@ -584,52 +608,54 @@ const MenuPage = ({ handleOwnerLogout }) => {
             />
 
 <Modal
-      title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
-      open={isModalVisible}
-      onOk={handleFormSubmit}
-      onCancel={handleModalClose}
-    >
-      <Form form={form} layout="vertical">
-        <MenuManagementForms
-          modalType={modalType}
-          categories={categories}
-          useMainPrice={useMainPrice}
-          setUseMainPrice={setUseMainPrice}
-          sizes={sizes}
-          handleSizeChange={handleSizeChange}
-          addSize={addSize}
-          removeSize={removeSize}
-          handleAdditionalImagesPreview={handleAdditionalImagesPreview}
-          handleRemoveAdditionalImage={(itemId, imageId) => 
-            menuPageDeletionMethods.handleRemoveAdditionalImage.call({
-              coffeeShopId,
-              ownerToken,
-              messageApi,
-              fetchData
-            }, itemId, imageId)
-          }
-          handleRemoveSize={(itemId, sizeId) => 
-            menuPageDeletionMethods.handleRemoveSize.call({
-              coffeeShopId,
-              ownerToken,
-              messageApi,
-              fetchData
-            }, itemId, sizeId)
-          }
-          selectedItem={selectedItem}
-          form={form}
-        />
-      </Form>
-    </Modal>
+        title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
+        open={isModalVisible}
+        onOk={handleFormSubmit}
+        onCancel={handleModalClose}
+      >
+        <Form form={form} layout="vertical">
+          <MenuManagementForms
+            modalType={modalType}
+            categories={categories}
+            useMainPrice={useMainPrice}
+            setUseMainPrice={setUseMainPrice}
+            sizes={sizes}
+            handleSizeChange={handleSizeChange}
+            addSize={addSize}
+            removeSize={removeSize}
+            handleAdditionalImagesPreview={handleAdditionalImagesPreview}
+            handleRemoveAdditionalImage={(itemId, imageId) => 
+              menuPageDeletionMethods.handleRemoveAdditionalImage.call({
+                coffeeShopId,
+                ownerToken,
+                messageApi,
+                fetchData
+              }, itemId, imageId)
+            }
+            handleRemoveSize={(itemId, sizeId) => 
+              menuPageDeletionMethods.handleRemoveSize.call({
+                coffeeShopId,
+                ownerToken,
+                messageApi,
+                fetchData
+              }, itemId, sizeId)
+            }
+            selectedItem={selectedItem}
+            form={form}
+          />
+        </Form>
+      </Modal>
 
-    <FormPreviewModal
-      visible={isPreviewVisible}
-      onCancel={handlePreviewCancel}
-      onConfirm={handlePreviewConfirm}
-      modalType={modalType}
-      formData={form.getFieldsValue()}
-    />
-      </div>
+      {/* Add FormPreviewModal */}
+      <FormPreviewModal
+        visible={isPreviewVisible}
+        onCancel={handlePreviewCancel}
+        onConfirm={handlePreviewConfirm}
+        modalType={modalType}
+        formData={previewData}
+        categories={categories}
+      />
+    </div>
        )}
       </div>
       

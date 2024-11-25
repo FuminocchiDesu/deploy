@@ -4,7 +4,7 @@ import { formatDate } from '../utils/formatdate';
 
 const { Title, Text } = Typography;
 
-const PreviewContent = ({ modalType, formData }) => {
+const PreviewContent = ({ modalType, formData, categories }) => {
   const styles = {
     section: {
       marginBottom: '24px',
@@ -34,14 +34,69 @@ const PreviewContent = ({ modalType, formData }) => {
       display: 'flex',
       justifyContent: 'space-between',
       padding: '8px 0',
+      borderBottom: '1px solid #f0f0f0',
+    },
+    lastPriceContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: '8px 0',
+    },
+    noPricing: {
+      color: '#999',
+      fontStyle: 'italic',
     }
+  };
+  console.log(formData);
+  const getCategoryName = (categoryId) => {
+    const category = categories?.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Unknown Category';
+  };
+
+  const renderPricingSection = () => {
+    // Check if using main price (explicitly true)
+    if (formData.useMainPrice === true) {
+      return (
+        <Card size="small">
+          <div style={styles.lastPriceContainer}>
+            <Text>Regular Price</Text>
+            <Text strong>₱{parseFloat(formData.price || 0).toLocaleString()}</Text>
+          </div>
+        </Card>
+      );
+    }
+
+    // Check for sizes array from the parent component's state
+    const sizesData = formData.sizes || [];
+    
+    if (sizesData.length > 0) {
+      return (
+        <Card size="small">
+          {sizesData.map((size, index) => (
+            <div 
+              key={index} 
+              style={index === sizesData.length - 1 ? styles.lastPriceContainer : styles.priceContainer}
+            >
+              <Text>{size.size}</Text>
+              <Text strong>₱{parseFloat(size.price || 0).toLocaleString()}</Text>
+            </div>
+          ))}
+        </Card>
+      );
+    }
+
+    // If no pricing information is available
+    return (
+      <div style={styles.noPricing}>
+        {formData.useMainPrice === null ? 'Loading pricing information...' : 'No pricing information available'}
+      </div>
+    );
   };
 
   const renderItemPreview = () => (
     <div>
       <div style={styles.section}>
         <Text style={styles.label}>Category</Text>
-        <div style={styles.value}>{formData.category}</div>
+        <div style={styles.value}>{getCategoryName(formData.category)}</div>
 
         <Text style={styles.label}>Name</Text>
         <div style={styles.value}>{formData.name}</div>
@@ -54,18 +109,7 @@ const PreviewContent = ({ modalType, formData }) => {
         )}
 
         <Text style={styles.label}>Pricing</Text>
-        {formData.useMainPrice ? (
-          <div style={styles.value}>₱{formData.price}</div>
-        ) : (
-          <Card size="small">
-            {formData.sizes?.map((size, index) => (
-              <div key={index} style={styles.priceContainer}>
-                <Text>{size.size}</Text>
-                <Text>₱{size.price}</Text>
-              </div>
-            ))}
-          </Card>
-        )}
+        {renderPricingSection()}
       </div>
 
       {formData.image?.length > 0 && (
@@ -75,7 +119,7 @@ const PreviewContent = ({ modalType, formData }) => {
             {formData.image.map((img, index) => (
               <Image
                 key={index}
-                src={img.url || URL.createObjectURL(img.originFileObj)}
+                src={img.url || (img.originFileObj ? URL.createObjectURL(img.originFileObj) : img)}
                 style={styles.imagePreview}
                 alt="Primary"
               />
@@ -91,7 +135,7 @@ const PreviewContent = ({ modalType, formData }) => {
             {formData.additional_images.map((img, index) => (
               <Image
                 key={index}
-                src={img.url || URL.createObjectURL(img.originFileObj)}
+                src={img.url || (img.originFileObj ? URL.createObjectURL(img.originFileObj) : img)}
                 style={styles.imagePreview}
                 alt={`Additional ${index + 1}`}
               />
@@ -106,6 +150,13 @@ const PreviewContent = ({ modalType, formData }) => {
     <div style={styles.section}>
       <Text style={styles.label}>Category Name</Text>
       <div style={styles.value}>{formData.name}</div>
+
+      {formData.description && (
+        <>
+          <Text style={styles.label}>Description</Text>
+          <div style={styles.value}>{formData.description}</div>
+        </>
+      )}
     </div>
   );
 
@@ -131,7 +182,7 @@ const PreviewContent = ({ modalType, formData }) => {
             {formData.image.map((img, index) => (
               <Image
                 key={index}
-                src={img.url || URL.createObjectURL(img.originFileObj)}
+                src={img.url || (img.originFileObj ? URL.createObjectURL(img.originFileObj) : img)}
                 style={styles.imagePreview}
                 alt="Promo"
               />
@@ -169,7 +220,8 @@ const FormPreviewModal = ({
   onCancel, 
   onConfirm, 
   modalType, 
-  formData 
+  formData,
+  categories 
 }) => {
   return (
     <Modal
@@ -181,7 +233,7 @@ const FormPreviewModal = ({
       okText="Confirm"
       cancelText="Back to Edit"
     >
-      <PreviewContent modalType={modalType} formData={formData} />
+      <PreviewContent modalType={modalType} formData={formData} categories={categories} />
     </Modal>
   );
 };
