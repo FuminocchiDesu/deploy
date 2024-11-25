@@ -43,6 +43,7 @@ const MenuTables = ({
       title: 'Actions',
       key: 'actions',
       width: '20%',
+      align: 'center',
       render: (_, record) => (  
         <Space>
           <Button icon={<EditOutlined />} onClick={() => showModal('category', record)} />
@@ -75,6 +76,7 @@ const MenuTables = ({
       key: 'category',
       width: '15%',
       ellipsis: true,
+      align: 'center',
       filteredValue: filteredInfo.category || null,
       filters: categories.map(category => ({
         text: category.name,
@@ -91,6 +93,7 @@ const MenuTables = ({
       dataIndex: 'is_available',
       key: 'is_available',
       width: '15%',
+      align: 'center',
       filters: [
         { text: 'Available', value: true },
         { text: 'Unavailable', value: false },
@@ -114,6 +117,7 @@ const MenuTables = ({
       title: 'Actions',
       key: 'actions',
       width: '20%',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => showModal('item', record)} />
@@ -145,6 +149,7 @@ const MenuTables = ({
       dataIndex: 'start_date', 
       key: 'start_date',
       width: '15%',
+      align: 'center',
       filteredValue: filteredInfo.start_date || null,
       filters: Array.from(new Set(promos.map(promo => promo.start_date)))
         .map(date => ({
@@ -158,6 +163,7 @@ const MenuTables = ({
       dataIndex: 'end_date', 
       key: 'end_date',
       width: '15%',
+      align: 'center',
       filteredValue: filteredInfo.end_date || null,
       filters: Array.from(new Set(promos.map(promo => promo.end_date)))
         .map(date => ({
@@ -170,6 +176,7 @@ const MenuTables = ({
       title: 'Actions',
       key: 'actions',
       width: '20%',
+      align: 'center',
       render: (_, record) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => showModal('promo', record)} />
