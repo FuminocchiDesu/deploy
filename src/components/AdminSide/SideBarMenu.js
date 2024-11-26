@@ -61,7 +61,7 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
         
         messageApi.warning({
           content: `Promo "${promo.name}" is ending in ${daysUntilEnd} day${daysUntilEnd !== 1 ? 's' : ''}!`,
-          duration: 0,
+          duration: 2,
           key: `promo-${promo.id}`,
         });
       });
@@ -86,7 +86,7 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
   const handleNotificationItemClick = (promo) => {
     // Close the notifications modal
     setIsNotificationModalVisible(false);
-
+  
     // Navigate to the menu page with the promo ID in the state
     navigate('/dashboard/menu', { 
       state: { 

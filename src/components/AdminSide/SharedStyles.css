@@ -1355,3 +1355,17 @@ body {
 .menu-section-header h2 {
   margin-bottom: 0;
 }
+
+.highlighted-promo {
+  background-color: #ffff99 !important; /* Light yellow background */
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.5s ease;
+  animation: highlight-flash 1s;
+}
+
+@keyframes highlight-flash {
+  0%, 100% { background-color: #ffff99; }
+  50% { background-color: #ffffcc; }
+}

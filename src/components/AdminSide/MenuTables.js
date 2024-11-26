@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button, Table, ConfigProvider, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { formatTime } from './CustomTimePicker';
@@ -30,6 +31,42 @@ const MenuTables = ({
     setPromoPageSize,
   }
 }) => {
+  const location = useLocation();
+  const [highlightedPromoId, setHighlightedPromoId] = useState(null);
+
+  const scrollToPromo = useCallback(() => {
+    // Use a slight delay to ensure DOM is fully rendered
+    setTimeout(() => {
+      const promoRow = document.querySelector(`[data-promo-id="${highlightedPromoId}"]`);
+      
+      if (promoRow) {
+        // Scroll to the row and center it
+        promoRow.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
+  }, [highlightedPromoId]);
+
+  useEffect(() => {
+    // Check if we're navigating from notification and should highlight a promo
+    const highlightPromoId = location.state?.highlightPromoId;
+    const shouldScrollToPromo = location.state?.scrollToPromo;
+
+    if (highlightPromoId) {
+      setHighlightedPromoId(highlightPromoId);
+
+      // Clear the state to prevent re-highlighting on subsequent renders
+      window.history.replaceState(null, '', location.pathname);
+
+      // Scroll to the promo if requested
+      if (shouldScrollToPromo) {
+        scrollToPromo();
+      }
+    }
+  }, [location.state, promos, scrollToPromo]);
+
   const categoryColumns = [
     { 
       title: 'Name', 
@@ -137,6 +174,14 @@ const MenuTables = ({
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === 'promo_name' && sortedInfo.order,
+      render: (name, record) => (
+        <div 
+          data-promo-id={record.id}
+          className={`promo-name ${highlightedPromoId === record.id ? 'highlighted-promo' : ''}`}
+        >
+          {name}
+        </div>
+      )
     },
     { 
       title: 'Description', 
