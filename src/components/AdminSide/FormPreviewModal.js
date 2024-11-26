@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Card, Typography, Divider, Image, Space, Tag } from 'antd';
-import { formatDate } from '../utils/formatdate';
+import { formatTime } from './CustomTimePicker';
 
 const { Title, Text } = Typography;
 
@@ -159,39 +159,82 @@ const PreviewContent = ({ modalType, formData, categories }) => {
       )}
     </div>
   );
-
-  const renderPromoPreview = () => (
-    <div>
-      <div style={styles.section}>
-        <Text style={styles.label}>Promotion Name</Text>
-        <div style={styles.value}>{formData.name}</div>
-
-        <Text style={styles.label}>Description</Text>
-        <div style={styles.value}>{formData.description}</div>
-
-        <Text style={styles.label}>Promotion Period</Text>
-        <div style={styles.value}>
-          {formatDate(formData.start_date)} - {formatDate(formData.end_date)}
-        </div>
-      </div>
-
-      {formData.image?.length > 0 && (
+  
+  const renderPromoPreview = () => {
+    const formatDays = (days) => {
+      if (!days || days.length === 0) return 'All days';
+      
+      const dayMap = {
+        'MON': 'Monday', 'TUE': 'Tuesday', 'WED': 'Wednesday',
+        'THU': 'Thursday', 'FRI': 'Friday', 'SAT': 'Saturday', 'SUN': 'Sunday'
+      };
+      
+      return days.map(day => dayMap[day]).join(', ');
+    };
+  
+    const formatDate = (date) => {
+      // Handle both moment and Date objects, or plain date strings
+      if (!date) return 'Not specified';
+      
+      // If it's a moment or Date object, convert to string
+      if (date.toDate || date instanceof Date) {
+        return (date.toDate ? date.toDate() : date).toLocaleDateString();
+      }
+      
+      // If it's already a string, return it
+      return date;
+    };
+  
+    return (
+      <div>
         <div style={styles.section}>
-          <Text style={styles.label}>Promotion Image</Text>
-          <div style={styles.imagesContainer}>
-            {formData.image.map((img, index) => (
-              <Image
-                key={index}
-                src={img.url || (img.originFileObj ? URL.createObjectURL(img.originFileObj) : img)}
-                style={styles.imagePreview}
-                alt="Promo"
-              />
-            ))}
+          <Text style={styles.label}>Promotion Name</Text>
+          <div style={styles.value}>{formData.name}</div>
+  
+          <Text style={styles.label}>Description</Text>
+          <div style={styles.value}>{formData.description}</div>
+  
+          <Text style={styles.label}>Promotion Period</Text>
+          <div style={styles.value}>
+            {formatDate(formData.start_date)} - {formatDate(formData.end_date)}
           </div>
+          {(formData.days || formData.start_time || formData.end_time) && (
+          <div style={styles.section}>
+            <Text style={styles.label}>Promotion Days and Hours</Text>
+            <div style={styles.value}>
+              {formData.days && (
+                <div>
+                  <strong>Days:</strong> {formatDays(formData.days)}
+                </div>
+              )}
+              {formData.start_time && formData.end_time && (
+              <div>
+                <strong>Hours:</strong> {formatTime(formData.start_time)} - {formatTime(formData.end_time)}
+              </div>
+            )}
+            </div>
+          </div>
+        )}
         </div>
-      )}
-    </div>
-  );
+  
+        {formData.image?.length > 0 && (
+          <div style={styles.section}>
+            <Text style={styles.label}>Promotion Image</Text>
+            <div style={styles.imagesContainer}>
+              {formData.image.map((img, index) => (
+                <Image
+                  key={index}
+                  src={img.url || (img.originFileObj ? URL.createObjectURL(img.originFileObj) : img)}
+                  style={styles.imagePreview}
+                  alt="Promo"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderPreview = () => {
     switch (modalType) {

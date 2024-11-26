@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Table, ConfigProvider, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { formatTime } from './CustomTimePicker';
 
 const MenuTables = ({
   loading,
@@ -132,7 +133,7 @@ const MenuTables = ({
       title: 'Name', 
       dataIndex: 'name', 
       key: 'promo_name',
-      width: '20%',
+      width: '10%',
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === 'promo_name' && sortedInfo.order,
@@ -141,14 +142,14 @@ const MenuTables = ({
       title: 'Description', 
       dataIndex: 'description', 
       key: 'description',
-      width: '30%',
+      width: '20%',
       ellipsis: true,
     },
     { 
       title: 'Start Date', 
       dataIndex: 'start_date', 
       key: 'start_date',
-      width: '15%',
+      width: '10%',
       align: 'center',
       filteredValue: filteredInfo.start_date || null,
       filters: Array.from(new Set(promos.map(promo => promo.start_date)))
@@ -162,7 +163,7 @@ const MenuTables = ({
       title: 'End Date', 
       dataIndex: 'end_date', 
       key: 'end_date',
-      width: '15%',
+      width: '10%',
       align: 'center',
       filteredValue: filteredInfo.end_date || null,
       filters: Array.from(new Set(promos.map(promo => promo.end_date)))
@@ -171,6 +172,31 @@ const MenuTables = ({
           value: date,
         })),
       onFilter: (value, record) => record.end_date === value
+    },
+    { 
+      title: 'Days', 
+      dataIndex: 'days', 
+      key: 'days',
+      width: '15%',
+      render: (days) => {
+        if (!days || days.length === 0) return 'All Days';
+        
+        const dayMap = {
+          'MON': 'Mon', 'TUE': 'Tue', 'WED': 'Wed',
+          'THU': 'Thu', 'FRI': 'Fri', 'SAT': 'Sat', 'SUN': 'Sun'
+        };
+        
+        return days.map(day => dayMap[day]).join(', ');
+      }
+    },
+    { 
+      title: 'Hours', 
+      key: 'hours',
+      width: '15%',
+      render: (_, record) => {
+        if (!record.start_time || !record.end_time) return 'All Hours';
+        return `${formatTime(record.start_time)} - ${formatTime(record.end_time)}`;
+      }
     },
     {
       title: 'Actions',

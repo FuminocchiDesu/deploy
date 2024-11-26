@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Select, Upload, Button, Checkbox } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import CustomTimePicker, { formatTime } from './CustomTimePicker';
 import DatePicker from './DatePicker';
 
 const MenuManagementForms = ({
@@ -296,7 +297,18 @@ const MenuManagementForms = ({
     </div>
   );
 
-  const renderPromoForm = () => (
+  const renderPromoForm = () => {
+    const daysOfWeek = [
+      { label: 'Monday', value: 'MON' },
+      { label: 'Tuesday', value: 'TUE' },
+      { label: 'Wednesday', value: 'WED' },
+      { label: 'Thursday', value: 'THU' },
+      { label: 'Friday', value: 'FRI' },
+      { label: 'Saturday', value: 'SAT' },
+      { label: 'Sunday', value: 'SUN' },
+    ];
+  
+    return (
     <div style={formStyles.container}>
       <div style={formStyles.header}>
         <h2 style={formStyles.title}>Promotion Details</h2>
@@ -363,6 +375,60 @@ const MenuManagementForms = ({
       </div>
 
       <div style={formStyles.section}>
+        <h3 style={formStyles.sectionTitle}>Selected Days (Optional)</h3>
+        <Form.Item 
+          name="days" 
+          label="Days of Week"
+        >
+          <Checkbox.Group 
+            options={daysOfWeek} 
+            style={{ display: 'flex', flexDirection: 'column' }}
+          />
+        </Form.Item>
+      </div>
+
+      <div style={formStyles.section}>
+      <h3 style={formStyles.sectionTitle}>Promotion Hours (Optional)</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Form.Item 
+          name="start_time" 
+          label="Start Time"
+          style={{ width: '48%' }}
+        >
+          <CustomTimePicker />
+        </Form.Item>
+
+        <Form.Item 
+          name="end_time" 
+          label="End Time"
+          style={{ width: '48%' }}
+          dependencies={['start_time']}
+          rules={[
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const startTime = getFieldValue('start_time');
+                if (!value || !startTime) return Promise.resolve();
+                
+                // Compare times 
+                const [startHour, startMinute] = startTime.split(':').map(Number);
+                const [endHour, endMinute] = value.split(':').map(Number);
+                
+                const startTotalMinutes = startHour * 60 + startMinute;
+                const endTotalMinutes = endHour * 60 + endMinute;
+                
+                return endTotalMinutes > startTotalMinutes
+                  ? Promise.resolve()
+                  : Promise.reject(new Error('End time must be after start time'));
+              },
+            }),
+          ]}
+        >
+          <CustomTimePicker />
+        </Form.Item>
+      </div>
+    </div>
+
+      <div style={formStyles.section}>
         <h3 style={formStyles.sectionTitle}>Promotion Image</h3>
         <Form.Item 
           name="image" 
@@ -385,6 +451,7 @@ const MenuManagementForms = ({
       </div>
     </div>
   );
+};
 
   const renderForm = () => {
     switch (modalType) {

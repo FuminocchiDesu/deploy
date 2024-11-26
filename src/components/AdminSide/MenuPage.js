@@ -190,9 +190,13 @@ const MenuPage = ({ handleOwnerLogout }) => {
         additional_images: values.additional_images?.map(file => ({
           url: file.originFileObj ? URL.createObjectURL(file.originFileObj) : file.url,
           ...file
-        }))
+        })),
+        days: values.days || [],
+        // Directly use the string time values
+        start_time: values.start_time,
+        end_time: values.end_time,
       };
-
+  
       // Set preview data and show modal
       setPreviewData(formattedData);
       setIsPreviewVisible(true);
@@ -233,6 +237,19 @@ const MenuPage = ({ handleOwnerLogout }) => {
           } else {
             formData.append(key, values[key]);
           }
+        }
+        
+        if (values.days) {
+          formData.append('days', JSON.stringify(values.days));
+        }
+        
+        // Directly use the string time values
+        if (values.start_time) {
+          formData.append('start_time', values.start_time);
+        }
+        
+        if (values.end_time) {
+          formData.append('end_time', values.end_time);
         }
       }
   
@@ -607,7 +624,7 @@ const MenuPage = ({ handleOwnerLogout }) => {
               }}
             />
 
-<Modal
+    <Modal
         title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Form`}
         open={isModalVisible}
         onOk={handleFormSubmit}
