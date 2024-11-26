@@ -74,7 +74,6 @@ const MenuPage = ({ handleOwnerLogout }) => {
         itemsResponse.json(),
         promosResponse.json()
       ]);
-
       // Ensure we're setting arrays, with fallbacks if the API returns null or undefined
       setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       setItems(Array.isArray(itemsData) ? itemsData : []);
