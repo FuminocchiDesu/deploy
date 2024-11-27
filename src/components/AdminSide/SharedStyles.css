@@ -34,22 +34,12 @@ body {
   flex-shrink: 0;
 }
 
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 1rem;
-  padding-right: 1.5rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
 
 .admin-title {
-  font-size: 1.11rem;
+  font-size: 1.058rem;
   font-weight: 600;
   color: var(--color-primary);
-  margin-left: 1rem;
+  text-align: center
 }
 
 .user-profile-link {
@@ -1354,7 +1344,7 @@ body {
 
 .menu-section-header h2 {
   margin-bottom: 0;
-}
+} 
 
 .highlighted-promo {
   background-color: #ffff99 !important; /* Light yellow background */
@@ -1368,4 +1358,69 @@ body {
 @keyframes highlight-flash {
   0%, 100% { background-color: #ffff99; }
   50% { background-color: #ffffcc; }
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background-color: white;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-grow: 1;
+  margin-left: 1rem;
+}
+
+.notification-container {
+  position: relative;
+  margin-left: 1rem;
+}
+
+.notification-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primary-light);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.user-profile-link .menu-icon {
+  color: var(--color-primary);
+  width: 20px;
+  height: 20px;
 }

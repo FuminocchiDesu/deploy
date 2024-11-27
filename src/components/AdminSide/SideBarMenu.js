@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Home, LogOut, Edit, User, Star, Bell, XCircle, AlertCircle } from 'lucide-react';
+import { Coffee, Home, LogOut, Edit, User, Star, Bell, XCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Modal, App } from 'antd';
 
@@ -9,7 +9,7 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
   const [notifications, setNotifications] = useState([]);
   const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
   const navigate = useNavigate();
-  const { message: messageApi, modal } = App.useApp();
+  const { message: messageApi } = App.useApp();
 
   const coffeeShopId = localStorage.getItem('coffeeShopId');
   const ownerToken = localStorage.getItem('ownerToken');
@@ -84,10 +84,7 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
   };
 
   const handleNotificationItemClick = (promo) => {
-    // Close the notifications modal
     setIsNotificationModalVisible(false);
-  
-    // Navigate to the menu page with the promo ID in the state
     navigate('/dashboard/menu', { 
       state: { 
         highlightPromoId: promo.id,
@@ -113,12 +110,29 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
         <div className="sidebar-header">
           <Link 
             to="/dashboard/profile" 
-            className="user-profile-link hover:opacity-80 transition-opacity"
+            className="user-profile-link"
           >
             <User className="menu-icon" />
           </Link>
-          <span className="admin-title">Coffee Shop Admin Dashboard</span>
+          <div className="header-content">
+            <span className="admin-title">Coffee Shop Dashboard</span>
+            <div className="notification-container">
+              <button 
+                className="notification-icon" 
+                onClick={handleNotificationClick}
+                aria-label="Notifications"
+              >
+                <Bell size={20} />
+                {notifications.length > 0 && (
+                  <span className="notification-badge">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
+
         <nav className="sidebar-menu">
           {menuItems.map((item) => (
             <button
@@ -131,25 +145,10 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
             </button>
           ))}
         </nav>
-        <div className="sidebar-footer">
-          <div className="notification-container relative">
-            <button 
-              className="notification-icon" 
-              onClick={handleNotificationClick}
-            >
-              <Bell className="menu-icon" />
-              {notifications.length > 0 && (
-                <span className="notification-badge">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-          </div>
-          <button className="logout-button" onClick={onLogout}>
-            <LogOut className="menu-icon" />
-            <span>Logout</span>
-          </button>
-        </div>
+        <button className="logout-button" onClick={onLogout}>
+          <LogOut className="menu-icon" />
+          <span>Logout</span>
+        </button>
       </aside>
 
       <Modal
@@ -158,8 +157,8 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
         onCancel={handleCloseNotificationModal}
         footer={[
           <button 
-            key="clear" 
-            className="text-red-500 hover:bg-red-50 p-2 rounded flex items-center"
+            key="button" 
+            className="ant-btn css-dev-only-do-not-override-1a6v4c6 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
             onClick={clearNotifications}
           >
             <XCircle className="inline-block mr-2" /> Clear All
