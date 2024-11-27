@@ -1379,6 +1379,7 @@ body {
 .notification-container {
   position: relative;
   margin-left: 1rem;
+  margin-right: 0.5rem;
 }
 
 .notification-icon {
