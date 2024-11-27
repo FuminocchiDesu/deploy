@@ -93,7 +93,7 @@ const SidebarMenu = ({
         onCancel={handleCloseNotificationModal}
         footer={[
           <button 
-            key="button" 
+            type="button" 
             className="ant-btn css-dev-only-do-not-override-1a6v4c6 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
             onClick={clearNotifications}
           >
