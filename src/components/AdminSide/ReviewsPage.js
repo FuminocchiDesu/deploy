@@ -7,7 +7,11 @@ import DateFilterModal from './DateFilterModal';
 import { CoffeeLoader } from '../ui/CoffeeLoader';
 import './SharedStyles.css';
 
-function ReviewsPage({ handleOwnerLogout }) {
+function ReviewsPage({ handleOwnerLogout, 
+  notifications = [], 
+  clearNotifications = () => {}, 
+  markNotificationAsRead = () => {} 
+}) {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState(null);
   const [activeMenuItem, setActiveMenuItem] = useState('Reviews');
@@ -232,6 +236,9 @@ function ReviewsPage({ handleOwnerLogout }) {
         activeMenuItem={activeMenuItem}
         handleMenuItemClick={handleMenuItemClick}
         onLogout={onLogout}
+        notifications={notifications}
+        clearNotifications={clearNotifications}
+        markNotificationAsRead={markNotificationAsRead}
       />
 
       <main className="main-content">

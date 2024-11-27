@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Coffee, Home, LogOut, Edit, User, Star, Bell, XCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Modal, App } from 'antd';
+import { Modal } from 'antd';
 
-const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
-
-const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
-  const [notifications, setNotifications] = useState([]);
+const SidebarMenu = ({ 
+  activeMenuItem, 
+  handleMenuItemClick, 
+  onLogout, 
+  notifications, 
+  clearNotifications, 
+  markNotificationAsRead 
+}) => {
   const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
   const navigate = useNavigate();
-  const { message: messageApi } = App.useApp();
-
-  const coffeeShopId = localStorage.getItem('coffeeShopId');
-  const ownerToken = localStorage.getItem('ownerToken');
 
   const menuItems = [
     { name: 'Dashboard', icon: <Home className="menu-icon" />, path: '/dashboard' },
@@ -21,70 +21,13 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
     { name: 'Edit Page', icon: <Edit className="menu-icon" />, path: '/dashboard/page-settings' },
   ];
 
-  useEffect(() => {
-    if (coffeeShopId && ownerToken) {
-      fetchPromos();
-    }
-  }, [coffeeShopId, ownerToken]);
-
-  const fetchPromos = async () => {
-    try {
-      const config = {
-        headers: { Authorization: `Bearer ${ownerToken}` }
-      };
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/promos/`, 
-        config
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch promos');
-      }
-
-      const promosData = await response.json();
-      processPromoNotifications(promosData);
-    } catch (error) {
-      console.error('Error fetching promos:', error);
-      messageApi.error('Failed to fetch promo notifications');
-    }
-  };
-
-  const processPromoNotifications = (promos) => {
-    const nearEndPromos = promos.filter(checkPromoNearEndDate);
-    setNotifications(nearEndPromos);
-
-    if (nearEndPromos.length > 0) {
-      nearEndPromos.forEach(promo => {
-        const endDate = new Date(promo.end_date);
-        const daysUntilEnd = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-        
-        messageApi.warning({
-          content: `Promo "${promo.name}" is ending in ${daysUntilEnd} day${daysUntilEnd !== 1 ? 's' : ''}!`,
-          duration: 2,
-          key: `promo-${promo.id}`,
-        });
-      });
-    }
-  };
-
-  const checkPromoNearEndDate = (promo) => {
-    if (!promo.end_date) return false;
-
-    const endDate = new Date(promo.end_date);
-    const today = new Date();
-    
-    const daysUntilEnd = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-    
-    return daysUntilEnd > 0 && daysUntilEnd <= 3;
-  };
-
   const handleNotificationClick = () => {
     setIsNotificationModalVisible(true);
   };
 
   const handleNotificationItemClick = (promo) => {
     setIsNotificationModalVisible(false);
+    markNotificationAsRead(promo.id);
     navigate('/dashboard/menu', { 
       state: { 
         highlightPromoId: promo.id,
@@ -95,13 +38,6 @@ const SidebarMenu = ({ activeMenuItem, handleMenuItemClick, onLogout }) => {
 
   const handleCloseNotificationModal = () => {
     setIsNotificationModalVisible(false);
-  };
-
-  const clearNotifications = () => {
-    setNotifications([]);
-    notifications.forEach(promo => {
-      messageApi.destroy(`promo-${promo.id}`);
-    });
   };
 
   return (

@@ -8,7 +8,12 @@ import DashboardReport from './DashboardReport';
 import FavoritesCard from './FavoritesCard';
 import './SharedStyles.css';
 
-const AdminDashboard = ({ handleOwnerLogout }) => {
+const AdminDashboard = ({ 
+  handleOwnerLogout, 
+  notifications = [], 
+  clearNotifications = () => {}, 
+  markNotificationAsRead = () => {} 
+}) => {
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [visitsData, setVisitsData] = useState(null);
   const [reviewsData, setReviewsData] = useState(null);
@@ -58,7 +63,6 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
         setVisitsData(visitsResponse.data);
         setReviewsData(reviewsResponse.data);
         setDashboardData(dashboardResponse.data);
-        console.log(dashboardResponse.data);
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(2000 - elapsedTime, 0);
         
@@ -110,6 +114,9 @@ const AdminDashboard = ({ handleOwnerLogout }) => {
           handleOwnerLogout();
           navigate('/admin-login');
         }}
+        notifications={notifications}
+        clearNotifications={clearNotifications}
+        markNotificationAsRead={markNotificationAsRead}
       />
 
       <main className="main-content">

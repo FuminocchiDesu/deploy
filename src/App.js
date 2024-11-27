@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { App as AntApp, ConfigProvider } from 'antd';
+import { App as AntApp, ConfigProvider, message } from 'antd';
 import AdminLogin from './components/AdminSide/AdminLogin';
 import AdminDashboard from './components/AdminSide/AdminDashboard';
 import PageSettings from './components/AdminSide/PageSettings';
@@ -14,6 +14,7 @@ import './App.css';
 const App = () => {
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -62,6 +63,62 @@ const App = () => {
     checkAuthStatus();
   }, []);
 
+  useEffect(() => {
+    if (isOwnerAuthenticated) {
+      fetchPromos();
+    }
+  }, [isOwnerAuthenticated]);
+
+  const fetchPromos = async () => {
+    const coffeeShopId = localStorage.getItem('coffeeShopId');
+    const ownerToken = localStorage.getItem('ownerToken');
+
+    if (!coffeeShopId || !ownerToken) return;
+
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${ownerToken}` }
+      };
+
+      const response = await fetch(
+        `https://khlcle.pythonanywhere.com/api/coffee-shops/${coffeeShopId}/promos/`, 
+        config
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch promos');
+      }
+
+      const promosData = await response.json();
+      processPromoNotifications(promosData);
+    } catch (error) {
+      console.error('Error fetching promos:', error);
+      message.error('Failed to fetch promo notifications');
+    }
+  };
+
+  const processPromoNotifications = (promos) => {
+    const nearEndPromos = promos.filter(checkPromoNearEndDate);
+    setNotifications(nearEndPromos);
+
+    nearEndPromos.forEach(promo => {
+      const endDate = new Date(promo.end_date);
+      const daysUntilEnd = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+      
+    });
+  };
+
+  const checkPromoNearEndDate = (promo) => {
+    if (!promo.end_date) return false;
+
+    const endDate = new Date(promo.end_date);
+    const today = new Date();
+    
+    const daysUntilEnd = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+    
+    return daysUntilEnd > 0 && daysUntilEnd <= 3;
+  };
+
   const handleOwnerLogin = () => {
     setIsOwnerAuthenticated(true);
   };
@@ -80,6 +137,20 @@ const App = () => {
     }
     
     setIsOwnerAuthenticated(false);
+    setNotifications([]);
+  };
+
+  const clearNotifications = () => {
+    notifications.forEach(promo => {
+      message.destroy(`promo-${promo.id}`);
+    });
+    setNotifications([]);
+  };
+
+  const markNotificationAsRead = (promoId) => {
+    const updatedNotifications = notifications.filter(promo => promo.id !== promoId);
+    setNotifications(updatedNotifications);
+    message.destroy(`promo-${promoId}`);
   };
 
   if (isLoading) {
@@ -120,7 +191,12 @@ const App = () => {
               path="/dashboard" 
               element={
                 isOwnerAuthenticated 
-                  ? <AdminDashboard handleOwnerLogout={handleOwnerLogout} /> 
+                  ? <AdminDashboard 
+                      handleOwnerLogout={handleOwnerLogout} 
+                      notifications={notifications}
+                      clearNotifications={clearNotifications}
+                      markNotificationAsRead={markNotificationAsRead}
+                    /> 
                   : <Navigate to="/admin-login" />
               } 
             />
@@ -128,7 +204,12 @@ const App = () => {
               path="/dashboard/page-settings" 
               element={
                 isOwnerAuthenticated 
-                  ? <PageSettings handleOwnerLogout={handleOwnerLogout} /> 
+                  ? <PageSettings 
+                      handleOwnerLogout={handleOwnerLogout} 
+                      notifications={notifications}
+                      clearNotifications={clearNotifications}
+                      markNotificationAsRead={markNotificationAsRead}
+                    /> 
                   : <Navigate to="/admin-login" />
               } 
             />
@@ -136,7 +217,12 @@ const App = () => {
               path="/dashboard/menu" 
               element={
                 isOwnerAuthenticated 
-                  ? <MenuPage handleOwnerLogout={handleOwnerLogout} /> 
+                  ? <MenuPage 
+                      handleOwnerLogout={handleOwnerLogout} 
+                      notifications={notifications}
+                      clearNotifications={clearNotifications}
+                      markNotificationAsRead={markNotificationAsRead}
+                    /> 
                   : <Navigate to="/admin-login" />
               } 
             />
@@ -144,7 +230,12 @@ const App = () => {
               path="/dashboard/reviews" 
               element={
                 isOwnerAuthenticated 
-                  ? <ReviewsPage handleOwnerLogout={handleOwnerLogout} /> 
+                  ? <ReviewsPage 
+                      handleOwnerLogout={handleOwnerLogout} 
+                      notifications={notifications}
+                      clearNotifications={clearNotifications}
+                      markNotificationAsRead={markNotificationAsRead}
+                    /> 
                   : <Navigate to="/admin-login" />
               } 
             />
@@ -152,7 +243,12 @@ const App = () => {
               path="/dashboard/profile" 
               element={
                 isOwnerAuthenticated 
-                  ? <UserProfile handleOwnerLogout={handleOwnerLogout} /> 
+                  ? <UserProfile 
+                      handleOwnerLogout={handleOwnerLogout} 
+                      notifications={notifications}
+                      clearNotifications={clearNotifications}
+                      markNotificationAsRead={markNotificationAsRead}
+                    /> 
                   : <Navigate to="/admin-login" />
               } 
             />

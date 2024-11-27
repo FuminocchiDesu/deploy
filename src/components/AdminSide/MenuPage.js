@@ -10,7 +10,11 @@ import FormPreviewModal from './FormPreviewModal';
 
 const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 
-const MenuPage = ({ handleOwnerLogout }) => {
+const MenuPage = ({ handleOwnerLogout, 
+  notifications = [], 
+  clearNotifications = () => {}, 
+  markNotificationAsRead = () => {} 
+}) => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [promos, setPromos] = useState([]);
@@ -586,6 +590,9 @@ const MenuPage = ({ handleOwnerLogout }) => {
         activeMenuItem={activeMenuItem}
         handleMenuItemClick={handleMenuItemClick}
         onLogout={onLogout}
+        notifications={notifications}
+        clearNotifications={clearNotifications}
+        markNotificationAsRead={markNotificationAsRead}
       />
       <div className="main-content">
       {loading ? (

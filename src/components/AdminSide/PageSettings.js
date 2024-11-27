@@ -14,7 +14,11 @@ import { CoffeeLoader } from '../ui/CoffeeLoader';
 
 const libraries = ['places'];
 
-const PageSettings = ({ handleOwnerLogout }) => {
+const PageSettings = ({ handleOwnerLogout, 
+  notifications = [], 
+  clearNotifications = () => {}, 
+  markNotificationAsRead = () => {} 
+}) => {
   const { message: messageApi } = App.useApp();
   const [coffeeShop, setCoffeeShop] = useState({
     id: '',
@@ -345,6 +349,9 @@ const PageSettings = ({ handleOwnerLogout }) => {
         activeMenuItem={activeMenuItem}
         handleMenuItemClick={handleMenuItemClick}
         onLogout={onLogout}
+        notifications={notifications}
+        clearNotifications={clearNotifications}
+        markNotificationAsRead={markNotificationAsRead}
       />
 
       <main className="main-content">

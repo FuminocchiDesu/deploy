@@ -123,7 +123,11 @@ const ProfileTab = ({ profile, editedProfile, isEditing, setIsEditing, handleSav
   </div>
 );
 
-const UserProfile = ({ handleOwnerLogout }) => {
+const UserProfile = ({ handleOwnerLogout, 
+  notifications = [], 
+  clearNotifications = () => {}, 
+  markNotificationAsRead = () => {} 
+}) => {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
@@ -243,6 +247,9 @@ const UserProfile = ({ handleOwnerLogout }) => {
         activeMenuItem="Profile"
         handleMenuItemClick={(item) => navigate(item.path)}
         onLogout={handleOwnerLogout}
+        notifications={notifications}
+        clearNotifications={clearNotifications}
+        markNotificationAsRead={markNotificationAsRead}
       />
       <main className="profile-container">
       {isLoading ? (
