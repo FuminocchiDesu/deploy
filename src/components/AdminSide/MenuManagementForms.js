@@ -158,17 +158,33 @@ const MenuManagementForms = ({
       </div>
 
       <div style={formStyles.section}>
-        <Form.Item name="category" label="Category" rules={[{ required: true }]}>
+        <Form.Item 
+          name="category" 
+          label={<span>Category {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+          rules={[{ required: true }]}
+          required={false}
+        >
           <Select style={formStyles.select}>
             {categories.map(category => (
               <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
+        
+        <Form.Item 
+          name="name" 
+          label={<span>Item Name {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+          rules={[{ required: true }]}
+          required={false}
+        >
           <Input style={formStyles.input} />
         </Form.Item>
-        <Form.Item name="description" label="Description" initialValue="">
+        
+        <Form.Item 
+          name="description" 
+          label="Description" 
+          initialValue=""
+        >
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
       </div>
@@ -177,23 +193,23 @@ const MenuManagementForms = ({
         <h3 style={formStyles.sectionTitle}>Images</h3>
         <Form.Item 
           name="image" 
-          label="Primary Image" 
+          label= "l"
           valuePropName="fileList"
           getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList}
         >
           <Upload 
-          beforeUpload={() => false}
-          listType="picture-card"
-          maxCount={1}
-          accept="image/*"
-          onRemove={handlePrimaryImageRemove}
-        >
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </div>
-        </Upload>
-      </Form.Item>
+            beforeUpload={() => false}
+            listType="picture-card"
+            maxCount={1}
+            accept="image/*"
+            onRemove={handlePrimaryImageRemove}
+          >
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Upload</div>
+            </div>
+          </Upload>
+        </Form.Item>
 
         <Form.Item 
           name="additional_images" 
@@ -227,7 +243,12 @@ const MenuManagementForms = ({
         </Form.Item>
         
         {useMainPrice ? (
-          <Form.Item name="price" label="Price" rules={[{ required: true }]}>
+          <Form.Item 
+            name="price" 
+            label={<span>Price {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+            rules={[{ required: true }]}
+            required={false}
+          >
             <Input type="number" step="0.01" style={formStyles.input} />
           </Form.Item>
         ) : (
@@ -268,7 +289,7 @@ const MenuManagementForms = ({
               onClick={addSize} 
               style={{
                 ...formStyles.addButton,
-                backgroundColor: '#a0522d' // Changed from '#1890ff' to '#a0522d'
+                backgroundColor: '#a0522d'
               }}
             >
               <PlusOutlined /> Add Size
@@ -317,18 +338,20 @@ const MenuManagementForms = ({
 
       <div style={formStyles.section}>
         <Form.Item 
-        name="name" 
-        label={<span>Promo Name {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
-        rules={[{ required: true }]}
-        required={false}
+          name="name" 
+          label={<span>Promo Name {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+          rules={[{ required: true }]}
+          required={false}
         >
           <Input style={formStyles.input} />
         </Form.Item>
         
         <Form.Item 
-        name="description" 
-        label={<span>Description {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
-        rules={[{ required: true }]}>
+          name="description" 
+          label={<span>Description {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
+          rules={[{ required: true }]}
+          required={false}
+        >
           <Input.TextArea style={formStyles.textarea} />
         </Form.Item>
       </div>
@@ -339,6 +362,7 @@ const MenuManagementForms = ({
           name="start_date" 
           label={<span>Start Date {<span style={{ color: '#ff4d4f' }}>*</span>}</span>} 
           rules={[{ required: true }]}
+          required={false}
         >
           <DatePicker 
             value={form.getFieldValue('start_date')}
@@ -364,6 +388,7 @@ const MenuManagementForms = ({
             }),
           ]}
           dependencies={['start_date']}
+          required={false}
         >
           <DatePicker 
             value={form.getFieldValue('end_date')}
@@ -388,53 +413,55 @@ const MenuManagementForms = ({
       </div>
 
       <div style={formStyles.section}>
-      <h3 style={formStyles.sectionTitle}>Promotion Hours (Optional)</h3>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Form.Item 
-          name="start_time" 
-          label="Start Time"
-          style={{ width: '48%' }}
-        >
-          <CustomTimePicker />
-        </Form.Item>
+        <h3 style={formStyles.sectionTitle}>Promotion Hours (Optional)</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Form.Item 
+            name="start_time" 
+            label="Start Time"
+            style={{ width: '48%' }}
+          >
+            <CustomTimePicker />
+          </Form.Item>
 
-        <Form.Item 
-          name="end_time" 
-          label="End Time"
-          style={{ width: '48%' }}
-          dependencies={['start_time']}
-          rules={[
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                const startTime = getFieldValue('start_time');
-                if (!value || !startTime) return Promise.resolve();
-                
-                // Compare times 
-                const [startHour, startMinute] = startTime.split(':').map(Number);
-                const [endHour, endMinute] = value.split(':').map(Number);
-                
-                const startTotalMinutes = startHour * 60 + startMinute;
-                const endTotalMinutes = endHour * 60 + endMinute;
-                
-                return endTotalMinutes > startTotalMinutes
-                  ? Promise.resolve()
-                  : Promise.reject(new Error('End time must be after start time'));
-              },
-            }),
-          ]}
-        >
-          <CustomTimePicker />
-        </Form.Item>
+          <Form.Item 
+            name="end_time" 
+            label="End Time"
+            style={{ width: '48%' }}
+            dependencies={['start_time']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const startTime = getFieldValue('start_time');
+                  if (!value || !startTime) return Promise.resolve();
+                  
+                  // Compare times 
+                  const [startHour, startMinute] = startTime.split(':').map(Number);
+                  const [endHour, endMinute] = value.split(':').map(Number);
+                  
+                  const startTotalMinutes = startHour * 60 + startMinute;
+                  const endTotalMinutes = endHour * 60 + endMinute;
+                  
+                  return endTotalMinutes > startTotalMinutes
+                    ? Promise.resolve()
+                    : Promise.reject(new Error('End time must be after start time'));
+                },
+              }),
+            ]}
+          >
+            <CustomTimePicker />
+          </Form.Item>
+        </div>
       </div>
-    </div>
 
       <div style={formStyles.section}>
         <h3 style={formStyles.sectionTitle}>Promotion Image</h3>
         <Form.Item 
           name="image" 
-          label="Promo Image" 
+          label={<span>Promo Image {<span style={{ color: '#ff4d4f' }}>*</span>}</span>}
           valuePropName="fileList" 
           getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList}
+          rules={[{ required: true }]}
+          required={false}
         >
           <Upload 
             beforeUpload={() => false}
