@@ -222,7 +222,7 @@ const MenuManagementForms = ({
         <h3 style={formStyles.sectionTitle}>Pricing</h3>
         <Form.Item name="useMainPrice" valuePropName="checked">
           <Checkbox onChange={(e) => setUseMainPrice(e.target.checked)}>
-            Use main price (no sizes)
+            Only one price (no sizes)
           </Checkbox>
         </Form.Item>
         
