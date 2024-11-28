@@ -1,0 +1,58 @@
+.digitalTimePickerContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .digitalDisplay {
+    display: flex;
+    align-items: center;
+    background-color: #2c3e50;
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .digitalSelect {
+    appearance: none;
+    background-color: transparent;
+    color: #ecf0f1;
+    border: none;
+    text-align: center;
+    font-size: 24px;
+    font-family: 'Digital', monospace;
+    width: 60px;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .separator {
+    color: #ecf0f1;
+    font-size: 24px;
+    font-family: 'Digital', monospace;
+    margin: 0 10px;
+  }
+  
+  .periodSelect {
+    appearance: none;
+    background-color: transparent;
+    color: #ecf0f1;
+    border: none;
+    font-size: 16px;
+    font-family: 'Digital', monospace;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  
+  /* Hide default select arrows */
+  .digitalSelect::-ms-expand,
+  .periodSelect::-ms-expand {
+    display: none;
+  }
+  
+  .digitalSelect option,
+  .periodSelect option {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+  }

@@ -227,33 +227,42 @@ const MenuPage = ({ handleOwnerLogout,
             ? dateValue.toISOString().split('T')[0]
             : dateValue;
           formData.append(key, formattedDate);
-        } else if (key === 'sizes') {
-          formData.append(key, JSON.stringify(sizes));
+        } else if ((key === 'start_time' || key === 'end_time') && values[key]) {
+          // Ensure 24-hour format
+          const [hour, minute, period] = [
+            values[key].split(':')[0], 
+            values[key].split(':')[1], 
+            values[key].includes('PM')
+          ];
+          
+          let formattedHour = parseInt(hour);
+          if (period && formattedHour !== 12) {
+            formattedHour += 12;
+          }
+          if (!period && formattedHour === 12) {
+            formattedHour = 0;
+          }
+          
+          const formattedTime = `${formattedHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          formData.append(key, formattedTime);
+        } else if (key === 'days') {
+          // Explicitly handle days as JSON or empty array
+          formData.append(key, JSON.stringify(values.days || []));
         } else if (key === 'image') {
           if (values[key] && values[key][0] && values[key][0].originFileObj) {
             formData.append(key, values[key][0].originFileObj);
           }
-        } else if (key !== 'additional_images' && key !== 'useMainPrice') {
-          // Don't append price if using sizes
-          if (key === 'price' && !useMainPrice) {
-            formData.append('price', '0'); // Set price to 0 when using sizes
-          } else {
-            formData.append(key, values[key]);
-          }
+        } else if (values[key] !== undefined && key !== 'useMainPrice') {
+          formData.append(key, values[key]);
         }
-        
-        if (values.days) {
-          formData.append('days', JSON.stringify(values.days));
-        }
-        
-        // Directly use the string time values
-        if (values.start_time) {
-          formData.append('start_time', values.start_time);
-        }
-        
-        if (values.end_time) {
-          formData.append('end_time', values.end_time);
-        }
+      }
+  
+      // IMPORTANT: Explicitly check if times are undefined
+      if (!values.start_time) {
+        formData.delete('start_time');
+      }
+      if (!values.end_time) {
+        formData.delete('end_time');
       }
   
       // Special handling for promos
@@ -263,7 +272,7 @@ const MenuPage = ({ handleOwnerLogout,
         formData.append('is_available', true);
         formData.append('coffee_shop', coffeeShopId);
       }
-  
+
       // Handle item-specific price logic
       if (modalType === 'item') {
         if (useMainPrice) {
@@ -274,7 +283,7 @@ const MenuPage = ({ handleOwnerLogout,
           formData.append('sizes', JSON.stringify(sizes));
         }
       }
-  
+
       // Handle additional images for items
       if (values.additional_images) {
         values.additional_images.forEach((file) => {
@@ -283,23 +292,22 @@ const MenuPage = ({ handleOwnerLogout,
           }
         });
       }
-  
-      // Determine endpoint based on modal type
-      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
-      switch (modalType) {
-        case 'category':
-          endpoint += 'menu-categories/';
-          break;
-        case 'item':
-          endpoint += 'menu-items/';
-          break;
-        case 'promo':
-          endpoint += 'promos/';
-          break;
-        default:
-          throw new Error('Invalid modal type');
-      }
-  
+
+    // Determine endpoint based on modal type
+    let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/`;
+    switch (modalType) {
+      case 'category':
+        endpoint += 'menu-categories/';
+        break;
+      case 'item':
+        endpoint += 'menu-items/';
+        break;
+      case 'promo':
+        endpoint += 'promos/';
+        break;
+      default:
+        throw new Error('Invalid modal type');
+    }      
       // Add ID for update operations
       if (selectedItem && selectedItem.id) {
         endpoint += `${selectedItem.id}/`;
@@ -328,7 +336,10 @@ const MenuPage = ({ handleOwnerLogout,
       fetchData();
     } catch (error) {
       console.error('Error submitting form:', error);
-      messageApi.error('Operation failed: ' + error.message);
+      // Only show error message if it's not a validation error
+      if (!(error instanceof Error && error.message.startsWith('Missing required field'))) {
+        messageApi.error('Operation failed: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }

@@ -46,7 +46,6 @@ const PreviewContent = ({ modalType, formData, categories }) => {
       fontStyle: 'italic',
     }
   };
-  console.log(formData);
   const getCategoryName = (categoryId) => {
     const category = categories?.find(cat => cat.id === categoryId);
     return category ? category.name : 'Unknown Category';

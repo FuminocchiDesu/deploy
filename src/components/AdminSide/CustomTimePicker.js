@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Input, Select } from 'antd';
+import React, { useState, useEffect } from 'react';
+import styles from './CustomTimePicker.module.css';
 
 const CustomTimePicker = ({ 
   value, 
@@ -7,106 +7,61 @@ const CustomTimePicker = ({
   placeholder = "Select Time",
   style 
 }) => {
-  // Generate hours (1-12)
-  const hours = Array.from({length: 12}, (_, i) => 
-    (i + 1).toString().padStart(2, '0')
-  );
-
-  // Generate minutes (00-59)
-  const minutes = Array.from({length: 60}, (_, i) => 
-    i.toString().padStart(2, '0')
-  );
-
-  // Periods for 12-hour format
-  const periods = ['AM', 'PM'];
-
   // Parse existing value
   const parseTime = (timeString) => {
-    if (!timeString) return { hour: '', minute: '', period: 'AM' };
+    if (!timeString) return '';
     
-    // Convert 24-hour to 12-hour format
-    const [h, m] = timeString.split(':').map(Number);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour = h % 12 || 12; // Convert 0 or 12 to 12
+    // Convert 24-hour to 12-hour format for display
+    const [hours, minutes] = timeString.split(':').map(Number);
     
-    return { 
-      hour: hour.toString().padStart(2, '0'), 
-      minute: m.toString().padStart(2, '0'), 
-      period 
-    };
+    // Format to HH:MM for native time input
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
   // Current state
   const [time, setTime] = useState(parseTime(value));
 
-  // Handle change for hour, minute, or period
-  const handleChange = (type, val) => {
-    const newTime = { ...time, [type]: val };
-    
-    // Convert 12-hour to 24-hour format for storage
-    const hour24 = newTime.period === 'PM' 
-      ? (newTime.hour === '12' ? 12 : parseInt(newTime.hour) + 12)
-      : (newTime.hour === '12' ? 0 : parseInt(newTime.hour));
-    
-    // Construct time string if all fields are selected
-    const timeString = newTime.hour && newTime.minute && newTime.period
-      ? `${hour24.toString().padStart(2, '0')}:${newTime.minute}` 
-      : null;
+  // Update state if value prop changes
+  useEffect(() => {
+    setTime(parseTime(value));
+  }, [value]);
 
-    setTime(newTime);
+  // Handle change for time input
+  const handleChange = (e) => {
+    const newTimeValue = e.target.value;
+    setTime(newTimeValue);
     
-    // Call onChange if provided
+    // Call onChange with 24-hour format time string
     if (onChange) {
-      onChange(timeString);
+      onChange(newTimeValue ? newTimeValue + ':00' : null);
     }
   };
 
   return (
-    <div style={{ display: 'flex', gap: '8px', ...style }}>
-      <Select
-        style={{ width: '35%' }}
-        value={time.hour}
-        placeholder="Hour"
-        onChange={(val) => handleChange('hour', val)}
-      >
-        {hours.map(hour => (
-          <Select.Option key={hour} value={hour}>
-            {hour}
-          </Select.Option>
-        ))}
-      </Select>
-      
-      <Select
-        style={{ width: '35%' }}
-        value={time.minute}
-        placeholder="Minute"
-        onChange={(val) => handleChange('minute', val)}
-      >
-        {minutes.map(minute => (
-          <Select.Option key={minute} value={minute}>
-            {minute}
-          </Select.Option>
-        ))}
-      </Select>
-
-      <Select
-        style={{ width: '30%' }}
-        value={time.period}
-        onChange={(val) => handleChange('period', val)}
-      >
-        {periods.map(period => (
-          <Select.Option key={period} value={period}>
-            {period}
-          </Select.Option>
-        ))}
-      </Select>
+    <div className={styles.CustomTimePickerContainer} style={style}>
+      <input
+        type="time"
+        value={time}
+        onChange={handleChange}
+        className={styles.nativeTimeInput}
+        style={{
+          width: '100%',
+          padding: '0.75rem',
+          border: '1px solid #DEB887',
+          borderRadius: '0.375rem',
+          backgroundColor: '#ffffff',
+          color: 'var(--color-text)',
+          transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
+        }}
+        placeholder={placeholder}
+      />
     </div>
   );
 };
 
 export default CustomTimePicker;
 
-// Updated time formatting functions
+// Formatting function (kept from original implementation)
 export const formatTime = (time) => {
   if (!time) return 'Not specified';
   
