@@ -15,170 +15,76 @@ const AdminDashboard = ({
   clearNotifications = () => {}, 
   markNotificationAsRead = () => {} 
 }) => {
+  // Set default date range to current month
+  const getCurrentMonthRange = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return {
+      startDate: firstDay.toISOString().split('T')[0],
+      endDate: lastDay.toISOString().split('T')[0]
+    };
+  };
+
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [visitsData, setVisitsData] = useState(null);
   const [reviewsData, setReviewsData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
-  const [visitsFilter, setVisitsFilter] = useState('month');
-  const [reviewsFilter, setReviewsFilter] = useState('month');
-  const [visitsYear, setVisitsYear] = useState(null);
-  const [visitsMonth, setVisitsMonth] = useState(null);
-  const [visitsWeek, setVisitsWeek] = useState(null);
-  const [reviewsYear, setReviewsYear] = useState(null);
-  const [reviewsMonth, setReviewsMonth] = useState(null);
-  const [reviewsWeek, setReviewsWeek] = useState(null);
-  const [visitsStartDate, setVisitsStartDate] = useState(null);
-  const [visitsEndDate, setVisitsEndDate] = useState(null);
-  const [reviewsStartDate, setReviewsStartDate] = useState(null);
-  const [reviewsEndDate, setReviewsEndDate] = useState(null);
+  
+  // Initialize with current month's start and end dates
+  const { startDate: currentMonthStart, endDate: currentMonthEnd } = getCurrentMonthRange();
+  const [visitsStartDate, setVisitsStartDate] = useState(currentMonthStart);
+  const [visitsEndDate, setVisitsEndDate] = useState(currentMonthEnd);
+  const [reviewsStartDate, setReviewsStartDate] = useState(currentMonthStart);
+  const [reviewsEndDate, setReviewsEndDate] = useState(currentMonthEnd);
+  
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [noVisitsData, setNoVisitsData] = useState(false);
+  const [noReviewsData, setNoReviewsData] = useState(false);
   const navigate = useNavigate();
 
-  const formatDate = (dateStr, filter = 'month', options = {}) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return '';
     
-    // Handle different potential date formats
-    let date = new Date(dateStr);
+    const date = new Date(dateStr);
     
-    // Check if the date is valid
     if (isNaN(date.getTime())) {
-      try {
-        date = new Date(Date.parse(dateStr));
-      } catch (error) {
-        console.warn('Invalid date:', dateStr);
-        return dateStr;
-      }
+      console.warn('Invalid date:', dateStr);
+      return dateStr;
     }
 
-    // Formatting based on filter type
-    switch(filter) {
-      case 'day':
-        return date.toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric'
-        });
-      
-      case 'week':
-        // Calculate the start and end of the week
-        const startOfWeek = new Date(date);
-        const endOfWeek = new Date(date);
-        
-        // Adjust to the first day of the week (assuming Sunday is the first day)
-        startOfWeek.setDate(date.getDate() - date.getDay());
-        endOfWeek.setDate(date.getDate() + (6 - date.getDay()));
-        
-        return `${startOfWeek.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}`;
-      
-      case 'month':
-        return date.toLocaleDateString('en-US', {
-          month: 'long',
-          year: 'numeric'
-        });
-      
-      case 'year':
-        return date.getFullYear().toString();
-      
-      default:
-        return date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric'
-        });
-    }
-  };
-
-  // Enhanced chart title generator
-  const generateChartTitle = (filter, year, month, week, startDate, endDate) => {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    switch(filter) {
-      case 'day':
-        return 'Daily Analysis';
-      
-      case 'week':
-        if (week) {
-          const monthName = new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' });
-          const weekStart = (week - 1) * 7 + 1;
-          const weekEnd = week * 7;
-          return `Week ${week}: ${monthName} ${weekStart}-${weekEnd}, ${currentYear}`;
-        }
-        return 'Weekly Analysis';
-      
-      case 'month':
-        if (month) {
-          const monthName = new Date(currentYear, month - 1).toLocaleString('default', { month: 'long' });
-          return `${monthName} ${year || currentYear}`;
-        }
-        return 'Monthly Analysis';
-      
-      case 'year':
-        return `Analysis for ${year || currentYear}`;
-      
-      case 'custom':
-        if (startDate && endDate) {
-          const start = new Date(startDate);
-          const end = new Date(endDate);
-          return `Custom Period: ${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-        }
-        return 'Custom Period Analysis';
-      
-      default:
-        return 'Analysis';
-    }
-  };
-
-  // Custom Tooltip to handle date formatting with filter context
-  const CustomTooltip = ({ active, payload, label }) => {
-    const currentFilter = activeMenuItem === 'Visits' ? visitsFilter : reviewsFilter;
-    
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip" style={{
-          backgroundColor: 'white', 
-          padding: '10px', 
-          border: '1px solid #ccc'
-        }}>
-          <p>{formatDate(label, currentFilter)}</p>
-          {payload.map((entry, index) => (
-            <p key={`item-${index}`} style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setIsLoading(true);
+      // Only set loading to true on initial load
+      if (isInitialLoad) {
+        setIsLoading(true);
+      } else {
+        setIsFetching(true);
+      }
+
+      setNoVisitsData(false);
+      setNoReviewsData(false);
       const startTime = Date.now();
       
       try {
-        // More comprehensive query parameters for visits
+        // Comprehensive query parameters for visits and reviews
         const visitsParams = {
-          filter: visitsFilter,
-          ...(visitsYear && { year: visitsYear }),
-          ...(visitsMonth && { month: visitsMonth }),
-          ...(visitsWeek && { week: visitsWeek }),
-          ...(visitsFilter === 'custom' && visitsStartDate && visitsEndDate && {
-            start_date: visitsStartDate,
-            end_date: visitsEndDate
-          })
+          start_date: visitsStartDate,
+          end_date: visitsEndDate
         };
 
-        // Similar comprehensive query parameters for reviews
         const reviewsParams = {
-          filter: reviewsFilter,
-          ...(reviewsYear && { year: reviewsYear }),
-          ...(reviewsMonth && { month: reviewsMonth }),
-          ...(reviewsWeek && { week: reviewsWeek }),
-          ...(reviewsFilter === 'custom' && reviewsStartDate && reviewsEndDate && {
-            start_date: reviewsStartDate,
-            end_date: reviewsEndDate
-          })
+          start_date: reviewsStartDate,
+          end_date: reviewsEndDate
         };
 
         const [visitsResponse, reviewsResponse, dashboardResponse] = await Promise.all([
@@ -204,6 +110,16 @@ const AdminDashboard = ({
           )
         ]);
 
+        // Check if visits data is empty
+        if (!visitsResponse.data.visits_data || visitsResponse.data.visits_data.length === 0) {
+          setNoVisitsData(true);
+        }
+
+        // Check if reviews data is empty
+        if (!reviewsResponse.data.reviews_data || reviewsResponse.data.reviews_data.length === 0) {
+          setNoReviewsData(true);
+        }
+
         setVisitsData(visitsResponse.data);
         setReviewsData(reviewsResponse.data);
         setDashboardData(dashboardResponse.data);
@@ -215,18 +131,17 @@ const AdminDashboard = ({
       } catch (error) {
         handleError(error);
       } finally {
-        setIsLoading(false);
+        if (isInitialLoad) {
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        } else {
+          setIsFetching(false);
+        }
       }
     };
 
     fetchAllData();
-  }, [
-    visitsFilter, visitsYear, visitsMonth, visitsWeek, 
-    visitsStartDate, visitsEndDate,
-    reviewsFilter, reviewsYear, reviewsMonth, reviewsWeek, 
-    reviewsStartDate, reviewsEndDate
-  ]);
-
+  }, [visitsStartDate, visitsEndDate, reviewsStartDate, reviewsEndDate]);
 
   const handleError = (error) => {
     if (error.response?.status === 401) {
@@ -237,103 +152,59 @@ const AdminDashboard = ({
     }
   };
 
-  const FilterButtons = ({ 
-    filter, 
-    setFilter, 
+  const DateRangeSelector = ({ 
     label, 
     startDate, 
     setStartDate, 
     endDate, 
     setEndDate,
-    year, 
-    setYear, 
-    month, 
-    setMonth, 
-    week, 
-    setWeek 
+    onApplyFilter // New prop to handle filter application
   }) => {
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-    const weeks = Array.from({ length: 5 }, (_, i) => i + 1);
-
+    const [localStartDate, setLocalStartDate] = useState(startDate);
+    const [localEndDate, setLocalEndDate] = useState(endDate);
+  
+    const resetToCurrentMonth = () => {
+      const { startDate: currentStart, endDate: currentEnd } = getCurrentMonthRange();
+      setLocalStartDate(currentStart);
+      setLocalEndDate(currentEnd);
+    };
+  
+    const handleApplyFilter = () => {
+      // Call the onApplyFilter prop with the local dates
+      onApplyFilter(localStartDate, localEndDate);
+    };
+  
     return (
-      <div className="filter-buttons">
+      <div className="date-range-selector">
         <span className="filter-label">{label}:</span>
-        {['day', 'week', 'month', 'year', 'custom'].map((period) => (
-          <React.Fragment key={period}>
-            <button
-              className={`filter-button ${filter === period ? 'active' : ''}`}
-              onClick={() => {
-                setFilter(period);
-                // Reset specific parameters when changing filter
-                setYear(null);
-                setMonth(null);
-                setWeek(null);
-                setStartDate(null);
-                setEndDate(null);
-              }}
+        <div className="custom-date-range flex items-center space-x-2 ml-4">
+          <span>From:</span>
+          <DatePicker 
+            value={localStartDate} 
+            onChange={setLocalStartDate} 
+          />
+          <span>To:</span>
+          <DatePicker 
+            value={localEndDate} 
+            onChange={setLocalEndDate} 
+          />
+          {(localStartDate !== getCurrentMonthRange().startDate || 
+            localEndDate !== getCurrentMonthRange().endDate) && (
+            <button 
+              className="reset-filter-btn"
+              onClick={resetToCurrentMonth}
             >
-              {period.charAt(0).toUpperCase() + period.slice(1)}
+              Reset to Current Month
             </button>
-            
-            {filter === period && period !== 'custom' && period !== 'year' && (
-              <select 
-                value={month || ''} 
-                onChange={(e) => setMonth(e.target.value ? parseInt(e.target.value) : null)}
-                className="filter-select"
-              >
-                <option value="">All Months</option>
-                {months.map(m => (
-                  <option key={m} value={m}>
-                    {new Date(0, m - 1).toLocaleString('default', { month: 'long' })}
-                  </option>
-                ))}
-              </select>
-            )}
-            
-            {filter === period && period !== 'custom' && period === 'week' && (
-              <select 
-                value={week || ''} 
-                onChange={(e) => setWeek(e.target.value ? parseInt(e.target.value) : null)}
-                className="filter-select"
-              >
-                <option value="">All Weeks</option>
-                {weeks.map(w => (
-                  <option key={w} value={w}>Week {w}</option>
-                ))}
-              </select>
-            )}
-            
-            {filter === period && period !== 'custom' && period === 'year' && (
-              <select 
-                value={year || ''} 
-                onChange={(e) => setYear(e.target.value ? parseInt(e.target.value) : null)}
-                className="filter-select"
-              >
-                <option value="">Current Year</option>
-                {years.map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            )}
-            
-            {filter === 'custom' && period === 'custom' && (
-              <div className="custom-date-range flex items-center space-x-2 ml-4">
-                <span>From:</span>
-                <DatePicker 
-                  value={startDate} 
-                  onChange={setStartDate} 
-                />
-                <span>To:</span>
-                <DatePicker 
-                  value={endDate} 
-                  onChange={setEndDate} 
-                />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
+          )}
+          <button
+            className="apply-filter-btn"
+            onClick={handleApplyFilter}
+            disabled={localStartDate > localEndDate}
+          >
+            Apply Filter
+          </button>
+        </div>
       </div>
     );
   };
@@ -358,7 +229,7 @@ const AdminDashboard = ({
       <main className="main-content">
       {isLoading ? (
           <div className="loader-container">
-            <CoffeeLoader size={80} color="#8B4513" />
+            <CoffeeLoader size={80} color="#8B4613" />
           </div>
         ) : (
           <div>
@@ -368,145 +239,129 @@ const AdminDashboard = ({
                   visitsData={visitsData}
                   reviewsData={reviewsData}
                   dashboardData={dashboardData}
-                  visitsFilter={visitsFilter}
-                  reviewsFilter={reviewsFilter}
                 />       
             </div>
 
             <div className="dashboard-content">
               {/* Visits Chart */}
-            <div className="settings-form">
-              <div className="card-header">
-                <h2 className="card-title">Visits Over Time</h2>
-                {generateChartTitle(
-                      visitsFilter, 
-                      visitsYear, 
-                      visitsMonth, 
-                      visitsWeek, 
-                      visitsStartDate, 
-                      visitsEndDate
-                    )}
-                <FilterButtons
-                    filter={visitsFilter}
-                    setFilter={setVisitsFilter}
-                    label="Filter by"
+              <div className="settings-form">
+                <div className="card-header">
+                  <h2 className="card-title">Visits Over Time</h2>
+                  <DateRangeSelector
+                    label="Filter by Date"
                     startDate={visitsStartDate}
                     setStartDate={setVisitsStartDate}
                     endDate={visitsEndDate}
                     setEndDate={setVisitsEndDate}
-                    year={visitsYear}
-                    setYear={setVisitsYear}
-                    month={visitsMonth}
-                    setMonth={setVisitsMonth}
-                    week={visitsWeek}
-                    setWeek={setVisitsWeek}
+                    onApplyFilter={(start, end) => {
+                      setVisitsStartDate(start);
+                      setVisitsEndDate(end);
+                    }}
                   />
-              </div>
-              <div className="card-content">
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={visitsData?.visits_data || []}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="period" 
-                        tickFormatter={(value) => formatDate(value, visitsFilter)}
-                        angle={-45}
-                        textAnchor="end"
-                        height={70}
-                      />
-                      <YAxis />
-                      <Tooltip 
-                        content={<CustomTooltip />} 
-                        labelFormatter={formatDate} 
-                      />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="visits" 
-                        stroke="#8884d8" 
-                        name="Visits"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                </div>
+                <div className="card-content">
+                  {noVisitsData ? (
+                    <div className="no-data-message">
+                      No data found for the selected dates
+                    </div>
+                  ) : (
+                    <div className="chart-container">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={visitsData?.visits_data || []}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="period" 
+                            tickFormatter={(value) => formatDate(value)}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                          />
+                          <YAxis />
+                          <Tooltip 
+                            labelFormatter={formatDate} 
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="visits" 
+                            stroke="#8884d8" 
+                            name="Visits"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Reviews Chart */}
-            <div className="settings-form">
-              <div className="card-header">
-                <h2 className="card-title">Reviews Analysis</h2>
-                {generateChartTitle(
-                      reviewsFilter, 
-                      reviewsYear, 
-                      reviewsMonth, 
-                      reviewsWeek, 
-                      reviewsStartDate, 
-                      reviewsEndDate
-                    )}
-                <FilterButtons
-                    filter={reviewsFilter}
-                    setFilter={setReviewsFilter}
-                    label="Filter by"
+              {/* Reviews Chart */}
+              <div className="settings-form">
+                <div className="card-header">
+                  <h2 className="card-title">Reviews Analysis</h2>
+                  <DateRangeSelector
+                    label="Filter by Date"
                     startDate={reviewsStartDate}
                     setStartDate={setReviewsStartDate}
                     endDate={reviewsEndDate}
                     setEndDate={setReviewsEndDate}
-                    year={reviewsYear}
-                    setYear={setReviewsYear}
-                    month={reviewsMonth}
-                    setMonth={setReviewsMonth}
-                    week={reviewsWeek}
-                    setWeek={setReviewsWeek}
+                    onApplyFilter={(start, end) => {
+                      setReviewsStartDate(start);
+                      setReviewsEndDate(end);
+                    }}
                   />
-              </div>
-              <div className="card-content">
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={reviewsData?.reviews_data || []}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="period" 
-                        tickFormatter={(value) => formatDate(value, reviewsFilter)}
-                        angle={-45}
-                        textAnchor="end"
-                        height={70}
-                      />
-                      <YAxis 
-                        yAxisId="left"
-                        domain={[0, 5]}
-                        tickCount={6}
-                        label={{ value: 'Average Rating', angle: -90, position: 'insideLeft' }}
-                      />
-                      <YAxis 
-                        yAxisId="right"
-                        orientation="right"
-                        label={{ value: 'Number of Reviews', angle: 90, position: 'insideRight' }}
-                      />
-                      <Tooltip 
-                        content={<CustomTooltip />} 
-                        labelFormatter={formatDate} 
-                      />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="average_rating" 
-                        stroke="#82ca9d" 
-                        name="Average Rating"
-                        yAxisId="left"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="review_count" 
-                        stroke="#ffc658" 
-                        name="Number of Reviews"
-                        yAxisId="right"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                </div>
+                <div className="card-content">
+                  {noReviewsData ? (
+                    <div className="no-data-message">
+                      No data found for the selected dates
+                    </div>
+                  ) : (
+                    <div className="chart-container">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={reviewsData?.reviews_data || []}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="period" 
+                            tickFormatter={(value) => formatDate(value)}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                          />
+                          <YAxis 
+                            yAxisId="left"
+                            domain={[0, 5]}
+                            tickCount={6}
+                            label={{ value: 'Average Rating', angle: -90, position: 'insideLeft' }}
+                          />
+                          <YAxis 
+                            yAxisId="right"
+                            orientation="right"
+                            label={{ value: 'Number of Reviews', angle: 90, position: 'insideRight' }}
+                          />
+                          <Tooltip 
+                            labelFormatter={formatDate} 
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="average_rating" 
+                            stroke="#82ca9d" 
+                            name="Average Rating"
+                            yAxisId="left"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="review_count" 
+                            stroke="#ffc658" 
+                            name="Number of Reviews"
+                            yAxisId="right"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
               <div className="dashboard-grid">
                 {/* Favorites Card */}
