@@ -39,6 +39,8 @@ const AdminDashboard = ({
   const [reviewsEndDate, setReviewsEndDate] = useState(currentMonthEnd);
   
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [noVisitsData, setNoVisitsData] = useState(false);
   const [noReviewsData, setNoReviewsData] = useState(false);
   const navigate = useNavigate();
@@ -62,7 +64,13 @@ const AdminDashboard = ({
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setIsLoading(true);
+      // Only set loading to true on initial load
+      if (isInitialLoad) {
+        setIsLoading(true);
+      } else {
+        setIsFetching(true);
+      }
+
       setNoVisitsData(false);
       setNoReviewsData(false);
       const startTime = Date.now();
@@ -123,7 +131,12 @@ const AdminDashboard = ({
       } catch (error) {
         handleError(error);
       } finally {
-        setIsLoading(false);
+        if (isInitialLoad) {
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        } else {
+          setIsFetching(false);
+        }
       }
     };
 
@@ -144,30 +157,39 @@ const AdminDashboard = ({
     startDate, 
     setStartDate, 
     endDate, 
-    setEndDate 
+    setEndDate,
+    onApplyFilter // New prop to handle filter application
   }) => {
+    const [localStartDate, setLocalStartDate] = useState(startDate);
+    const [localEndDate, setLocalEndDate] = useState(endDate);
+  
     const resetToCurrentMonth = () => {
       const { startDate: currentStart, endDate: currentEnd } = getCurrentMonthRange();
-      setStartDate(currentStart);
-      setEndDate(currentEnd);
+      setLocalStartDate(currentStart);
+      setLocalEndDate(currentEnd);
     };
-
+  
+    const handleApplyFilter = () => {
+      // Call the onApplyFilter prop with the local dates
+      onApplyFilter(localStartDate, localEndDate);
+    };
+  
     return (
       <div className="date-range-selector">
         <span className="filter-label">{label}:</span>
         <div className="custom-date-range flex items-center space-x-2 ml-4">
           <span>From:</span>
           <DatePicker 
-            value={startDate} 
-            onChange={setStartDate} 
+            value={localStartDate} 
+            onChange={setLocalStartDate} 
           />
           <span>To:</span>
           <DatePicker 
-            value={endDate} 
-            onChange={setEndDate} 
+            value={localEndDate} 
+            onChange={setLocalEndDate} 
           />
-          {(startDate !== getCurrentMonthRange().startDate || 
-            endDate !== getCurrentMonthRange().endDate) && (
+          {(localStartDate !== getCurrentMonthRange().startDate || 
+            localEndDate !== getCurrentMonthRange().endDate) && (
             <button 
               className="reset-filter-btn"
               onClick={resetToCurrentMonth}
@@ -175,6 +197,13 @@ const AdminDashboard = ({
               Reset to Current Month
             </button>
           )}
+          <button
+            className="apply-filter-btn"
+            onClick={handleApplyFilter}
+            disabled={localStartDate > localEndDate}
+          >
+            Apply Filter
+          </button>
         </div>
       </div>
     );
@@ -200,7 +229,7 @@ const AdminDashboard = ({
       <main className="main-content">
       {isLoading ? (
           <div className="loader-container">
-            <CoffeeLoader size={80} color="#8B4513" />
+            <CoffeeLoader size={80} color="#8B4613" />
           </div>
         ) : (
           <div>
@@ -224,6 +253,10 @@ const AdminDashboard = ({
                     setStartDate={setVisitsStartDate}
                     endDate={visitsEndDate}
                     setEndDate={setVisitsEndDate}
+                    onApplyFilter={(start, end) => {
+                      setVisitsStartDate(start);
+                      setVisitsEndDate(end);
+                    }}
                   />
                 </div>
                 <div className="card-content">
@@ -271,6 +304,10 @@ const AdminDashboard = ({
                     setStartDate={setReviewsStartDate}
                     endDate={reviewsEndDate}
                     setEndDate={setReviewsEndDate}
+                    onApplyFilter={(start, end) => {
+                      setReviewsStartDate(start);
+                      setReviewsEndDate(end);
+                    }}
                   />
                 </div>
                 <div className="card-content">
