@@ -235,11 +235,15 @@ const AdminDashboard = ({
           <div>
             <div className="dashboard-header">
               <h1>Dashboard</h1>
-                <DashboardReport
-                  visitsData={visitsData}
-                  reviewsData={reviewsData}
-                  dashboardData={dashboardData}
-                />       
+              <DashboardReport
+                visitsData={visitsData}
+                reviewsData={reviewsData}
+                dashboardData={dashboardData}
+                visitsStartDate={visitsStartDate}
+                visitsEndDate={visitsEndDate}
+                reviewsStartDate={reviewsStartDate}
+                reviewsEndDate={reviewsEndDate}
+              />      
             </div>
 
             <div className="dashboard-content">

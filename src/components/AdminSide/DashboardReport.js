@@ -20,11 +20,11 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDa
 
     const createSVGGraph = (data, type) => {
         const width = 600;
-        const height = 300;
-        const margin = 40;
+        const height = 350;  // Increased height to accommodate labels
+        const margin = 60;   // Increased margin for labels
         const chartWidth = width - 2 * margin;
         const chartHeight = height - 2 * margin;
-
+    
         // Determine max and min values
         let values, maxValue, minValue;
         if (type === 'visits') {
@@ -38,11 +38,11 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDa
             maxValue = Math.max(...ratings, ...reviewCounts);
             minValue = Math.min(...ratings, ...reviewCounts);
         }
-
+    
         // Scaling functions
         const xScale = chartWidth / (data.length - 1);
         const yScale = chartHeight / (maxValue - minValue);
-
+    
         // Generate path for visits or ratings
         const generatePath = (accessor) => {
             return data.map((d, i) => {
@@ -51,20 +51,69 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDa
                 return i === 0 ? `M${x},${y}` : ` L${x},${y}`;
             }).join('');
         };
-
+    
         // Visits or average rating path
         const primaryPath = type === 'visits' 
             ? generatePath(d => d.visits)
             : generatePath(d => d.average_rating);
-
+    
         // Review count path (for reviews graph)
         const secondaryPath = type === 'reviews'
             ? generatePath(d => d.review_count)
             : '';
-
+    
+        // Y-axis ticks and labels
+        const yTicks = 5;
+        const yTickValues = Array.from({length: yTicks}, (_, i) => 
+            minValue + (maxValue - minValue) * (i / (yTicks - 1))
+        );
+    
         return `
             <svg width="${width}" height="${height}">
                 <rect width="${width}" height="${height}" fill="#f9f9f9" />
+                
+                <!-- Y-axis label -->
+                <text 
+                    x="20" 
+                    y="${height / 2}" 
+                    transform="rotate(-90, 20, ${height / 2})" 
+                    text-anchor="middle"
+                >
+                    ${type === 'visits' ? 'Visits Count' : 'Ratings & Review Count'}
+                </text>
+    
+                <!-- Y-axis ticks and labels -->
+                ${yTickValues.map((value, i) => {
+                    const y = height - margin - (value - minValue) * yScale;
+                    return `
+                        <line 
+                            x1="${margin - 10}" 
+                            y1="${y}" 
+                            x2="${margin}" 
+                            y2="${y}" 
+                            stroke="black" 
+                        />
+                        <text 
+                            x="${margin - 15}" 
+                            y="${y}" 
+                            text-anchor="end" 
+                            alignment-baseline="middle" 
+                            font-size="10"
+                        >
+                            ${value.toFixed(1)}
+                        </text>
+                    `;
+                }).join('')}
+    
+                <!-- X-axis label -->
+                <text 
+                    x="${width / 2}" 
+                    y="${height - 10}" 
+                    text-anchor="middle"
+                >
+                    Time Period
+                </text>
+    
                 <path d="${primaryPath}" 
                     fill="none" 
                     stroke="${type === 'visits' ? '#8884d8' : '#82ca9d'}" 
@@ -79,15 +128,27 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDa
                 ` : ''}
                 ${data.map((d, i) => {
                     const x = i * xScale + margin;
+                    const formattedDate = new Date(d.period).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
                     return `
                         <text 
                             x="${x}" 
-                            y="${height - 10}" 
+                            y="${height - 45}" 
                             text-anchor="middle" 
                             font-size="10"
+                            transform="rotate(-45, ${x}, ${height - 25})"
                         >
-                            ${formatDate(d.period)}
+                            ${formattedDate}
                         </text>
+                        <line 
+                            x1="${x}" 
+                            y1="${height - margin}" 
+                            x2="${x}" 
+                            y2="${height - margin + 10}" 
+                            stroke="black" 
+                        />
                     `;
                 }).join('')}
             </svg>
@@ -98,16 +159,16 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDa
         const reportWindow = window.open('', '_blank');
         if (!reportWindow) return;
 
-        // Construct filter descriptions
+        // Detailed filter descriptions
         const visitsFilterDesc = [
-            visitsStartDate && `From: ${formatDate(visitsStartDate)}`,
-            visitsEndDate && `To: ${formatDate(visitsEndDate)}`
-        ].filter(Boolean).join(' ');
-
+            visitsStartDate && `${formatDate(visitsStartDate)}`,
+            visitsEndDate && `${formatDate(visitsEndDate)}`
+        ].filter(Boolean).join(' - ');
+        
         const reviewsFilterDesc = [
-            reviewsStartDate && `From: ${formatDate(reviewsStartDate)}`,
-            reviewsEndDate && `To: ${formatDate(reviewsEndDate)}`
-        ].filter(Boolean).join(' ');
+            reviewsStartDate && `${formatDate(reviewsStartDate)}`,
+            reviewsEndDate && `${formatDate(reviewsEndDate)}`
+        ].filter(Boolean).join(' - ');
 
         // Create SVG graphs
         const visitsGraphSVG = createSVGGraph(visitsData.visits_data, 'visits');
