@@ -244,7 +244,12 @@ function ReviewsPage({ handleOwnerLogout,
       <main className="main-content">
       {isLoading ? (
             <div className="loader-container">
-              <CoffeeLoader size={80} color="#8B4513" />
+              <CoffeeLoader 
+            size={80} 
+            cupColor="#B5651D" 
+            steamColor="#D2B48C" 
+            saucerColor="#A0522D" 
+          />
             </div>
           ) : (
             <div>
