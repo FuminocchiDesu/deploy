@@ -1,6 +1,23 @@
 import React from 'react';
 
-const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter, reviewsFilter }) => {
+const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsStartDate, visitsEndDate, reviewsStartDate, reviewsEndDate }) => {
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        
+        const date = new Date(dateStr);
+        
+        if (isNaN(date.getTime())) {
+            console.warn('Invalid date:', dateStr);
+            return dateStr;
+        }
+
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     const createStaticSVGChart = (data, type) => {
         const width = 900;
         const height = 600;
@@ -32,7 +49,7 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter,
             if (i === 0) path += `M${x},${y}`;
             else path += ` L${x},${y}`;
             labels += `
-              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${d.date}</text>
+              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${formatDate(d.date)}</text>
               <text x="${x}" y="${y - 10}" text-anchor="middle" font-size="10">${d.visits}</text>
             `;
           } else {
@@ -46,7 +63,7 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter,
               reviewCountPath += ` L${x},${yReviewCount}`;
             }
             labels += `
-              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${d.date}</text>
+              <text x="${x}" y="${height - padding / 2}" text-anchor="middle" font-size="10" transform="rotate(90 ${x} ${height - padding / 2})">${formatDate(d.date)}</text>
               <text x="${x}" y="${yRating - 10}" text-anchor="middle" font-size="10" fill="green">${d.average_rating.toFixed(1)}</text>
               <text x="${x}" y="${yReviewCount - 10}" text-anchor="middle" font-size="10" fill="orange">${d.review_count}</text>
             `;
@@ -83,6 +100,17 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter,
 
     const visitsChartSvg = createStaticSVGChart(visitsData.visits_data, 'visits');
     const reviewsChartSvg = createStaticSVGChart(reviewsData.reviews_data, 'reviews');
+
+    // Construct filter descriptions
+    const visitsFilterDesc = [
+      visitsStartDate && `From: ${formatDate(visitsStartDate)}`,
+      visitsEndDate && `To: ${formatDate(visitsEndDate)}`
+    ].filter(Boolean).join(' ');
+
+    const reviewsFilterDesc = [
+      reviewsStartDate && `From: ${formatDate(reviewsStartDate)}`,
+      reviewsEndDate && `To: ${formatDate(reviewsEndDate)}`
+    ].filter(Boolean).join(' ');
 
     reportWindow.document.write(`
       <html>
@@ -137,8 +165,8 @@ const DashboardReport = ({ visitsData, reviewsData, dashboardData, visitsFilter,
 
             <div class="filter-info">
               <h3>Analysis Parameters</h3>
-              <p>Visits data filtered by: ${visitsFilter}</p>
-              <p>Reviews data filtered by: ${reviewsFilter}</p>
+              <p>Visits data filtered: ${visitsFilterDesc || 'No date filter applied'}</p>
+              <p>Reviews data filtered: ${reviewsFilterDesc || 'No date filter applied'}</p>
             </div>
 
             <button class="download-btn" onclick="window.print()">Download PDF</button>
