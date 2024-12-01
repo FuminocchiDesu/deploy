@@ -1683,4 +1683,64 @@ body {
   }
 }
 
+.clearbutton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: 
+    background-color 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  gap: 0.5rem;
+  outline: none;
+}
+
+.clearbutton:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 85%, white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.clearbutton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notifcontents {
+  cursor: pointer;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: 
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.notifcontents:hover {
+  background-color: var(--color-hover-background, #f9fafb);
+  border-color: var(--color-primary, #111827);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.viewdetails {
+  color: var(--color-primary);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.viewdetails:hover {
+  color: color-mix(in srgb, var(--color-primary) 75%, black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
 /* Add any additional styles as needed */

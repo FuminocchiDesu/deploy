@@ -94,7 +94,7 @@ const SidebarMenu = ({
         footer={[
           <button 
             type="button" 
-            className="ant-btn css-dev-only-do-not-override-1a6v4c6 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+            className="clearbutton"
             onClick={clearNotifications}
           >
             <XCircle className="inline-block mr-2" /> Clear All
@@ -113,7 +113,7 @@ const SidebarMenu = ({
               return (
                 <div 
                   key={promo.id} 
-                  className="border p-4 rounded hover:bg-gray-50 cursor-pointer"
+                  className="notifcontents"
                   onClick={() => handleNotificationItemClick(promo)}
                 >
                   <div className="flex justify-between items-center">
@@ -123,7 +123,7 @@ const SidebarMenu = ({
                         Ending in {daysUntilEnd} day{daysUntilEnd !== 1 ? 's' : ''}
                       </p>
                     </div>
-                    <span className="text-red-500 font-semibold">
+                    <span className="viewdetails">
                       View Details
                     </span>
                   </div>
