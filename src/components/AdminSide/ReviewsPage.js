@@ -126,15 +126,32 @@ function ReviewsPage({ handleOwnerLogout,
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    }).format(date);
-  };
+    if (isNaN(date.getTime())) {
+      return dateString;
+    }
+    
+    // Array of month names
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    // Get components
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Format time with AM/PM
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    
+    return `${month} ${day}, ${year} ${hours}:${minutes} ${ampm}`;
+};
 
   const handleDateRangeChange = (newDateRange) => {
     setDateRange(newDateRange);
