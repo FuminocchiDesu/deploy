@@ -193,7 +193,7 @@ const MenuManagementForms = ({
         <h3 style={formStyles.sectionTitle}>Images</h3>
         <Form.Item 
           name="image" 
-          label= "l"
+          label= "Primary Image"
           valuePropName="fileList"
           getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList}
         >

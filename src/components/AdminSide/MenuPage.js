@@ -406,132 +406,146 @@ const MenuPage = ({ handleOwnerLogout,
     });
   };  
 
-  const handleItemDeletion = async ({ 
-    itemId, 
-    deleteType, 
-    additionalId = null,
-    coffeeShopId, 
-    ownerToken, 
-    messageApi, 
-    refreshData 
-  }) => {
-    try {
-      let endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}`;
-      
-      // Construct the appropriate endpoint based on deletion type
-      switch (deleteType) {
-        case 'primary-image':
-          endpoint += '/remove-primary-image/';
-          break;
-        case 'additional-image':
-          endpoint += `/remove-additional-image/${additionalId}/`;
-          break;
-        case 'size':
-          endpoint += `/sizes/${additionalId}/`;
-          break;
-        case 'item':
-          // Use base endpoint for full item deletion
-          break;
-        default:
-          throw new Error('Invalid deletion type');
-      }
-  
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${ownerToken}`
+  const handleDeleteMenuItem = (itemId) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this menu item?',
+      content: 'This action cannot be undone.',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          const config = {
+            headers: { Authorization: `Bearer ${ownerToken}` },
+          };
+    
+          const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}/`;
+    
+          const response = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: config.headers,
+          });
+    
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          }
+    
+          messageApi.success('Menu item deleted successfully');
+          fetchData();
+        } catch (error) {
+          console.error('Error deleting menu item:', error);
+          messageApi.error(`Delete operation failed: ${error.message}`);
+        } finally {
+          setLoading(false);
+        }
+      },
+      onCancel() {
+        messageApi.info('Delete action was canceled');
+      },
+    });
+  };
+
+  const menuPageDeletionMethods = {
+    handleDeleteMenuItem,
+    handleRemovePrimaryImage: (itemId) => {
+      Modal.confirm({
+        title: 'Are you sure you want to remove the primary image?',
+        content: 'This action cannot be undone.',
+        okText: 'Yes',
+        okType: 'danger',
+        cancelText: 'No',
+        onOk: async () => {
+          try {
+            const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}/remove-primary-image/`;
+            
+            const response = await fetch(endpoint, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${ownerToken}` }
+            });
+    
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to delete: ${errorText}`);
+            }
+    
+            messageApi.success('Primary image removed successfully');
+            fetchData();
+            return true;
+          } catch (error) {
+            console.error('Delete operation failed:', error);
+            messageApi.error(`Failed to delete: ${error.message}`);
+            return false;
+          }
         }
       });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to delete: ${errorText}`);
-      }
-  
-      // Show success message
-      const messages = {
-        'primary-image': 'Primary image removed successfully',
-        'additional-image': 'Additional image removed successfully',
-        'size': 'Size option removed successfully',
-        'item': 'Menu item deleted successfully'
-      };
-      messageApi.success(messages[deleteType]);
-  
-      // Refresh data if needed
-      if (refreshData) {
-        await refreshData();
-      }
-  
-      return true;
-    } catch (error) {
-      console.error('Delete operation failed:', error);
-      messageApi.error(`Failed to delete: ${error.message}`);
-      return false;
-    }
-  };
-  
-  // Usage functions that can be added to the MenuPage component
-  const menuPageDeletionMethods = {
-    // Delete entire menu item
-    handleDeleteMenuItem: async function(itemId) {
-      if (window.confirm('Are you sure you want to delete this menu item?')) {
-        return handleItemDeletion({
-          itemId,
-          deleteType: 'item',
-          coffeeShopId: this.coffeeShopId,
-          ownerToken: this.ownerToken,
-          messageApi: this.messageApi,
-          refreshData: this.fetchData
-        });
-      }
-      return false;
     },
-  
-    // Remove primary image
-    handleRemovePrimaryImage: async function(itemId) {
-      if (window.confirm('Are you sure you want to remove the primary image?')) {
-        return handleItemDeletion({
-          itemId,
-          deleteType: 'primary-image',
-          coffeeShopId: this.coffeeShopId,
-          ownerToken: this.ownerToken,
-          messageApi: this.messageApi,
-          refreshData: this.fetchData
-        });
-      }
-      return false;
+    
+    handleRemoveAdditionalImage: (itemId, imageId) => {
+      Modal.confirm({
+        title: 'Are you sure you want to remove this image?',
+        content: 'This action cannot be undone.',
+        okText: 'Yes',
+        okType: 'danger',
+        cancelText: 'No',
+        onOk: async () => {
+          try {
+            const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}/remove-additional-image/${imageId}/`;
+            
+            const response = await fetch(endpoint, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${ownerToken}` }
+            });
+    
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to delete: ${errorText}`);
+            }
+    
+            messageApi.success('Additional image removed successfully');
+            fetchData();
+            return true;
+          } catch (error) {
+            console.error('Delete operation failed:', error);
+            messageApi.error(`Failed to delete: ${error.message}`);
+            return false;
+          }
+        }
+      });
     },
-  
-    // Remove additional image
-    handleRemoveAdditionalImage: async function(itemId, imageId) {
-      if (window.confirm('Are you sure you want to remove this image?')) {
-        return handleItemDeletion({
-          itemId,
-          deleteType: 'additional-image',
-          additionalId: imageId,
-          coffeeShopId: this.coffeeShopId,
-          ownerToken: this.ownerToken,
-          messageApi: this.messageApi,
-          refreshData: this.fetchData
-        });
-      }
-      return false;
-    },
-  
-    // Remove size option
-    handleRemoveSize: async function(itemId, sizeId) {
-      if (window.confirm('Are you sure you want to remove this size option?')) {
-        return handleItemDeletion({
-          itemId,
-          deleteType: 'size',
-          additionalId: sizeId,
-          coffeeShopId: this.coffeeShopId,
-          ownerToken: this.ownerToken,
-          messageApi: this.messageApi,
-          refreshData: this.fetchData
-        });
-      }
-      return false;
+    
+    handleRemoveSize: (itemId, sizeId) => {
+      Modal.confirm({
+        title: 'Are you sure you want to remove this size option?',
+        content: 'This action cannot be undone.',
+        okText: 'Yes',
+        okType: 'danger',
+        cancelText: 'No',
+        onOk: async () => {
+          try {
+            const endpoint = `${API_BASE_URL}/api/coffee-shops/${coffeeShopId}/menu-items/${itemId}/sizes/${sizeId}/`;
+            
+            const response = await fetch(endpoint, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${ownerToken}` }
+            });
+    
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to delete: ${errorText}`);
+            }
+    
+            messageApi.success('Size option removed successfully');
+            fetchData();
+            return true;
+          } catch (error) {
+            console.error('Delete operation failed:', error);
+            messageApi.error(`Failed to delete: ${error.message}`);
+            return false;
+          }
+        }
+      });
     }
   };
 
