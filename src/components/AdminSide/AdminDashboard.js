@@ -15,7 +15,6 @@ const AdminDashboard = ({
   clearNotifications = () => {}, 
   markNotificationAsRead = () => {} 
 }) => {
-  // Set default date range to current month
   const getCurrentMonthRange = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -31,7 +30,6 @@ const AdminDashboard = ({
   const [reviewsData, setReviewsData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   
-  // Initialize with current month's start and end dates
   const { startDate: currentMonthStart, endDate: currentMonthEnd } = getCurrentMonthRange();
   const [visitsStartDate, setVisitsStartDate] = useState(currentMonthStart);
   const [visitsEndDate, setVisitsEndDate] = useState(currentMonthEnd);
@@ -64,7 +62,6 @@ const AdminDashboard = ({
 
   useEffect(() => {
     const fetchAllData = async () => {
-      // Only set loading to true on initial load
       if (isInitialLoad) {
         setIsLoading(true);
       } else {
@@ -76,7 +73,6 @@ const AdminDashboard = ({
       const startTime = Date.now();
       
       try {
-        // Comprehensive query parameters for visits and reviews
         const visitsParams = {
           start_date: visitsStartDate,
           end_date: visitsEndDate
@@ -110,12 +106,10 @@ const AdminDashboard = ({
           )
         ]);
 
-        // Check if visits data is empty
         if (!visitsResponse.data.visits_data || visitsResponse.data.visits_data.length === 0) {
           setNoVisitsData(true);
         }
 
-        // Check if reviews data is empty
         if (!reviewsResponse.data.reviews_data || reviewsResponse.data.reviews_data.length === 0) {
           setNoReviewsData(true);
         }
@@ -158,7 +152,7 @@ const AdminDashboard = ({
     setStartDate, 
     endDate, 
     setEndDate,
-    onApplyFilter // New prop to handle filter application
+    onApplyFilter
   }) => {
     const [localStartDate, setLocalStartDate] = useState(startDate);
     const [localEndDate, setLocalEndDate] = useState(endDate);
@@ -170,40 +164,49 @@ const AdminDashboard = ({
     };
   
     const handleApplyFilter = () => {
-      // Call the onApplyFilter prop with the local dates
       onApplyFilter(localStartDate, localEndDate);
     };
   
     return (
       <div className="date-range-selector">
-        <span className="filter-label">{label}:</span>
-        <div className="custom-date-range flex items-center space-x-2 ml-4">
-          <span>From:</span>
-          <DatePicker 
-            value={localStartDate} 
-            onChange={setLocalStartDate} 
-          />
-          <span>To:</span>
-          <DatePicker 
-            value={localEndDate} 
-            onChange={setLocalEndDate} 
-          />
-          {(localStartDate !== getCurrentMonthRange().startDate || 
-            localEndDate !== getCurrentMonthRange().endDate) && (
-            <button 
-              className="reset-filter-btn"
-              onClick={resetToCurrentMonth}
+        <div className="filter-label">{label}</div>
+        <div className="date-picker-container">
+          <div className="date-inputs">
+            <div className="date-picker-group">
+              <span className="date-label">From:</span>
+              <DatePicker 
+                value={localStartDate} 
+                onChange={setLocalStartDate} 
+                className="date-input"
+              />
+            </div>
+            <div className="date-picker-group">
+              <span className="date-label">To:</span>
+              <DatePicker 
+                value={localEndDate} 
+                onChange={setLocalEndDate} 
+                className="date-input"
+              />
+            </div>
+          </div>
+          <div className="filter-actions">
+            {(localStartDate !== getCurrentMonthRange().startDate || 
+              localEndDate !== getCurrentMonthRange().endDate) && (
+              <button 
+                className="reset-filter-btn"
+                onClick={resetToCurrentMonth}
+              >
+                Reset
+              </button>
+            )}
+            <button
+              className="apply-filter-btn"
+              onClick={handleApplyFilter}
+              disabled={localStartDate > localEndDate}
             >
-              Reset to Current Month
+              Apply Filter
             </button>
-          )}
-          <button
-            className="apply-filter-btn"
-            onClick={handleApplyFilter}
-            disabled={localStartDate > localEndDate}
-          >
-            Apply Filter
-          </button>
+          </div>
         </div>
       </div>
     );
@@ -227,14 +230,14 @@ const AdminDashboard = ({
       />
 
       <main className="main-content">
-      {isLoading ? (
+        {isLoading ? (
           <div className="loader-container">
             <CoffeeLoader 
-            size={80} 
-            cupColor="#B5651D" 
-            steamColor="#D2B48C" 
-            saucerColor="#A0522D" 
-          />
+              size={80} 
+              cupColor="#B5651D" 
+              steamColor="#D2B48C" 
+              saucerColor="#A0522D" 
+            />
           </div>
         ) : (
           <div>
@@ -252,7 +255,6 @@ const AdminDashboard = ({
             </div>
 
             <div className="dashboard-content">
-              {/* Visits Chart */}
               <div className="settings-form">
                 <div className="card-header">
                   <h2 className="card-title">Visits Over Time</h2>
@@ -303,7 +305,6 @@ const AdminDashboard = ({
                 </div>
               </div>
 
-              {/* Reviews Chart */}
               <div className="settings-form">
                 <div className="card-header">
                   <h2 className="card-title">Reviews Analysis</h2>
@@ -373,19 +374,17 @@ const AdminDashboard = ({
               </div>
 
               <div className="dashboard-grid">
-                {/* Favorites Card */}
                 <div className="settings-form">
-                <FavoritesCard dashboardData={dashboardData} />
+                  <FavoritesCard dashboardData={dashboardData} />
                 </div>
 
-                {/* Recent Reviews Card */}
                 <div className="settings-form">
                   <div className="card-header">
                     <h2 className="card-title">Recent Reviews</h2>
                   </div>
                   <div className="card-content">
                     <div className="reviews-list">
-                      {reviewsData.recent_reviews.map((review, index) => (
+                      {reviewsData?.recent_reviews?.map((review, index) => (
                         <div key={index} className="review-item-dashboard">
                           <p className="review-content">{review.content}</p>
                           <div className="review-footer">
