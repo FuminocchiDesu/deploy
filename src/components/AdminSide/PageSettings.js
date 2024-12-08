@@ -17,7 +17,8 @@ const libraries = ['places'];
 const PageSettings = ({ handleOwnerLogout, 
   notifications = [], 
   clearNotifications = () => {}, 
-  markNotificationAsRead = () => {} 
+  markNotificationAsRead = () => {}, 
+  coffeeShopName = 'Coffee Shop Dashboard'
 }) => {
   const { message: messageApi } = App.useApp();
   const [coffeeShop, setCoffeeShop] = useState({
@@ -352,6 +353,7 @@ const PageSettings = ({ handleOwnerLogout,
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
+        coffeeShopName={coffeeShopName}
       />
 
       <main className="main-content">

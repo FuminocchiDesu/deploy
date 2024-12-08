@@ -15,6 +15,38 @@ const App = () => {
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [coffeeShopName, setCoffeeShopName] = useState('Coffee Shop Dashboard');
+  const [coffeeShopDetails, setCoffeeShopDetails] = useState(null);
+  
+  useEffect(() => {
+    const fetchCoffeeShopDetails = async () => {
+      const coffeeShopId = localStorage.getItem('coffeeShopId');
+      const ownerToken = localStorage.getItem('ownerToken');
+  
+      if (!coffeeShopId || !ownerToken) return;
+  
+      try {
+        const config = {
+          headers: { Authorization: `Bearer ${ownerToken}` }
+        };
+  
+        const response = await axios.get(
+          `https://khlcle.pythonanywhere.com/api/owner/coffee-shop/${coffeeShopId}/`, 
+          config
+        );
+  
+        setCoffeeShopDetails(response.data);
+        setCoffeeShopName(response.data.name);
+      } catch (error) {
+        console.error('Error fetching coffee shop details:', error);
+        message.error('Failed to fetch coffee shop details');
+      }
+    };
+  
+    if (isOwnerAuthenticated) {
+      fetchCoffeeShopDetails();
+    }
+  }, [isOwnerAuthenticated]);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -196,6 +228,7 @@ const App = () => {
                       notifications={notifications}
                       clearNotifications={clearNotifications}
                       markNotificationAsRead={markNotificationAsRead}
+                      coffeeShopName={coffeeShopName}
                     /> 
                   : <Navigate to="/admin-login" />
               } 
@@ -209,6 +242,7 @@ const App = () => {
                       notifications={notifications}
                       clearNotifications={clearNotifications}
                       markNotificationAsRead={markNotificationAsRead}
+                      coffeeShopName={coffeeShopName}
                     /> 
                   : <Navigate to="/admin-login" />
               } 
@@ -222,6 +256,7 @@ const App = () => {
                       notifications={notifications}
                       clearNotifications={clearNotifications}
                       markNotificationAsRead={markNotificationAsRead}
+                      coffeeShopName={coffeeShopName}
                     /> 
                   : <Navigate to="/admin-login" />
               } 
@@ -235,6 +270,7 @@ const App = () => {
                       notifications={notifications}
                       clearNotifications={clearNotifications}
                       markNotificationAsRead={markNotificationAsRead}
+                      coffeeShopName={coffeeShopName}
                     /> 
                   : <Navigate to="/admin-login" />
               } 
@@ -248,6 +284,7 @@ const App = () => {
                       notifications={notifications}
                       clearNotifications={clearNotifications}
                       markNotificationAsRead={markNotificationAsRead}
+                      coffeeShopName={coffeeShopName}
                     /> 
                   : <Navigate to="/admin-login" />
               } 

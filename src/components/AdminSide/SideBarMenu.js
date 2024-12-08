@@ -9,7 +9,8 @@ const SidebarMenu = ({
   onLogout, 
   notifications, 
   clearNotifications, 
-  markNotificationAsRead 
+  markNotificationAsRead,
+  coffeeShopName = 'Coffee Shop Dashboard'
 }) => {
   const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const SidebarMenu = ({
             <User className="menu-icon" />
           </Link>
           <div className="header-content">
-            <span className="admin-title">Coffee Shop Dashboard</span>
+          <span className="admin-title">{coffeeShopName}</span>
             <div className="notification-container">
               <button 
                 className="notification-icon" 

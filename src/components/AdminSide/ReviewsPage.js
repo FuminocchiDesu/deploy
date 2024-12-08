@@ -10,7 +10,8 @@ import './SharedStyles.css';
 function ReviewsPage({ handleOwnerLogout, 
   notifications = [], 
   clearNotifications = () => {}, 
-  markNotificationAsRead = () => {} 
+  markNotificationAsRead = () => {},
+  coffeeShopName = 'Coffee Shop Dashboard'
 }) {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState(null);
@@ -256,6 +257,7 @@ function ReviewsPage({ handleOwnerLogout,
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
+        coffeeShopName={coffeeShopName}
       />
 
       <main className="main-content">

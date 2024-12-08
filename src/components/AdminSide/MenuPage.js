@@ -13,7 +13,8 @@ const API_BASE_URL = 'https://khlcle.pythonanywhere.com';
 const MenuPage = ({ handleOwnerLogout, 
   notifications = [], 
   clearNotifications = () => {}, 
-  markNotificationAsRead = () => {} 
+  markNotificationAsRead = () => {},
+  coffeeShopName = 'Coffee Shop Dashboard'
 }) => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
@@ -618,6 +619,7 @@ const MenuPage = ({ handleOwnerLogout,
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
+        coffeeShopName={coffeeShopName}
       />
       <div className="main-content">
       {loading ? (

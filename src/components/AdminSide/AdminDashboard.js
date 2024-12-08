@@ -13,7 +13,8 @@ const AdminDashboard = ({
   handleOwnerLogout, 
   notifications = [], 
   clearNotifications = () => {}, 
-  markNotificationAsRead = () => {} 
+  markNotificationAsRead = () => {},
+  coffeeShopName = 'Coffee Shop Dashboard' 
 }) => {
   const getCurrentMonthRange = () => {
     const now = new Date();
@@ -227,6 +228,7 @@ const AdminDashboard = ({
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
+        coffeeShopName={coffeeShopName}
       />
 
       <main className="main-content">
