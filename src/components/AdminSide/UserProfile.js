@@ -245,9 +245,9 @@ const UserProfile = ({ handleOwnerLogout,
   return (
     <div className="admin-layout">
       <SidebarMenu
-        activeMenuItem={activeMenuItem}
-        handleMenuItemClick={handleMenuItemClick}
-        onLogout={onLogout}
+        activeMenuItem="Profile"
+        handleMenuItemClick={(item) => navigate(item.path)}
+        onLogout={handleOwnerLogout}
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
