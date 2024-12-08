@@ -150,17 +150,17 @@ export default function Component({ onLogin }) {
             <p style={{
               color: 'var(--color-text-light)',
               marginBottom: '2rem'
-            }}>Enter your credentials to access your coffee shop dashboard</p>
+            }}>Enter your username or email to access your coffee shop dashboard</p>
             
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label className="form-label">Username</label>
+                <label className="form-label">Username or Email</label>
                 <input
                   id="username"
                   name="username"
                   type="text"
                   className="form-input"
-                  placeholder="Enter your username"
+                  placeholder="Enter your username or email"
                   value={credentials.username}
                   onChange={handleChange}
                   required
