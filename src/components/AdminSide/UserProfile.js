@@ -126,7 +126,8 @@ const ProfileTab = ({ profile, editedProfile, isEditing, setIsEditing, handleSav
 const UserProfile = ({ handleOwnerLogout, 
   notifications = [], 
   clearNotifications = () => {}, 
-  markNotificationAsRead = () => {} 
+  markNotificationAsRead = () => {},
+  coffeeShopName = 'Coffee Shop Dashboard' 
 }) => {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -244,12 +245,13 @@ const UserProfile = ({ handleOwnerLogout,
   return (
     <div className="admin-layout">
       <SidebarMenu
-        activeMenuItem="Profile"
-        handleMenuItemClick={(item) => navigate(item.path)}
-        onLogout={handleOwnerLogout}
+        activeMenuItem={activeMenuItem}
+        handleMenuItemClick={handleMenuItemClick}
+        onLogout={onLogout}
         notifications={notifications}
         clearNotifications={clearNotifications}
         markNotificationAsRead={markNotificationAsRead}
+        coffeeShopName={coffeeShopName}
       />
       <main className="profile-container">
       {isLoading ? (
